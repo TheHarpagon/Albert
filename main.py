@@ -2,7 +2,7 @@
 import discord
 from discord.ext import commands
 from discord.ext import tasks
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import asyncio
 import tinydb
 import psutil
@@ -19,7 +19,7 @@ bot.remove_command("help")
 
 # mute json logging setup
 mutes = {}
-db = tinydb.TinyDB("db.json")
+muteDatabase = tinydb.TinyDB("muteDatabase.json")
 query = tinydb.Query()
 
 async def assignments():
@@ -34,6 +34,10 @@ async def assignments():
 	bot.botProfile = s.get_member(variables.rolesChannelID)
 	bot.privateServer1Bot = bot.get_channel(variables.privateServer1BotID)
 	bot.privateServer2Bot = bot.get_channel(variables.privateServer2BotID)
+	bot.eventLabel = variables.eventLabel
+	bot.commandLabel = variables.commandLabel
+	bot.serverInviteURL = variables.serverInviteURL
+	bot.statusPageURL = variables.statusPageURL
 
 	bot.adminRole = s.get_role(variables.adminRoleID)
 	bot.moderatorRole = s.get_role(variables.moderatorRoleID)
@@ -95,10 +99,6 @@ async def assignments():
 	bot.eightEmoji = bot.get_emoji(variables.eightEmojiID)
 	bot.nineEmoji = bot.get_emoji(variables.nineEmojiID)
 	bot.tenEmoji = bot.get_emoji(variables.tenEmojiID)
-	
-	bot.serverInviteURL = variables.serverInviteURL
-	bot.eventLabel = variables.eventLabel
-	bot.commandLabel = variables.commandLabel
 
 	bot.schoolRRDict = {variables.brainEmojiID: bot.helpRole, variables.bellEmojiID: bot.scheduleRole, variables.oneEmojiID: bot.precalculusRole, variables.twoEmojiID: bot.apCalcABRole, variables.threeEmojiID: bot.apCalcBCRole, variables.fourEmojiID: bot.hPhysicsRole, variables.fiveEmojiID: bot.apPhysicsRole, variables.sixEmojiID: bot.apBiologyRole, variables.sevenEmojiID: bot.rushRole, variables.eightEmojiID: bot.apushRole, variables.nineEmojiID: bot.vsNetRole, variables.tenEmojiID: bot.apcsRole}
 
@@ -109,13 +109,13 @@ def userCount(userType: int):
 	if userType == 1:
 		humanCount = 0
 		for member in bot.server.members:
-			if member.bot == False:
+			if not member.bot:
 				humanCount += 1
 		return humanCount
 	else:
 		botCount = 0
 		for member in bot.server.members:
-			if member.bot == True:
+			if member.bot:
 				botCount += 1
 		return botCount
 
@@ -123,9 +123,10 @@ def userCount(userType: int):
 @bot.event
 async def on_ready():
 	await assignments()
-	bellSchedule.start()
+	# bellSchedule.start()
 	bot.starttime = datetime.now()
-	await bot.change_presence(status = discord.Status.dnd, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{userCount(1)} Members • !help"))
+	# await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{userCount(1)} Members • !help"))
+	await bot.change_presence(activity=discord.Streaming(name="Onlyfanz", url='https://twitch.tv/0nly_fanz'))
 	print(f"""
   _____ _            ____        _   _           
  |_   _| |__   ___  | __ ) _   _| |_| | ___ _ __ 
@@ -136,15 +137,15 @@ async def on_ready():
 
 	subjectRolesMessage = await bot.rolesChannel.fetch_message(759521601170833469)
 	embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.scheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xFFFFFE)
-	embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
-	embed.set_footer(text = bot.server.name + " • Developed by Harsh#2626", icon_url = bot.server.icon_url)
+	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
+	embed.set_footer(text = bot.server.name + " • Reaction Roles", icon_url = bot.server.icon_url)
 	embed.set_thumbnail(url = bot.server.icon_url)
 	await subjectRolesMessage.edit(embed = embed)
 
 	gameRolesMessage = await bot.rolesChannel.fetch_message(759534246607585300)
 	embed = discord.Embed(title = "Game Roles :video_game:", description = f"Pick up some roles for any games you play! \n\n{bot.amongUsEmoji} {bot.amongUsRole.mention} \n{bot.chessEmoji} {bot.chessRole.mention} \n{bot.krunkerEmoji} {bot.krunkerRole.mention} \n{bot.minecraftEmoji} {bot.minecraftRole.mention} \n{bot.skribblEmoji} {bot.skribblRole.mention} \n{bot.valorantEmoji} {bot.valorantRole.mention}", color = 0xFFFFFE)
-	embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
-	embed.set_footer(text = bot.server.name + " • Developed by Harsh#2626", icon_url = bot.server.icon_url)
+	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
+	embed.set_footer(text = bot.server.name + " • Reaction Roles", icon_url = bot.server.icon_url)
 	embed.set_thumbnail(url = bot.server.icon_url)
 	await gameRolesMessage.edit(embed = embed)
 	
@@ -168,7 +169,7 @@ async def on_ready():
 	# await subjectRolesMessage.add_reaction("\U00000039\U0000fe0f\U000020e3")
 	# await subjectRolesMessage.add_reaction("\U0001f51f")
 
-	for i in db:
+	for i in muteDatabase:
 		ids = i["id"].split(" ")
 		server = bot.get_guild(int(ids[1]))
 		member = bot.server.get_member(int(ids[0]))
@@ -177,11 +178,11 @@ async def on_ready():
 			await member.remove_roles(bot.mutedRole)
 			await member.add_roles(bot.memberRole)
 
-		db.remove(query.id == (str(member.id) + " " + str(server.id)))
+		muteDatabase.remove(query.id == (str(member.id) + " " + str(server.id)))
 
 		generalChannel = bot.get_channel(variables.generalChannelID)
 		embed = discord.Embed(title = f":loud_sound: Unmuted", description = f"{member.mention} was unmuted on bot startup", color = 0x00FF00, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Unmuted by {bot.user}", icon_url = bot.user.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await generalChannel.send(embed = embed)
@@ -190,20 +191,21 @@ async def on_ready():
 
 @tasks.loop(minutes = 1.0)
 async def bellSchedule():
-	currTime = datetime.now().time().strftime("%H:%M")
+	tz = timezone(timedelta(hours = -8))
+	currTime = datetime.now(tz = tz).time().strftime("%H:%M")
 	monTimes = {"08:15": ":books: Period `A`", "08:55": ":books: Period `1`", "09:35": ":books: Period `2`", "10:20": ":books: Period `3`", "11:00": ":books: Period `4`", "11:35": ":sandwich: `Lunch`", "12:10": ":books: Period `5`", "12:50": ":books: Period `6`"}
 	tuesThursTimes = {"08:15": ":books: Period `A`", "09:05": ":books: Period `1`", "10:25": ":game_die: `Student Support`", "11:00": ":sandwich: `Lunch`", "11:50": ":books: Period `3`", "13:20": ":books: Period `5`"}
 	wedFriTimes = {"08:15": ":books: Period `A`", "09:05": ":books: Period `2`", "10:25": ":game_die: `Student Support`", "11:00": ":sandwich: `Lunch`", "11:50": ":books: Period `4`", "13:20": ":books: Period `6`"}
 	
 	if datetime.now().isoweekday() == 1:
 		if currTime in monTimes:
-			await bot.generalChannel.send(f"{bot.scheduleRole.mention} :bell: {monTimes[currTime]} starts in `5` minutes!")
+			await bot.generalChannel.send(f"{bot.scheduleRole.mention} {monTimes[currTime]} starts in `5` minutes!")
 	elif datetime.now().isoweekday() in [2, 4]:
 		if currTime in tuesThursTimes:
-			await bot.generalChannel.send(f"{bot.scheduleRole.mention} :bell: {tuesThursTimes[currTime]} starts in `5` minutes!")
+			await bot.generalChannel.send(f"{bot.scheduleRole.mention} {tuesThursTimes[currTime]} starts in `5` minutes!")
 	elif datetime.now().isoweekday() in [3, 5]:
 		if currTime in wedFriTimes:
-			await bot.generalChannel.send(f"{bot.scheduleRole.mention} :bell: {wedFriTimes[currTime]} starts in `5` minutes!")
+			await bot.generalChannel.send(f"{bot.scheduleRole.mention} {wedFriTimes[currTime]} starts in `5` minutes!")
 
 # reaction roles
 @bot.event
@@ -238,7 +240,7 @@ async def on_member_join(member):
 	if member.bot == False:
 		await bot.welcomeChannel.send(f"Welcome, {member.mention}")
 		embed = discord.Embed(title = ":inbox_tray: Member Joined", color = 0x00FF00, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Member #{userCount(1)}", icon_url = member.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		embed.add_field(name = "Main Info :loudspeaker:", value = "Read the [rules](https://discordapp.com/channels/612059384721440789/612380669821321256/) \nRead the [channel info](https://discordapp.com/channels/612059384721440789/672266054742966273/) \nJoin the talk [here](https://discordapp.com/channels/612059384721440789/612059384721440791/)", inline = False)
@@ -255,7 +257,7 @@ async def on_member_join(member):
 	if member.bot == True:
 		await bot.welcomeChannel.send(f"Welcome, {member.mention}")
 		embed = discord.Embed(title = ":inbox_tray: Bot Joined", color = 0x00FF00, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Bot #{userCount(2)}", icon_url = member.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		embed.add_field(name = "Role Assignment", value = "<@&637083530555555846> Role Added", inline = False)
@@ -271,7 +273,7 @@ async def on_member_remove(member):
 	if member.bot == False:
 		await bot.welcomeChannel.send(f"Goodbye, {member.mention}")
 		embed = discord.Embed(title = f":outbox_tray: `{member}` Dipped", color = 0xFF0000, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Member Count: {userCount(1)}", icon_url = member.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		embed.add_field(name = "Either kicked/banned/left", value = "\u200b", inline = False)
@@ -284,7 +286,7 @@ async def on_member_remove(member):
 	if member.bot == True:
 		await bot.welcomeChannel.send(f"Goodbye, {member.mention}")
 		embed = discord.Embed(title = f":outbox_tray: `{member}` Dipped", color = 0xFF0000, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Bot Count: {userCount(2)}", icon_url = member.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		embed.add_field(name = "Either kicked/banned/left", value = "\u200b", inline = False)
@@ -297,7 +299,7 @@ async def on_message_delete(message):
 	if message.author.bot == False:
 		if (bot.memberRole in message.author.roles):
 			embed = discord.Embed(title = ":wastebasket: Message Deleted", color = 0xFFFFFE, timestamp = datetime.utcnow())
-			embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+			embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 			embed.set_footer(text = f"Deleted message from {message.author}", icon_url = message.author.avatar_url)
 			embed.set_thumbnail(url = message.author.avatar_url)
 			embed.add_field(name = "Author", value = message.author.mention, inline = True)
@@ -318,13 +320,13 @@ async def on_message(message):
 		await message.delete()
 
 		embed = discord.Embed(title = "<:krunker_icon:699029209988726885> Krunker Link", description = message.content, color = 0xFFFFFE, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Link posted by {message.author}", icon_url = message.author.avatar_url)
 		embed.set_thumbnail(url = "https://i.imgur.com/SIIjfcd.png")
 		linkPost = await bot.krunkerLinksChannel.send(embed = embed)
 
 		embed = discord.Embed(title = "<:krunker_icon:699029209988726885> Krunker Link", description = f":white_check_mark: Posted [here]({linkPost.jump_url})", color = 0xFFFFFE, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Link posted by {message.author}", icon_url = message.author.avatar_url)
 		embed.set_thumbnail(url = "https://i.imgur.com/SIIjfcd.png")
 		await message.channel.send(embed = embed)
@@ -347,7 +349,7 @@ async def on_message(message):
 async def pfp(ctx, member: discord.Member = None):
 	member = ctx.author if not member else member
 	embed = discord.Embed(title = ":frame_photo: Profile Picture",description = member.mention, color = 0xFFFFFE, timestamp = datetime.utcnow())
-	embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_image(url = member.avatar_url)
 	await ctx.send(embed = embed)
@@ -461,7 +463,7 @@ async def profile(ctx, member: discord.Member = None):
 		#     gameRoles = "`None`"
 
 		embed = discord.Embed(title=f":bust_in_silhouette: User Profile", description = f"`{member}`", color = topColor, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		embed.add_field(name = "Main Role", value = topRole, inline = True)
@@ -478,7 +480,7 @@ async def profile(ctx, member: discord.Member = None):
 
 	if member.bot == True:
 		embed = discord.Embed(title=f":robot: Bot Profile", description = f"`{member}`", color = member.color, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		embed.add_field(name = "Main Role", value = "<@&637083530555555846>", inline = True)
@@ -524,7 +526,7 @@ async def predict(ctx, *, question: str):
 	embed = discord.Embed(title = ":8ball: The Mighty 8Ball", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.add_field(name = "Question", value = question, inline = False)
 	embed.add_field(name = "Response", value = random.choice(responses), inline = False)
-	embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_thumbnail(url = "https://i.imgur.com/LkSBSuR.gif")
 	await ctx.send(embed = embed)
@@ -540,14 +542,14 @@ async def flip(ctx):
 
 	if response == responses[0]:
 		embed = discord.Embed(title = "<:discord_coin:728695789316210860> Flip a Coin", description = f"It's `{response}`", color = 0xFFFFFE, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = "https://i.imgur.com/92xg7uR.png")
 		await ctx.send(embed = embed)
 	
 	else:
 		embed = discord.Embed(title = "<:discord_coin:728695789316210860> Flip a Coin", description = f"It's `{response}`", color = 0xFFFFFE, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = "https://i.imgur.com/TjqDdBI.png")
 		await ctx.send(embed = embed)
@@ -566,7 +568,7 @@ async def mute(ctx, user: str, mtime = None):
 		mtime = float(mtime)
 
 	if (bot.adminRole in ctx.message.author.roles) or (bot.moderatorRole in ctx.message.author.roles):
-		if db.search(query.id == (str(member.id) + " " + str(member.guild.id))) == [] and (not ((bot.adminRole in member.roles) or (bot.moderatorRole in member.roles) or (bot.botRole in member.roles))):
+		if muteDatabase.search(query.id == (str(member.id) + " " + str(member.guild.id))) == [] and (not ((bot.adminRole in member.roles) or (bot.moderatorRole in member.roles) or (bot.botRole in member.roles))):
 				if mtime > 0:
 					if mtime < 1:
 						stime = round(mtime * 60)
@@ -576,7 +578,7 @@ async def mute(ctx, user: str, mtime = None):
 							sunit = "second"
 						
 						embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{stime}` {sunit}", color = 0x00FF00, timestamp = datetime.utcnow())
-						embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+						embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 						embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
 						embed.set_thumbnail(url = member.avatar_url)
 						await ctx.send(embed = embed)
@@ -591,7 +593,7 @@ async def mute(ctx, user: str, mtime = None):
 								hunit = "hour"
 						
 						embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{htime}` {hunit}", color = 0x00FF00, timestamp = datetime.utcnow())
-						embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+						embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 						embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
 						embed.set_thumbnail(url = member.avatar_url)
 						await ctx.send(embed = embed)
@@ -605,7 +607,7 @@ async def mute(ctx, user: str, mtime = None):
 								munit = "minute"
 						
 						embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{mtime}` {munit}", color = 0x00FF00, timestamp = datetime.utcnow())
-						embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+						embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 						embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
 						embed.set_thumbnail(url = member.avatar_url)
 						await ctx.send(embed = embed)
@@ -614,14 +616,14 @@ async def mute(ctx, user: str, mtime = None):
 				
 				else:
 					embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `infinity` (`∞`)", color = 0x00FF00, timestamp = datetime.utcnow())
-					embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+					embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 					embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
 					embed.set_thumbnail(url = member.avatar_url)
 					await ctx.send(embed = embed)
 
 					print(f"{bot.commandLabel} Mute (Infinity ∞)")
 				
-				db.insert({"id":(str(member.id) + " " + str(member.guild.id)), "expires":(mtime * 60)})
+				muteDatabase.insert({"id":(str(member.id) + " " + str(member.guild.id)), "expires":(mtime * 60)})
 				await member.add_roles(bot.mutedRole)
 				await member.remove_roles(bot.memberRole)
 
@@ -633,31 +635,31 @@ async def mute(ctx, user: str, mtime = None):
 					
 					print(f"{bot.eventLabel} Unmute")
 						
-					if db.search(query.id == (str(member.id) + " " + str(member.guild.id))) != []:
+					if muteDatabase.search(query.id == (str(member.id) + " " + str(member.guild.id))) != []:
 						embed = discord.Embed(title = ":loud_sound: Unmuted", description = f"{member.mention}'s mute expired", color = 0x00FF00, timestamp = datetime.utcnow())
-						embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+						embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 						embed.set_footer(text = f"Originally muted by {ctx.author}", icon_url = ctx.author.avatar_url)
 						embed.set_thumbnail(url = member.avatar_url)
 						await ctx.send(embed = embed)
-						db.remove(query.id == (str(member.id) + " " + str(member.guild.id)))
+						muteDatabase.remove(query.id == (str(member.id) + " " + str(member.guild.id)))
 		
 		else:
 			if (bot.adminRole in member.roles) or (bot.moderatorRole in member.roles) or (bot.botRole in member.roles):
 				embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Mute", description = f"Exempt Roles: \n• {bot.adminRole.mention} \n• {bot.moderatorRole.mention} \n• {bot.botRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow()) 
-				embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+				embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 				embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 				embed.set_thumbnail(url = member.avatar_url)
 				await ctx.send(embed = embed)
 		
 			else:
 				embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Mute", description = f"{member.mention} is already muted", color = 0xFF0000, timestamp = datetime.utcnow())
-				embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+				embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 				embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 				embed.set_thumbnail(url = member.avatar_url)
 				await ctx.send(embed = embed)
 	else:
 		embed = discord.Embed(title = f"{bot.errorEmoji} Missing Permissions", description = f"Required Roles: \n• {bot.adminRole.mention} \n• {bot.moderatorRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())   
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
@@ -694,14 +696,14 @@ async def unmute(ctx, user: str):
 			if not bot.memberRole in member.roles:
 				await member.add_roles(bot.memberRole)
 			embed = discord.Embed(title = f":loud_sound: Unmuted", description = f"{member.mention} was unmuted", color = 0x00FF00, timestamp = datetime.utcnow())
-			embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+			embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 			embed.set_footer(text = f"Unmuted by {ctx.author}", icon_url = ctx.author.avatar_url)
 			embed.set_thumbnail(url = member.avatar_url)
 			await ctx.send(embed = embed)
 		
 		else:
 			embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Unmute", description = f"{member.mention} isn't even muted", color = 0xFF0000, timestamp = datetime.utcnow())
-			embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+			embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 			embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 			embed.set_thumbnail(url = member.avatar_url)
 			await ctx.send(embed = embed)
@@ -709,12 +711,12 @@ async def unmute(ctx, user: str):
 		if not bot.memberRole in member.roles:
 			await member.add_roles(bot.memberRole)
 		
-		db.remove(query.id == (str(member.id) + " " + str(member.guild.id)))
+		muteDatabase.remove(query.id == (str(member.id) + " " + str(member.guild.id)))
 		print(f"{bot.commandLabel} Unmute")
 	
 	else:
 		embed = discord.Embed(title = f"{bot.errorEmoji} Missing Permissions", description = f"Required Roles: \n• {bot.adminRole.mention} \n• {bot.moderatorRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())   
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
@@ -746,7 +748,7 @@ async def pp(ctx):
 		rating = "BBC"
 
 	embed = discord.Embed(title = ":eggplant: PP Rater", description = f"8{output}D \n**Length:** `{round(length, 2)}` inches \n**Rating:** `{rating}`", color = 0xFFFFFE, timestamp = datetime.utcnow())
-	embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_thumbnail(url = ctx.author.avatar_url)
 	await ctx.send(embed = embed)
@@ -757,7 +759,7 @@ async def pp(ctx):
 @bot.command(aliases = ["ranks"])
 async def roles(ctx):
 	embed = discord.Embed(title = ":medal: Server Roles", color = 0xFFFFFE, timestamp = datetime.utcnow())
-	embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_image(url = "https://i.gyazo.com/5d858524628ea71faaa9c7b922ec093d.png")
 	await ctx.send(embed = embed)
@@ -767,7 +769,7 @@ async def roles(ctx):
 @bot.command(aliases = ["mcip"])
 async def ip(ctx):
 	embed = discord.Embed(title = "<:minecraft_icon:699029490332074015> Minecraft Server IPs", color = 0xFFFFFE, timestamp = datetime.utcnow())
-	embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 
 	# privateServer1BotStatus = "<:offline:736832948913045588>"
@@ -795,14 +797,14 @@ async def promote(ctx, member: discord.Member):
 		await member.remove_roles(bot.memberRole)
 
 		embed = discord.Embed(title = f"<:upvote:732640878145044623> Promoted", description = f"{member.mention} is now a {bot.moderatorRole.mention}", color = 0x00FF00, timestamp = datetime.utcnow())       
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Promoted by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
 
 		await bot.staffOnlyChannel.send(f"<:upvote:732640878145044623> {member.mention} was promoted")
 		embed = discord.Embed(title = "Staff Guidelines", description = f"Below are some guidelines/rules for a {bot.moderatorRole.mention}! \nPlease **do not** abuse your powers, or you will be demoted", color = 0xFFFFFE, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		embed.add_field(name = "Warning", value = "warn when user violate rules lightly \n`!warn @user reason` \n`!infractions @user`", inline = False)
@@ -815,21 +817,21 @@ async def promote(ctx, member: discord.Member):
 
 	elif (bot.adminRole in ctx.message.author.roles) and (bot.moderatorRole in member.roles):
 		embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Promote", description = f"{member.mention} is already a {bot.moderatorRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())       
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
 
 	elif (bot.adminRole in ctx.message.author.roles) and (bot.adminRole in member.roles):
 		embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Promote", description = f"You fool, you are literally the {bot.adminRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())       
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
 
 	else:
 		embed = discord.Embed(title = f"{bot.errorEmoji} Missing Permissions", description = f"Required Role: \n• {bot.adminRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())  
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
@@ -842,7 +844,7 @@ async def demote(ctx, member: discord.Member):
 		await member.remove_roles(bot.moderatorRole)
 
 		embed = discord.Embed(title = f"<:downvote:732640878249902161> Demoted", description = f"{member.mention} is now a {bot.memberRole.mention}", color = 0x00FF00, timestamp = datetime.utcnow())       
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Demoted by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
@@ -852,21 +854,21 @@ async def demote(ctx, member: discord.Member):
 
 	elif (bot.adminRole in ctx.message.author.roles) and (bot.memberRole in member.roles):
 		embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Demote", description = f"{member.mention} is already a {bot.memberRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())    
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
 
 	elif (bot.adminRole in ctx.message.author.roles) and (bot.adminRole in member.roles):
 		embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Promote", description = f"You fool, you literally are the {bot.adminRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())       
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
 
 	else:
 		embed = discord.Embed(title = f"{bot.errorEmoji} Missing Permissions", description = f"Required Role: {bot.adminRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())    
-		embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
@@ -875,7 +877,7 @@ async def demote(ctx, member: discord.Member):
 @bot.command(aliases = ["inv"])
 async def invite(ctx):
 	embed = discord.Embed(title = ":inbox_tray: Server Invite Link", description = bot.serverInviteURL, color = 0xFFFFFE, timestamp = datetime.utcnow())
-	embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_thumbnail(url = bot.server.icon_url)
 	await ctx.send(embed = embed)
@@ -906,8 +908,8 @@ async def ping(ctx):
 	if seconds > 1 or seconds == 0:
 		sunit += "s"
 
-	e = discord.Embed(title = "🏓 Pong!", description = "[Status Page](https://stats.uptimerobot.com/zq1QPiREEl)", color = 0xFFFFFE, timestamp = datetime.utcnow())
-	e.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+	e = discord.Embed(title = "🏓 Pong!", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	e.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	e.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	e.add_field(name = ":signal_strength: Latency", value = f"`{round(bot.latency * 1000)}`ms", inline = True)
 	e.add_field(name = ":robot: Hardware", value = f"`{psutil.cpu_count()}` Cores \n`{round(psutil.cpu_percent())}`% CPU Usage \n`{round(psutil.virtual_memory().percent)}`% RAM Usage", inline = True)
@@ -919,7 +921,7 @@ async def ping(ctx):
 @bot.command(aliases = ["info"])
 async def help(ctx):
 	embed = discord.Embed(title = "Help Section", color = 0xFFFFFE, timestamp = datetime.utcnow())
-	embed.set_author(name = bot.user.name, url = bot.serverInviteURL, icon_url = bot.user.avatar_url)
+	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_thumbnail(url = bot.server.icon_url)
 	embed.add_field(name = ":bust_in_silhouette: User Profile", value = "`!profile` \n`!profile @user`", inline = True)
