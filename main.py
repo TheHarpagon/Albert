@@ -1,20 +1,22 @@
 # importing libraries
+import asyncio
+from bs4 import BeautifulSoup
+from datetime import datetime, timezone, timedelta
 import discord
 from discord.ext import commands
 from discord.ext import tasks
-from datetime import datetime, timezone, timedelta
-import asyncio
-import tinydb
-import psutil
-import random
-import variables
-import os
 from keepAlive import keepAlive
-
-intents = discord.Intents.all()
+import os
+import psutil
+import pytz
+import random
+import requests
+import tinydb
+import variables
 
 # set prefix and remove default help command
-bot = commands.Bot(command_prefix = "!", case_insensitive = True, intents = intents)
+intents = discord.Intents.all()
+bot = commands.Bot(command_prefix = "!", intents = intents, case_insensitive = True)
 bot.remove_command("help")
 
 # mute json logging setup
@@ -27,6 +29,8 @@ async def assignments():
 	bot.server = bot.get_guild(variables.serverID)
 	bot.welcomeChannel = bot.get_channel(variables.welcomeChannelID)
 	bot.rolesChannel = bot.get_channel(variables.rolesChannelID)
+	bot.rulesChannel = bot.get_channel(variables.rulesChannelID)
+	bot.channelsChannel = bot.get_channel(variables.channelsChannelID)
 	bot.logChannel = bot.get_channel(variables.logChannelID)
 	bot.generalChannel = bot.get_channel(variables.generalChannelID)
 	bot.staffOnlyChannel = bot.get_channel(variables.staffOnlyChannelID)
@@ -42,6 +46,7 @@ async def assignments():
 	bot.adminRole = s.get_role(variables.adminRoleID)
 	bot.moderatorRole = s.get_role(variables.moderatorRoleID)
 	bot.mutedRole = s.get_role(variables.mutedRoleID)
+	bot.vipRole = s.get_role(variables.vipRoleID)
 	bot.memberRole = s.get_role(variables.memberRoleID)
 	bot.botRole = s.get_role(variables.botRoleID)
 	
@@ -104,6 +109,24 @@ async def assignments():
 
 	bot.gameRRDict = {variables.amongUsEmojiID: bot.amongUsRole, variables.chessEmojiID: bot.chessRole, variables.krunkerEmojiID: bot.krunkerRole, variables.minecraftEmojiID: bot.minecraftRole, variables.skribblEmojiID: bot.skribblRole, variables.valorantEmojiID: bot.valorantRole}
 
+# def leaderboardTask():
+# 	url = 'https://mee6.xyz/leaderboard/612059384721440789'
+# 	page = requests.get(url)
+# 	soup = BeautifulSoup(page.text.replace("</script\n", "</script>"), 'html.parser')
+# 	results = soup.find(class_ = "leaderboardPlayersListContainer")
+	
+# 	usernames = results.find_all(class_ = "leaderboardPlayerUsername")
+# 	usernamesList = []
+# 	for i in range (0, 10):
+# 		usernamesList.append(usernames[i].text.strip())
+
+# 	levels = results.find_all(class_ = "leaderboardPlayerStatText")
+# 	levelsList = []
+# 	for i in range (0, 10):
+# 		levelsList.append(levels[i].text.strip())
+
+# 	return [usernamesList, levelsList]
+
 # counts humans or bots in the server
 def userCount(userType: int):
 	if userType == 1:
@@ -125,8 +148,8 @@ async def on_ready():
 	await assignments()
 	# bellSchedule.start()
 	bot.starttime = datetime.now()
-	# await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{userCount(1)} Members • !help"))
-	await bot.change_presence(activity=discord.Streaming(name="Onlyfanz", url='https://twitch.tv/0nly_fanz'))
+	await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{userCount(1)} Members • !help"))
+	# await bot.change_presence(activity = discord.Streaming(name = "Onlyfanz", url = "https://bit.ly/3lH4oSp"))
 	print(f"""
   _____ _            ____        _   _           
  |_   _| |__   ___  | __ ) _   _| |_| | ___ _ __ 
@@ -138,16 +161,83 @@ async def on_ready():
 	subjectRolesMessage = await bot.rolesChannel.fetch_message(759521601170833469)
 	embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.scheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xFFFFFE)
 	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-	embed.set_footer(text = bot.server.name + " • Reaction Roles", icon_url = bot.server.icon_url)
+	embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
 	embed.set_thumbnail(url = bot.server.icon_url)
 	await subjectRolesMessage.edit(embed = embed)
 
 	gameRolesMessage = await bot.rolesChannel.fetch_message(759534246607585300)
-	embed = discord.Embed(title = "Game Roles :video_game:", description = f"Pick up some roles for any games you play! \n\n{bot.amongUsEmoji} {bot.amongUsRole.mention} \n{bot.chessEmoji} {bot.chessRole.mention} \n{bot.krunkerEmoji} {bot.krunkerRole.mention} \n{bot.minecraftEmoji} {bot.minecraftRole.mention} \n{bot.skribblEmoji} {bot.skribblRole.mention} \n{bot.valorantEmoji} {bot.valorantRole.mention}", color = 0xFFFFFE)
+	embed = discord.Embed(title = "Game Roles :video_game:", description = f"""Pick up some roles for any games you play! 
+	
+	{bot.amongUsEmoji} {bot.amongUsRole.mention} 
+	{bot.chessEmoji} {bot.chessRole.mention} 
+	{bot.krunkerEmoji} {bot.krunkerRole.mention} 
+	{bot.minecraftEmoji} {bot.minecraftRole.mention} 
+	{bot.skribblEmoji} {bot.skribblRole.mention} 
+	{bot.valorantEmoji} {bot.valorantRole.mention}""", color = 0xFFFFFE)
 	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-	embed.set_footer(text = bot.server.name + " • Reaction Roles", icon_url = bot.server.icon_url)
+	embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
 	embed.set_thumbnail(url = bot.server.icon_url)
 	await gameRolesMessage.edit(embed = embed)
+
+	rulesMessage = await bot.rulesChannel.fetch_message(790036264648441897)
+	embed = discord.Embed(title = "Rules :scroll:", color = 0xFFFFFE)
+	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
+	embed.set_footer(text = "Server Rules", icon_url = bot.server.icon_url)
+	embed.set_thumbnail(url = bot.server.icon_url)
+	embed.add_field(name = "Common Sense", value = f"""
+• no self promo
+• follow [Discord TOS](https://discord.com/terms)
+• do not diss <@533153734373539840>
+• have some [common sense](https://youtu.be/YSDTPPM9qsc)
+• [try not](https://youtu.be/uJHU6CICPGk) to be unfunny as hell
+• avoid being blatantly offensive
+• no annoying/unnecessary pinging
+• respect da staff cuz they're kinda hot
+• don't be an asshole/annoying person
+• use the right channel for your topic of discussion
+• no nsfw or crazy spamming (except in <#777040210005065739>)
+• arguing is allowed, but if it gets too spicy, go to <#744374005280276522>""", inline = False)
+	embed.add_field(name = "More Info", value = f"""
+• run `!help` to see server commands
+• staff can mute you at their discretion
+• ignorance of the rules above is not a valid excuse
+• bans and kicks generally happen after discussion in {bot.generalChannel.mention}
+• rules for the **minecraft servers** are pinned (<#659885014603005953> & <#693321555366903851>)""", inline = False)
+	await rulesMessage.edit(embed = embed)
+
+	channelsMessage1 = await bot.channelsChannel.fetch_message(790467696860594207)
+	embed = discord.Embed(title = "Channels :computer:", description = "ayo wtf are these channels for??", color = 0xFFFFFE)
+	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
+	embed.set_footer(text = "Server Channels", icon_url = bot.server.icon_url)
+	embed.set_thumbnail(url = bot.server.icon_url)
+	embed.add_field(name = "Text Channels", value = f"""
+• {bot.welcomeChannel.mention} user welcome and adios messages
+• {bot.rolesChannel.mention} reaction roles 
+• {bot.rulesChannel.mention} the constitution
+• {bot.channelsChannel.mention} info on all channels
+• <#635302492132999168> announcements and updates
+• <#732997653394227220> suggestions posted with `s!suggest <suggestion>`
+• <#745337266943164446> messages with four or more :star: reactions
+• {bot.generalChannel.mention} communicate with other idiots
+• <#612384531999096832> play some bangers with <@630199558294470676>""", inline = False)
+	await channelsMessage1.edit(embed = embed)
+
+	channelsMessage2 = await bot.channelsChannel.fetch_message(790467697841274890)
+	embed = discord.Embed(title = "Channels :computer:", color = 0xFFFFFE)
+	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
+	embed.set_footer(text = "Server Channels", icon_url = bot.server.icon_url)
+	embed.set_thumbnail(url = bot.server.icon_url)
+	embed.add_field(name = "Text Channels Continued...", value = f"""
+• <#744374005280276522> verbally duel with another person
+• <#744374515328614421> weeb territory
+• <#777040210005065739> in the name, just don't be mad weird when it comes to nsfw
+• <#700074631935295532> academic related discussion
+• <#690647361139245136> count till the end of time and space
+• <#746951407546007643> auto-posted {bot.amongUsEmoji}, {bot.chessEmoji}, and {bot.krunkerEmoji} join codes/links
+• <#636071901906731010> use all bots
+• <#659885014603005953> minecraft creative world chat
+• <#693321555366903851> minecraft survival world chat""", inline = False)
+	await channelsMessage2.edit(embed = embed)
 	
 	# await gameRolesMessage.add_reaction(bot.amongUsEmoji)
 	# await gameRolesMessage.add_reaction(bot.chessEmoji)
@@ -191,8 +281,8 @@ async def on_ready():
 
 @tasks.loop(minutes = 1.0)
 async def bellSchedule():
-	tz = timezone(timedelta(hours = -8))
-	currTime = datetime.now(tz = tz).time().strftime("%H:%M")
+	# tz = timezone(timedelta(hours = -8))
+	currTime = datetime.utcnow().time().strftime("%H:%M")
 	monTimes = {"08:15": ":books: Period `A`", "08:55": ":books: Period `1`", "09:35": ":books: Period `2`", "10:20": ":books: Period `3`", "11:00": ":books: Period `4`", "11:35": ":sandwich: `Lunch`", "12:10": ":books: Period `5`", "12:50": ":books: Period `6`"}
 	tuesThursTimes = {"08:15": ":books: Period `A`", "09:05": ":books: Period `1`", "10:25": ":game_die: `Student Support`", "11:00": ":sandwich: `Lunch`", "11:50": ":books: Period `3`", "13:20": ":books: Period `5`"}
 	wedFriTimes = {"08:15": ":books: Period `A`", "09:05": ":books: Period `2`", "10:25": ":game_die: `Student Support`", "11:00": ":sandwich: `Lunch`", "11:50": ":books: Period `4`", "13:20": ":books: Period `6`"}
@@ -219,6 +309,12 @@ async def on_raw_reaction_add(payload):
 		await payload.member.add_roles(bot.gameRRDict[payload.emoji.id], bot.dividerTwoRole)
 		await payload.member.send(f"{bot.plusEmoji} Added the **{bot.gameRRDict[payload.emoji.id].name}** role")
 		print(f"{bot.eventLabel} Reaction Role (Added Role)")
+	
+	if payload.message_id == 790827142589054986:
+		role = bot.server.get_role(790831238453657620)
+		await payload.member.add_roles(role)
+		await payload.member.send(f"{bot.plusEmoji} Added the **{role.name}** role")
+		print(f"{bot.eventLabel} Reaction Role (Added Role)")
 
 # reaction roles
 @bot.event
@@ -232,6 +328,12 @@ async def on_raw_reaction_remove(payload):
 	if payload.message_id == 759534246607585300:
 		await member.remove_roles(bot.gameRRDict[payload.emoji.id])
 		await member.send(f"{bot.minusEmoji} Removed the **{bot.gameRRDict[payload.emoji.id].name}** role")
+		print(f"{bot.eventLabel} Reaction Role (Removed Role)")
+	
+	if payload.message_id == 790827142589054986:
+		role = bot.server.get_role(790831238453657620)
+		await member.remove_roles(role)
+		await member.send(f"{bot.minusEmoji} Removed the **{role.name}** role")
 		print(f"{bot.eventLabel} Reaction Role (Removed Role)")
 
 # on member join event
@@ -297,7 +399,7 @@ async def on_member_remove(member):
 @bot.event
 async def on_message_delete(message):
 	if message.author.bot == False:
-		if (bot.memberRole in message.author.roles):
+		if bot.memberRole in message.author.roles and message.channel.id != 690647361139245136:
 			embed = discord.Embed(title = ":wastebasket: Message Deleted", color = 0xFFFFFE, timestamp = datetime.utcnow())
 			embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 			embed.set_footer(text = f"Deleted message from {message.author}", icon_url = message.author.avatar_url)
@@ -311,6 +413,26 @@ async def on_message_delete(message):
 
 			await bot.logChannel.send(embed = embed)
 			print(f"{bot.eventLabel} Message Deleted")
+
+@bot.event
+async def on_message_edit(before, after):
+	if before.author.bot == False:
+		if before.content != after.content and bot.memberRole in before.author.roles and before.channel.id != 690647361139245136:
+			embed = discord.Embed(title = ":pencil: Message Edited", color = 0xFFFFFE, timestamp = datetime.utcnow())
+			embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
+			embed.set_footer(text = f"Edited message from {before.author}", icon_url = before.author.avatar_url)
+			embed.set_thumbnail(url = before.author.avatar_url)
+			embed.add_field(name = "Author", value = before.author.mention, inline = True)
+			embed.add_field(name = "Channel", value = before.channel.mention, inline = True)
+			embed.add_field(name = "Message", value = f"[Jump!]({before.jump_url})", inline = True)
+			embed.add_field(name = "Before", value = before.content, inline = False)
+			embed.add_field(name = "After", value = after.content, inline = False)
+
+			# if (message.attachments[0].size > 0):
+			# 	embed.set_image(url = message.attachments[0].proxy_url)
+
+			await bot.logChannel.send(embed = embed)
+			print(f"{bot.eventLabel} Message Edited")
 
 # on message sent event
 @bot.event
@@ -333,6 +455,9 @@ async def on_message(message):
 
 		print(f"{bot.eventLabel} Krunker Link Posted")
 	
+	if message.guild is None and message.author.id == 410590963379994639:
+		await bot.generalChannel.send(message.content)
+	
 	await bot.process_commands(message)
 
 # @bot.event
@@ -344,15 +469,51 @@ async def on_message(message):
 #     else:
 #         await ctx.send(bot.errorEmoji)
 
+# @bot.command()
+# async def top(ctx):
+# 	data = leaderboardTask()
+# 	embed = discord.Embed(title = "Leaderboard", color = 0xFFFFFE, timestamp = datetime.utcnow())
+# 	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
+# 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+# 	for i in range(0, 10):
+# 		embed.add_field(name = f"{i+1}) {data[0][i]}", value = f"Level {data[1][i]}", inline = False)
+# 	await ctx.send(embed = embed)
+
 # pfp command
 @bot.command(aliases = ["avatar"])
 async def pfp(ctx, member: discord.Member = None):
 	member = ctx.author if not member else member
-	embed = discord.Embed(title = ":frame_photo: Profile Picture",description = member.mention, color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":frame_photo: Profile Picture", description = member.mention, color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_image(url = member.avatar_url)
 	await ctx.send(embed = embed)
+
+# @bot.command()
+# async def resetnicks(ctx):
+# 	if bot.adminRole in ctx.author.roles:
+# 		msg = await ctx.send("<a:loadingColorful:765034824926232606> Hold up...")
+# 		for member in bot.server.members:
+# 			if member.bot is False and member.id != 410590963379994639:
+# 				await member.edit(nick = member.name)
+# 		await msg.edit(f"{bot.checkmarkEmoji} Done!")
+# 	else:
+# 		await ctx.send(f"{bot.errorEmoji} You do not have access to use this command!")
+
+
+@bot.command()
+async def setstatus(ctx, *, argument):
+	if ctx.author.id == 410590963379994639:
+		if argument.lower() == "normal":
+			await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{userCount(1)} Members | !help"))
+			await ctx.send(f"{bot.checkmarkEmoji} Set!")
+		else:
+			await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = argument))
+			await ctx.send(f"{bot.checkmarkEmoji} Set!")
+		print(f"{bot.commandLabel} SetStatus")
+	else:
+		await ctx.send(f"{bot.errorEmoji} You do not have access to use this command!")
+
 
 @bot.command()
 async def kill(ctx):
@@ -386,10 +547,10 @@ async def kill(ctx):
 # dm command
 @bot.command()
 async def dm(ctx, member: discord.Member, *, message):
-	if ctx.author.id == 410590963379994639:
-		await member.send(message)
+	if bot.vipRole in ctx.author.roles:
+		await member.send(message + f"\n- from {ctx.author.mention}")
 		await ctx.send(f"{bot.checkmarkEmoji} Sent!")
-	
+		print(f"{bot.commandLabel} DM")
 	else:
 		await ctx.send(f"{bot.errorEmoji} You do not have access to use this command!")
 
@@ -495,7 +656,8 @@ async def profile(ctx, member: discord.Member = None):
 # predict command
 @bot.command(aliases = ["8ball"])
 async def predict(ctx, *, question: str):
-	responses = [   "Yeah I can picture that ngl",
+	responses = [   f"shut the fuck up {ctx.author.nick.lower()}",
+									"Yeah I can picture that ngl",
 									"Yeah fs dude",
 									"Yeah no doubt dude",
 									"Absolutely, not even a question",

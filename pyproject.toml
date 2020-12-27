@@ -10,6 +10,9 @@ discord = "^1.0.1"
 flask = "^1.1.2"
 psutil = "^5.7.3"
 tinydb = "^4.3.0"
+bs4 = "^0.0.1"
+pytz = "^2020.4"
+pandas = "^1.1.5"
 
 [tool.poetry.dev-dependencies]
 
