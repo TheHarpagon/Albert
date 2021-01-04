@@ -3,7 +3,7 @@ from threading import Thread
 import random
 
 app = Flask("")
-@app.route("/"
+@app.route("/")
 
 def home():
 	return("Online!")
