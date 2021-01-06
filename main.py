@@ -293,21 +293,21 @@ async def bellSchedule():
 	tuesThursTimes = {"08:10": ":books: Period `A` (Async)", "09:35": ":books: Period `1`", "11:05": ":books: Period `3`", "12:20": ":sandwich: `Lunch`", "13:05": ":books: Period `5`", "14:30": ":game_die: `Student Support`"}
 	wedFriTimes = {"08:10": ":books: Period `A`", "09:35": ":books: Period `2`", "11:05": ":books: Period `4`", "12:20": ":sandwich: `Lunch`", "13:05": ":books: Period `6`", "14:30": ":game_die: `Student Support`"}
 	
-	if datetime.now().isoweekday() == 1:
+	if today.isoweekday() == 1:
 		if currTime in monTimes:
 			embed = discord.Embed(title = f":bell: Reminder", description = f"{monTimes[currTime]} starts in `5` minutes!", color = 0xFFFFFE, timestamp = datetime.utcnow())
 			embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 			embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 			embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
 			await bot.generalChannel.send(bot.bellScheduleRole.mention, embed = embed)
-	elif datetime.now().isoweekday() in [2, 4]:
+	elif today.isoweekday() in [2, 4]:
 		if currTime in tuesThursTimes:
 			embed = discord.Embed(title = f":bell: Reminder", description = f"{tuesThursTimes[currTime]} starts in `5` minutes!", color = 0xFFFFFE, timestamp = datetime.utcnow())
 			embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 			embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 			embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
 			await bot.generalChannel.send(bot.bellScheduleRole.mention, embed = embed)
-	elif datetime.now().isoweekday() in [3, 5]:
+	elif today.isoweekday() in [3, 5]:
 		if currTime in wedFriTimes:
 			embed = discord.Embed(title = f":bell: Reminder", description = f"{wedFriTimes[currTime]} starts in `5` minutes!", color = 0xFFFFFE, timestamp = datetime.utcnow())
 			embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
@@ -346,25 +346,26 @@ async def on_raw_reaction_remove(payload):
 @bot.event
 async def on_member_join(member):
 	if member.bot == False:
-		await member.remove_roles(bot.mutedRole)
 		await member.add_roles(bot.memberRole)
 		await updateStatus()
-		embed = discord.Embed(title = ":inbox_tray: Member Joined", color = 0x00FF00, timestamp = datetime.utcnow())
+		embed = discord.Embed(title = ":inbox_tray: Member Joined", description = f"You are Member #`{userCount(1)}`", color = 0x00FF00, timestamp = datetime.utcnow())
 		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-		embed.set_footer(text = f"{userCount(1)} Members", icon_url = bot.server.icon_url)
+		embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		embed.add_field(name = "Get Roles", value = f"Go to {bot.rolesChannel.mention}", inline = False)
 		embed.add_field(name = "Main Info :loudspeaker:", value = f"Read the {bot.rulesChannel.mention}\nRead the {bot.channelsChannel.mention} info\nJoin the talk in {bot.generalChannel.mention}", inline = False)
 		await bot.welcomeChannel.send(f"Welcome, {member.mention}", embed = embed)
+		await member.remove_roles(bot.mutedRole)
 
 	else:
 		await member.add_roles(bot.botRole)
-		embed = discord.Embed(title = ":inbox_tray: Bot Joined", description = f"{bot.botRole.mention} role added", color = 0x00FF00, timestamp = datetime.utcnow())
+		embed = discord.Embed(title = ":inbox_tray: Bot Joined", description = f"You are Bot #`{userCount(1)}`\n{bot.botRole.mention} role added", color = 0x00FF00, timestamp = datetime.utcnow())
 		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-		embed.set_footer(text = f"{userCount(2)} Bots", icon_url = bot.server.icon_url)
+		embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await bot.welcomeChannel.send(f"Welcome, {member.mention}", embed = embed)
 		print(f"{bot.eventLabel} Bot Joined")
+		await member.remove_roles(bot.mutedRole)
 
 # on member exit event
 @bot.event
@@ -373,7 +374,7 @@ async def on_member_remove(member):
 		await updateStatus()
 		embed = discord.Embed(title = f":outbox_tray: Member Left", description = "Either kicked/banned/left", color = 0xFF0000, timestamp = datetime.utcnow())
 		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-		embed.set_footer(text = f"{userCount(1)} Members", icon_url = bot.server.icon_url)
+		embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await bot.welcomeChannel.send(f"Goodbye, {member.mention}", embed = embed)
 		print(f"{bot.eventLabel} Member Left")
@@ -381,7 +382,7 @@ async def on_member_remove(member):
 	else:
 		embed = discord.Embed(title = f":outbox_tray: Bot Left", description = "Either kicked/banned/left", color = 0xFF0000, timestamp = datetime.utcnow())
 		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-		embed.set_footer(text = f"{userCount(2)} Members", icon_url = bot.server.icon_url)
+		embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await bot.welcomeChannel.send(f"Goodbye, {member.mention}", embed = embed)
 		print(f"{bot.eventLabel} Bot Left")
@@ -422,7 +423,7 @@ async def on_message_edit(before, after):
 @bot.event
 async def on_message(message):
 	if bot.user.mentioned_in(message):
-		await message.channel.send("shut up what do you want")
+		await message.channel.send("https://tenor.com/view/hell-no-bollywood-indian-hell-no-gif-5616245")
 	
 	# checking if message is a valid krunker link
 	if ((message.content.startswith("https://krunker.io/?game=")) or (message.content.startswith("https://www.krunker.io/?game=")) or (message.content.startswith("krunker.io/?game=")) or (message.content.startswith("www.krunker.io/?game="))) and (message.content[-6] == ":"):
@@ -451,6 +452,13 @@ async def on_member_update(before, after):
 		await after.remove_roles(bot.liveOnTwitchRole)
 	if str(after.activity).lower() == "streaming":
 		await after.add_roles(bot.liveOnTwitchRole)
+
+@bot.event
+async def on_voice_state_update(member, before, after):
+	if after.channel:
+		await bot.logChannel.send(f"{bot.plusEmoji} `{member}` has joined `{after.channel.name}` VC")
+	if not before.self_stream and after.self_stream:
+		await bot.logChannel.send(f":red_circle: `{member}` went live in `{after.channel.name}` VC")
 
 # @bot.event
 # async def on_command_error(ctx, error):
@@ -488,6 +496,14 @@ async def emojis(ctx):
 		message += str(emoji)
 	await ctx.send(f"`{len(bot.server.emojis)}` Emojis")
 	await ctx.send(message)
+
+@bot.command(aliases = ["s"])
+async def schedule(ctx):
+	embed = discord.Embed(title = ":bell: DVHS Bell Schedule", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
+	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+	embed.set_image(url = "https://i.imgur.com/ES49tLo.jpg")
+	await ctx.send(embed = embed)
 
 @bot.command(aliases = ["nickname"])
 async def nick(ctx, *, nickname):
@@ -884,7 +900,6 @@ async def vcjoin(ctx):
 @bot.command(aliases = ["unstfu"])
 async def unmute(ctx, user: str):
 	member = ctx.message.mentions[0]
-	
 	if (bot.adminRole in ctx.message.author.roles) or (bot.moderatorRole in ctx.message.author.roles):
 		if bot.mutedRole in member.roles:
 			await member.remove_roles(bot.mutedRole)
