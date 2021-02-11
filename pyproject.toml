@@ -13,6 +13,9 @@ tinydb = "^4.3.0"
 bs4 = "^0.0.1"
 pytz = "^2020.4"
 pandas = "^1.1.5"
+ordinal = "^1.0.3"
+bitlyshortener = "^0.5.1"
+portolan = "^1.0.1"
 
 [tool.poetry.dev-dependencies]
 

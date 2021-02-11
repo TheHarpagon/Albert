@@ -1,14 +1,17 @@
 # importing libraries
 import asyncio
-from bs4 import BeautifulSoup
+# import bitlyshortener
+# from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import discord
 from discord.ext import commands
+from discord.ext.commands import BucketType, CommandOnCooldown, CommandNotFound
 from discord.ext import tasks
 from keepAlive import keepAlive
+from ordinal import ordinal
 import os
+import portolan
 import psutil
-import pytz
 import random
 import requests
 import tinydb
@@ -17,7 +20,6 @@ import variables
 # set prefix and remove default help command
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix = "!", intents = intents, case_insensitive = True)
-bot.remove_command("help")
 
 # mute json logging setup
 mutes = {}
@@ -34,10 +36,10 @@ async def assignments():
 	bot.logChannel = bot.get_channel(variables.logChannelID)
 	bot.generalChannel = bot.get_channel(variables.generalChannelID)
 	bot.staffOnlyChannel = bot.get_channel(variables.staffOnlyChannelID)
-	bot.krunkerLinksChannel = bot.get_channel(variables.krunkerLinksChannelID)
+	bot.joinGameChannel = bot.get_channel(variables.joinGameChannelID)
 	bot.botProfile = s.get_member(variables.rolesChannelID)
-	bot.privateServer1Bot = bot.get_channel(variables.privateServer1BotID)
-	bot.privateServer2Bot = bot.get_channel(variables.privateServer2BotID)
+	bot.survivalServerBot = s.get_member(variables.survivalServerBotID)
+	bot.creativeServerBot = s.get_member(variables.creativeServerBotID)
 	bot.eventLabel = variables.eventLabel
 	bot.commandLabel = variables.commandLabel
 	bot.serverInviteURL = variables.serverInviteURL
@@ -151,7 +153,7 @@ async def updateStatus():
 @bot.event
 async def on_ready():
 	await assignments()
-	bellSchedule.start()
+	# bellSchedule.start()
 	bot.startTime = datetime.now()
 	await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{userCount(1)} Members • !help"))
 	# await bot.change_presence(activity = discord.Streaming(name = "Onlyfanz", url = "https://bit.ly/3lH4oSp"))
@@ -165,7 +167,6 @@ async def on_ready():
 
 	subjectRolesMessage = await bot.rolesChannel.fetch_message(759521601170833469)
 	embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xFFFFFE)
-	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
 	embed.set_thumbnail(url = bot.server.icon_url)
 	await subjectRolesMessage.edit(embed = embed)
@@ -179,14 +180,12 @@ async def on_ready():
 	{bot.minecraftEmoji} {bot.minecraftRole.mention} 
 	{bot.skribblEmoji} {bot.skribblRole.mention} 
 	{bot.valorantEmoji} {bot.valorantRole.mention}""", color = 0xFFFFFE)
-	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
 	embed.set_thumbnail(url = bot.server.icon_url)
 	await gameRolesMessage.edit(embed = embed)
 
 	rulesMessage = await bot.rulesChannel.fetch_message(790036264648441897)
 	embed = discord.Embed(title = "Rules :scroll:", color = 0xFFFFFE)
-	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = "Server Rules", icon_url = bot.server.icon_url)
 	embed.set_thumbnail(url = bot.server.icon_url)
 	embed.add_field(name = "Common Sense", value = f"""
@@ -194,7 +193,6 @@ async def on_ready():
 • follow [Discord TOS](https://discord.com/terms)
 • do not diss <@533153734373539840>
 • have some [common sense](https://youtu.be/YSDTPPM9qsc)
-• [try not](https://youtu.be/uJHU6CICPGk) to be unfunny as hell
 • avoid being blatantly offensive
 • no annoying/unnecessary pinging
 • respect da staff cuz they're kinda hot
@@ -212,7 +210,6 @@ async def on_ready():
 
 	channelsMessage1 = await bot.channelsChannel.fetch_message(790467696860594207)
 	embed = discord.Embed(title = "Channels :computer:", description = "ayo wtf are these channels for??", color = 0xFFFFFE)
-	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = "Server Channels", icon_url = bot.server.icon_url)
 	embed.set_thumbnail(url = bot.server.icon_url)
 	embed.add_field(name = "Text Channels", value = f"""
@@ -229,7 +226,6 @@ async def on_ready():
 
 	channelsMessage2 = await bot.channelsChannel.fetch_message(790467697841274890)
 	embed = discord.Embed(title = "Channels :computer:", color = 0xFFFFFE)
-	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = "Server Channels", icon_url = bot.server.icon_url)
 	embed.set_thumbnail(url = bot.server.icon_url)
 	embed.add_field(name = "Text Channels Continued...", value = f"""
@@ -276,44 +272,212 @@ async def on_ready():
 		muteDatabase.remove(query.id == (str(member.id) + " " + str(server.id)))
 
 		generalChannel = bot.get_channel(variables.generalChannelID)
-		embed = discord.Embed(title = f":loud_sound: Unmuted", description = f"{member.mention} was unmuted on bot startup", color = 0x00FF00, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
+		embed = discord.Embed(title = ":loud_sound: Unmuted", description = f"{member.mention} was unmuted on bot startup", color = 0x00FF00, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Unmuted by {bot.user}", icon_url = bot.user.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await generalChannel.send(embed = embed)
 
 		print(f"{bot.eventLabel} Unmuted (Automatic)")
 
+@bot.command()
+@commands.cooldown(1 , 15, BucketType.user) 
+async def weather(ctx, *, city = None):
+	await ctx.trigger_typing()
+	message = await ctx.send("<a:loadingColorful:765034824926232606> Searching...")
+	if not city:
+		city = "San Ramon"
+	apiKey = "e83935ef7ce7823925eeb0bfd2db3f7f"
+	apiURL = "http://api.openweathermap.org/data/2.5/weather?" + "appid=" + apiKey + "&q=" + city
+	reply = requests.get(apiURL)
+	weatherDB = reply.json()
+	if weatherDB["cod"] == "404":
+		await message.edit(content = f"{bot.errorEmoji} Invalid city")
+	else:
+		sunrise = datetime.fromtimestamp(int(weatherDB["sys"]["sunrise"])) - timedelta(hours = 8)
+		sunset = datetime.fromtimestamp(int(weatherDB["sys"]["sunset"])) - timedelta(hours = 8)
+		embed = discord.Embed(title = ":partly_sunny: Weather", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+		embed.set_thumbnail(url = f"https://openweathermap.org/img/wn/{weatherDB['weather'][0]['icon']}@4x.png")
+		embed.add_field(name = "City", value = f"`{weatherDB['name']}`, `{weatherDB['sys']['country']}`", inline = True)
+		embed.add_field(name = "Condition", value = f"`{(weatherDB['weather'][0]['description']).title()}`", inline = True)
+		embed.add_field(name = "Cloudiness", value = f"`{weatherDB['clouds']['all']}`%", inline = True)
+		embed.add_field(name = "Temperature", value = f"`{round((1.8 * ((weatherDB['main']['temp']) - 273.15)) + 32)}`°F", inline = True)
+		embed.add_field(name = "Humidity", value = f"`{weatherDB['main']['humidity']}`%", inline = True)
+		embed.add_field(name = "Wind", value = f"`{round((weatherDB['wind']['speed'] * 2.24), 1)}`mph `{portolan.abbr(degree = weatherDB['wind']['deg'])}`", inline = True)
+		embed.add_field(name = "Sunrise", value = f"{sunrise.strftime('`%I`:`%M` `%p`')} PST", inline = True)
+		embed.add_field(name = "Sunset", value = f"{sunset.strftime('`%I`:`%M` `%p`')} PST", inline = True)
+		await message.edit(content = "", embed = embed)
+		print(f"{bot.commandLabel} Weather")
+
+@bot.command()
+@commands.cooldown(1 , 15, BucketType.user) 
+async def joke(ctx):
+	await ctx.trigger_typing()
+	message = await ctx.send("<a:loadingColorful:765034824926232606> Searching...")
+	apiURL = "https://official-joke-api.appspot.com/jokes/random"
+	reply = requests.get(apiURL)
+	jokeDB = reply.json()
+	embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDB['setup']}**", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+	await message.edit(content = "", embed = embed)
+	embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDB['setup']}**\n{jokeDB['punchline']}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+	await asyncio.sleep(2)
+	await message.edit(content = "", embed = embed)
+	print(f"{bot.commandLabel} Joke")
+
+@bot.command()
+@commands.cooldown(1 , 15, BucketType.user) 
+async def fact(ctx):
+	await ctx.trigger_typing()
+	message = await ctx.send("<a:loadingColorful:765034824926232606> Searching...")
+	apiURL = "https://uselessfacts.jsph.pl/random.json?language=en"
+	reply = requests.get(apiURL)
+	factDB = reply.json()
+	embed = discord.Embed(title = ":book: A useless fact", description = f"{factDB['text']}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+	await message.edit(content = "", embed = embed)
+	print(f"{bot.commandLabel} Fact")
+
+# @bot.command()
+# @commands.cooldown(1, 5, BucketType.user) 
+# async def shorten(ctx, *, URL: str):
+# 	await ctx.trigger_typing()
+# 	message = await ctx.send("<a:loadingColorful:765034824926232606> Shortening URL...")
+# 	tokensPool = "a9c21c045c5d62380a54a7d3a22b06d8e6396c1c"
+# 	shortener = bitlyshortener.Shortener(token = tokensPool, max_cache = 256)
+# 	URLs = [URL]
+# 	shortenedURL = shortener.shorten_urls(URLs)
+# 	print(shortenedURL)
+# 	embed = discord.Embed(title = ":link: Shortened Link", description = shortenedURL[0], color = 0xFFFFFE, timestamp = datetime.utcnow())
+# 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = bot.user.avatar_url)
+# 	embed.set_thumbnail(url = "https://i.imgur.com/YmjXC7s.png")
+# 	await message.edit(content = "", embed = embed)
+
+@bot.command(aliases = ["minsleft", "bruh"])
+@commands.cooldown(1, 5, BucketType.user) 
+async def left(ctx):
+	await ctx.trigger_typing()
+	await ctx.send("lmao look at schedule (`!s`) shits all wack this week")
+	# await ctx.trigger_typing()
+	# today = datetime.utcnow() - timedelta(hours = 8)
+	# totalMinutes = (int(today.time().strftime("%H")) * 60) + int(today.time().strftime("%M"))
+	# currPeriod = ""
+	# minutesLeft = 0
+	# isRunning = False
+
+	# monTimes = {525: ":books: Period `A`", 
+	# 						530: ":dividers: `Passing`", 
+	# 						560: ":books: Period `1`", 
+	# 						565: ":dividers: `Passing`", 
+	# 						595: ":books: Period `2`", 
+	# 						600: ":dividers: `Passing`", 
+	# 						630: ":books: Period `3`", 
+	# 						635: ":dividers: `Passing`", 
+	# 						665: ":books: Period `4`", 
+	# 						670: ":dividers: `Passing`", 
+	# 						695: ":sandwich: `Lunch`", 
+	# 						700: ":dividers: `Passing`", 
+	# 						730: ":books: Period `5`", 
+	# 						735: ":dividers: `Passing`", 
+	# 						765: ":books: Period `6`"}
+	# tuesThursTimes = {570: ":books: Period `A` (Async)", 
+	# 									580: ":dividers: `Passing`", 
+	# 									655: ":books: Period `1`", 
+	# 									670: ":dividers: `Passing`", 
+	# 									745: ":books: Period `3`", 
+	# 									780: ":sandwich: `Lunch`", 
+	# 									790: ":dividers: `Passing`", 
+	# 									865: ":books: Period `5`", 
+	# 									915: ":jigsaw: `Student Support`"}
+	# wedFriTimes = {570: ":books: Period `A`", 
+	# 							580: ":dividers: `Passing`", 
+	# 							655: ":books: Period `2`", 
+	# 							670: ":dividers: `Passing`", 
+	# 							745: ":books: Period `4`", 
+	# 							780: ":sandwich: `Lunch`", 
+	# 							790: ":dividers: `Passing`", 
+	# 							865: ":books: Period `6`", 
+	# 							915: ":jigsaw: `Student Support`"}
+
+	# if today.isoweekday() == 1 and 525 <= totalMinutes <= 765:
+	# 	for i in monTimes:
+	# 		if i > totalMinutes:
+	# 			minutesLeft = i - totalMinutes
+	# 			currPeriod = monTimes[i]
+	# 			isRunning = True
+	# 			break
+	
+	# elif today.isoweekday() in [2, 4] and 570 <= totalMinutes <= 915:
+	# 	for i in tuesThursTimes:
+	# 		if i > totalMinutes:
+	# 			minutesLeft = i - totalMinutes
+	# 			currPeriod = tuesThursTimes[i]
+	# 			isRunning = True
+	# 			break
+	
+	# elif today.isoweekday() in [3, 5] and 570 <= totalMinutes <= 915:
+	# 	for i in wedFriTimes:
+	# 		if i > totalMinutes:
+	# 			minutesLeft = i - totalMinutes
+	# 			currPeriod = wedFriTimes[i]
+	# 			isRunning = True
+	# 			break
+	
+	# if isRunning is True:
+	# 	embed = discord.Embed(title = ":bell: Time Left", description = f"{currPeriod} has `{minutesLeft}` minutes left!", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	# 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+	# 	embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
+	# 	await ctx.send(embed = embed)
+	# else:
+	# 	await ctx.send(f"{bot.errorEmoji} School is currently not in session")
+	# print(f"{bot.commandLabel} MLeft")
+
+
 @tasks.loop(minutes = 1.0)
 async def bellSchedule():
-	# tz = timezone(timedelta(hours = -8))
-	today = datetime.now() - timedelta(hours = 8)
-	currTime = today.time().strftime("%H:%M")
-	monTimes = {"08:10": ":books: Period `A`", "08:45": ":books: Period `1`", "09:20": ":books: Period `2`", "09:55": ":books: Period `3`", "10:30": ":books: Period `4`", "11:00": ":sandwich: `Lunch`", "11:35": ":books: Period `5`", "12:10": ":books: Period `6`"}
-	tuesThursTimes = {"08:10": ":books: Period `A` (Async)", "09:35": ":books: Period `1`", "11:05": ":books: Period `3`", "12:20": ":sandwich: `Lunch`", "13:05": ":books: Period `5`", "14:30": ":game_die: `Student Support`"}
-	wedFriTimes = {"08:10": ":books: Period `A`", "09:35": ":books: Period `2`", "11:05": ":books: Period `4`", "12:20": ":sandwich: `Lunch`", "13:05": ":books: Period `6`", "14:30": ":game_die: `Student Support`"}
+	today = datetime.utcnow() - timedelta(hours = 8)
+	stringTime = today.time().strftime("%H:%M")
+	monTimes = {"08:10": ":books: Period `A`", 
+	"08:40": ":dividers: `Passing`", 
+	"08:45": ":books: Period `1`", 
+	"09:15": ":dividers: `Passing`",
+	"09:20": ":books: Period `2`", 
+	"09:50": ":dividers: `Passing`", 
+	"09:55": ":books: Period `3`", 
+	"10:25": ":dividers: `Passing`", 
+	"10:30": ":books: Period `4`", 
+	"11:00": ":sandwich: `Lunch`", 
+	"11:30": ":dividers: `Passing`", 
+	"11:35": ":books: Period `5`", 
+	"12:05": ":dividers: `Passing`", 
+	"12:10": ":books: Period `6`"}
+	tuesThursTimes = {"08:10": ":books: Period `A` (Async)", "09:25": ":dividers: `Passing`", "09:35": ":books: Period `1`", "10:50": ":dividers: `Passing`", "11:05": ":books: Period `3`", "12:20": ":sandwich: `Lunch`", "12:55": ":dividers: `Passing`", "13:05": ":books: Period `5`", "02:20": ":dividers: `Passing`", "14:30": ":jigsaw: `Student Support`"}
+	wedFriTimes = {"08:10": ":books: Period `A`", "09:25": ":dividers: `Passing`", "09:35": ":books: Period `2`", "10:50": ":dividers: `Passing`", "11:05": ":books: Period `4`", "12:20": ":sandwich: `Lunch`", "12:55": ":dividers: `Passing`", "13:05": ":books: Period `6`", "02:20": ":dividers: `Passing`", "14:30": ":jigsaw: `Student Support`"}
 	
-	if today.isoweekday() == 1:
-		if currTime in monTimes:
-			embed = discord.Embed(title = f":bell: Reminder", description = f"{monTimes[currTime]} starts in `5` minutes!", color = 0xFFFFFE, timestamp = datetime.utcnow())
-			embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
+	daySchedule = {1: monTimes, 2: tuesThursTimes, 3: wedFriTimes, 4: tuesThursTimes, 5: wedFriTimes}
+
+	if today.isoweekday() in daySchedule:
+		if today.isoweekday() == 1 and stringTime in monTimes:
+			embed = discord.Embed(title = ":bell: Reminder", description = f"{monTimes[stringTime]} starts in `5` minutes!", color = 0xFFFFFE, timestamp = datetime.utcnow())
 			embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 			embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
-			await bot.generalChannel.send(bot.bellScheduleRole.mention, embed = embed)
-	elif today.isoweekday() in [2, 4]:
-		if currTime in tuesThursTimes:
-			embed = discord.Embed(title = f":bell: Reminder", description = f"{tuesThursTimes[currTime]} starts in `5` minutes!", color = 0xFFFFFE, timestamp = datetime.utcnow())
-			embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
+			
+			if ":dividers:" in monTimes[stringTime]:
+				await bot.generalChannel.send(embed = embed)
+			else:
+				await bot.generalChannel.send(bot.bellScheduleRole.mention, embed = embed)
+			
+		if today.isoweekday() != 1 and stringTime in daySchedule[today.isoweekday()]:
+			print("testing")
+			embed = discord.Embed(title = ":bell: Reminder", description = f"{daySchedule[today.isoweekday()][stringTime]} starts in `5` minutes!", color = 0xFFFFFE, timestamp = datetime.utcnow())
 			embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 			embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
-			await bot.generalChannel.send(bot.bellScheduleRole.mention, embed = embed)
-	elif today.isoweekday() in [3, 5]:
-		if currTime in wedFriTimes:
-			embed = discord.Embed(title = f":bell: Reminder", description = f"{wedFriTimes[currTime]} starts in `5` minutes!", color = 0xFFFFFE, timestamp = datetime.utcnow())
-			embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-			embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
-			embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
-			await bot.generalChannel.send(bot.bellScheduleRole.mention, embed = embed)
+			
+			if ":dividers:" in monTimes[stringTime]:
+				await bot.generalChannel.send(embed = embed)
+			else:
+				await bot.generalChannel.send(bot.bellScheduleRole.mention, embed = embed)
 
 # reaction roles (add)
 @bot.event
@@ -348,8 +512,7 @@ async def on_member_join(member):
 	if member.bot == False:
 		await member.add_roles(bot.memberRole)
 		await updateStatus()
-		embed = discord.Embed(title = ":inbox_tray: Member Joined", description = f"You are Member #`{userCount(1)}`", color = 0x00FF00, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
+		embed = discord.Embed(title = ":inbox_tray: Member Joined", description = f"You are the `{ordinal(userCount(1))}` member!", color = 0x00FF00, timestamp = datetime.utcnow())
 		embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		embed.add_field(name = "Get Roles", value = f"Go to {bot.rolesChannel.mention}", inline = False)
@@ -359,8 +522,7 @@ async def on_member_join(member):
 
 	else:
 		await member.add_roles(bot.botRole)
-		embed = discord.Embed(title = ":inbox_tray: Bot Joined", description = f"You are Bot #`{userCount(1)}`\n{bot.botRole.mention} role added", color = 0x00FF00, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
+		embed = discord.Embed(title = ":inbox_tray: Bot Joined", description = f"You are the `{ordinal(userCount(2))}` member!\n{bot.botRole.mention} role added", color = 0x00FF00, timestamp = datetime.utcnow())
 		embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await bot.welcomeChannel.send(f"Welcome, {member.mention}", embed = embed)
@@ -373,7 +535,6 @@ async def on_member_remove(member):
 	if member.bot == False:
 		await updateStatus()
 		embed = discord.Embed(title = f":outbox_tray: Member Left", description = "Either kicked/banned/left", color = 0xFF0000, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await bot.welcomeChannel.send(f"Goodbye, {member.mention}", embed = embed)
@@ -381,7 +542,6 @@ async def on_member_remove(member):
 
 	else:
 		embed = discord.Embed(title = f":outbox_tray: Bot Left", description = "Either kicked/banned/left", color = 0xFF0000, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await bot.welcomeChannel.send(f"Goodbye, {member.mention}", embed = embed)
@@ -391,7 +551,6 @@ async def on_member_remove(member):
 async def on_message_delete(message):
 	if message.author.bot == False and bot.memberRole in message.author.roles and message.channel.id != 690647361139245136:
 		embed = discord.Embed(title = ":wastebasket: Message Deleted", color = 0xFFFFFE, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 		embed.set_thumbnail(url = message.author.avatar_url)
 		embed.add_field(name = "Author", value = message.author.mention, inline = True)
@@ -406,7 +565,6 @@ async def on_message_delete(message):
 async def on_message_edit(before, after):
 	if before.author.bot == False and before.content != after.content and bot.memberRole in before.author.roles and before.channel.id != 690647361139245136:
 		embed = discord.Embed(title = ":pencil: Message Edited", color = 0xFFFFFE, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 		embed.set_thumbnail(url = before.author.avatar_url)
 		embed.add_field(name = "Author", value = before.author.mention, inline = True)
@@ -425,24 +583,12 @@ async def on_message(message):
 	if bot.user.mentioned_in(message):
 		await message.channel.send("https://tenor.com/view/hell-no-bollywood-indian-hell-no-gif-5616245")
 	
-	# checking if message is a valid krunker link
-	if ((message.content.startswith("https://krunker.io/?game=")) or (message.content.startswith("https://www.krunker.io/?game=")) or (message.content.startswith("krunker.io/?game=")) or (message.content.startswith("www.krunker.io/?game="))) and (message.content[-6] == ":"):
-		await message.delete()
-		embed = discord.Embed(title = "<:krunker_icon:699029209988726885> Krunker Link", description = message.content, color = 0xFFFFFE, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-		embed.set_footer(text = f"Link posted by {message.author}", icon_url = message.author.avatar_url)
-		embed.set_thumbnail(url = "https://i.imgur.com/SIIjfcd.png")
-		linkPost = await bot.krunkerLinksChannel.send(embed = embed)
-
-		embed = discord.Embed(title = "<:krunker_icon:699029209988726885> Krunker Link", description = f":white_check_mark: Posted [here]({linkPost.jump_url})", color = 0xFFFFFE, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-		embed.set_footer(text = f"Link posted by {message.author}", icon_url = message.author.avatar_url)
-		embed.set_thumbnail(url = "https://i.imgur.com/SIIjfcd.png")
-		await message.channel.send(embed = embed)
-		print(f"{bot.eventLabel} Krunker Link Posted")
-	
 	if message.guild is None and message.author.id == 410590963379994639:
 		await bot.generalChannel.send(message.content)
+	
+	if message.author.id == 320369001005842435:
+		if "ask" in message.content.lower():
+			await message.channel.send("but did i ask if you asked that if i asked in the scenario that we asked")
 	
 	await bot.process_commands(message)
 
@@ -455,58 +601,107 @@ async def on_member_update(before, after):
 
 @bot.event
 async def on_voice_state_update(member, before, after):
-	if after.channel:
-		await bot.logChannel.send(f"{bot.plusEmoji} `{member}` has joined `{after.channel.name}` VC")
-	if not before.self_stream and after.self_stream:
+	if after.self_stream:
 		await bot.logChannel.send(f":red_circle: `{member}` went live in `{after.channel.name}` VC")
 
-# @bot.event
-# async def on_command_error(ctx, error):
-#     if isinstance(error, commands.CommandNotFound):
-#         await ctx.send(f"{bot.errorEmoji} {error}")
-#     elif isinstance(error, commands.MissingRequiredArgument):
-#         await ctx.send(f"{bot.errorEmoji} {error}")
-#     else:
-#         await ctx.send(bot.errorEmoji)
+@bot.event
+async def on_command_error(ctx, erorr):
+	if not isinstance(erorr, CommandNotFound):
+		if isinstance(erorr, CommandOnCooldown):
+			phrase = ["Hold your temptation for another", "Hold on I'm fucking vrushank, gimme another", "I'm finishin up with your mother, stand outside for another"]
+			await ctx.trigger_typing()
+			await ctx.send(f"{bot.errorEmoji} {random.choice(phrase)} `{round(erorr.retry_after, 2)}` seconds")
+		else:
+			await ctx.trigger_typing()
+			await ctx.send(f"```{erorr}```")
 
 # @bot.command()
+# @commands.cooldown(1, 5, BucketType.user) 
 # async def top(ctx):
+# 	await ctx.trigger_typing()
 # 	data = leaderboardTask()
 # 	embed = discord.Embed(title = "Leaderboard", color = 0xFFFFFE, timestamp = datetime.utcnow())
-# 	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 # 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 # 	for i in range(0, 10):
 # 		embed.add_field(name = f"{i+1}) {data[0][i]}", value = f"Level {data[1][i]}", inline = False)
 # 	await ctx.send(embed = embed)
 
+@bot.command(aliases = ["k"])
+@commands.cooldown(1, 5, BucketType.user) 
+async def krunker(ctx, link):
+	if "krunker.io/?game=" in link:
+		await ctx.message.delete()
+		embed = discord.Embed(title = f"{bot.krunkerEmoji} Krunker Link", description = link, color = 0xFEB938, timestamp = datetime.utcnow())
+		embed.set_footer(text = f"Posted by {ctx.author}", icon_url = ctx.author.avatar_url)
+		embed.set_thumbnail(url = "https://cdn.discordapp.com/emojis/699029209988726885.png?v=1")
+		await bot.joinGameChannel.send(embed = embed)
+		await ctx.send(f"{bot.checkmarkEmoji} Posted in {bot.joinGameChannel.mention}")
+	else:
+		await ctx.send(f"{bot.errorEmoji} Invalid link")
+		print(f"{bot.commandLabel} Krunker")
+
+@bot.command(aliases = ["au"])
+@commands.cooldown(1, 5, BucketType.user) 
+async def amongus(ctx, code):
+	if len(code) == 6 and not any(char.isdigit() for char in code):
+		await ctx.message.delete()
+		embed = discord.Embed(title = f"{bot.amongUsEmoji} Among Us Code", description = f"`{code}`", color = 0xF21717, timestamp = datetime.utcnow())
+		embed.set_footer(text = f"Posted by {ctx.author}", icon_url = ctx.author.avatar_url)
+		embed.set_thumbnail(url = "https://cdn.discordapp.com/emojis/781258129329094666.png?v=1")
+		await bot.joinGameChannel.send(embed = embed)
+		await ctx.send(f"{bot.checkmarkEmoji} Posted in {bot.joinGameChannel.mention}")
+	else:
+		await ctx.send(f"{bot.errorEmoji} Invalid code")
+		print(f"{bot.commandLabel} Among Us")
+
+@bot.command(aliases = ["c"])
+@commands.cooldown(1, 5, BucketType.user) 
+async def chess(ctx, link):
+	if "play.chess.com/" in link:
+		await ctx.message.delete()
+		embed = discord.Embed(title = f"{bot.chessEmoji} Among Us Code", description = link, color = 0xF21717, timestamp = datetime.utcnow())
+		embed.set_footer(text = f"Posted by {ctx.author}", icon_url = ctx.author.avatar_url)
+		embed.set_thumbnail(url = "https://cdn.discordapp.com/emojis/781259278417395732.png?v=1")
+		await bot.joinGameChannel.send(embed = embed)
+		await ctx.send(f"{bot.checkmarkEmoji} Posted in {bot.joinGameChannel.mention}")
+	else:
+		await ctx.send(f"{bot.errorEmoji} Invalid link")
+		print(f"{bot.commandLabel} Among Us")
+
 # pfp command
 @bot.command(aliases = ["avatar", "av"])
+@commands.cooldown(1, 5, BucketType.user) 
 async def pfp(ctx, member: discord.Member = None):
+	await ctx.trigger_typing()
 	member = ctx.author if not member else member
 	embed = discord.Embed(title = ":frame_photo: Profile Picture", description = member.mention, color = 0xFFFFFE, timestamp = datetime.utcnow())
-	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_image(url = member.avatar_url)
 	await ctx.send(embed = embed)
 
-@bot.command()
-async def emojis(ctx):
-	message = ""
-	for emoji in bot.server.emojis:
-		message += str(emoji)
-	await ctx.send(f"`{len(bot.server.emojis)}` Emojis")
-	await ctx.send(message)
+# @bot.command()
+# @commands.cooldown(1, 5, BucketType.user) 
+# async def emojis(ctx):
+# 	await ctx.trigger_typing()
+# 	message = ""
+# 	for emoji in bot.server.emojis:
+# 		message += str(emoji)
+# 	await ctx.send(f"`{len(bot.server.emojis)}` Emojis")
+# 	await ctx.send(message)
 
 @bot.command(aliases = ["s"])
+@commands.cooldown(1, 5, BucketType.user) 
 async def schedule(ctx):
+	await ctx.trigger_typing()
 	embed = discord.Embed(title = ":bell: DVHS Bell Schedule", color = 0xFFFFFE, timestamp = datetime.utcnow())
-	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_image(url = "https://i.imgur.com/ES49tLo.jpg")
 	await ctx.send(embed = embed)
 
 @bot.command(aliases = ["nickname"])
+@commands.cooldown(1, 5, BucketType.user) 
 async def nick(ctx, *, nickname):
+	await ctx.trigger_typing()
 	if len(nickname) >= 1 and len(nickname) <= 32:
 		await ctx.author.edit(nick = nickname)
 		await ctx.send(f"{bot.checkmarkEmoji} Your nickname was set to `{nickname}`!")
@@ -515,7 +710,9 @@ async def nick(ctx, *, nickname):
 
 
 # @bot.command()
+# @commands.cooldown(1, 5, BucketType.user) 
 # async def resetnicks(ctx):
+# 	await ctx.trigger_typing()
 # 	if bot.adminRole in ctx.author.roles:
 # 		msg = await ctx.send("<a:loadingColorful:765034824926232606> Hold up...")
 # 		for member in bot.server.members:
@@ -527,7 +724,9 @@ async def nick(ctx, *, nickname):
 
 
 @bot.command()
+@commands.cooldown(1, 5, BucketType.user) 
 async def setstatus(ctx, *, argument):
+	await ctx.trigger_typing()
 	if ctx.author.id == 410590963379994639:
 		if argument.lower() == "normal":
 			await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{userCount(1)} Members • !help"))
@@ -541,7 +740,9 @@ async def setstatus(ctx, *, argument):
 
 
 @bot.command()
+@commands.cooldown(1, 5, BucketType.user) 
 async def kill(ctx):
+	await ctx.trigger_typing()
 	if ctx.author.id == 410590963379994639:
 		await ctx.send(f"{bot.checkmarkEmoji} Ending process! (start manually in repl)")
 		await bot.close()
@@ -549,14 +750,18 @@ async def kill(ctx):
 		await ctx.send(f"{bot.errorEmoji} You do not have access to use this command!")
 
 @bot.command()
+@commands.cooldown(1, 5, BucketType.user) 
 async def randomperson(ctx):
+	await ctx.trigger_typing()
 	if ctx.author.id == 410590963379994639:
 		await ctx.send(random.choice(bot.server.members).mention + " is the random person!")
 	else:
 		await ctx.send(f"{bot.errorEmoji} You do not have access to use this command!")
 
 # @bot.command()
+# @commands.cooldown(1, 5, BucketType.user) 
 # async def pogga(ctx):
+# 	await ctx.trigger_typing()
 # 	if ctx.author.id == 410590963379994639:
 # 		for member in bot.server.members:
 # 			if member.bot == False:
@@ -565,7 +770,9 @@ async def randomperson(ctx):
 # 		await ctx.send(f"{bot.errorEmoji} You do not have access to use this command!")
 
 # @bot.command()
+# @commands.cooldown(1, 5, BucketType.user) 
 # async def vc(ctx, argument):
+# 	await ctx.trigger_typing()
 # 	if bot.adminRole in ctx.author.roles or bot.moderatorRole in ctx.author.roles:
 # 		channel = ctx.message.author.voice.channel
 # 		if channel is not None:
@@ -587,7 +794,9 @@ async def randomperson(ctx):
 
 # dm command
 @bot.command()
+@commands.cooldown(1, 5, BucketType.user) 
 async def dm(ctx, member: discord.Member, *, message):
+	await ctx.trigger_typing()
 	if bot.vipRole in ctx.author.roles:
 		await member.send(message + f"\n- from {ctx.author.mention}")
 		await ctx.send(f"{bot.checkmarkEmoji} Sent!")
@@ -596,16 +805,18 @@ async def dm(ctx, member: discord.Member, *, message):
 		await ctx.send(f"{bot.errorEmoji} You do not have access to use this command!")
 
 @bot.command(aliases = ["servericon"])
+@commands.cooldown(1, 5, BucketType.user) 
 async def icon(ctx):
 	embed = discord.Embed(title = ":frame_photo: Server Icon", color = 0xFFFFFE, timestamp = datetime.utcnow())
-	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_image(url = bot.server.icon_url)
 	await ctx.send(embed = embed)
 
 # profile command
 @bot.command()
+@commands.cooldown(1, 5, BucketType.user) 
 async def profile(ctx, member: discord.Member = None):
+	await ctx.trigger_typing()
 	member = ctx.author if not member else member
 	roleCount = len([role for role in member.roles]) - 1
 	# roleCount = len(roleCount) - 1
@@ -673,7 +884,6 @@ async def profile(ctx, member: discord.Member = None):
 		#     gameRoles = "`None`"
 
 		embed = discord.Embed(title=f":bust_in_silhouette: User Profile", description = f"`{member}`", color = topColor, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		embed.add_field(name = "Main Role", value = topRole, inline = True)
@@ -690,7 +900,6 @@ async def profile(ctx, member: discord.Member = None):
 
 	if member.bot == True:
 		embed = discord.Embed(title=f":robot: Bot Profile", description = f"`{member}`", color = member.color, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		embed.add_field(name = "Main Role", value = "<@&637083530555555846>", inline = True)
@@ -702,10 +911,28 @@ async def profile(ctx, member: discord.Member = None):
 		await ctx.send(embed = embed)
 		print(f"{bot.commandLabel} Bot Profile")
 
+@bot.command(aliases = ["silenced", "banished"])
+@commands.cooldown(1, 5, BucketType.user) 
+async def muted(ctx):
+	output = ""
+	if len(muteDatabase.all()) == 0:
+		output = "None"
+	else:
+		for mute in muteDatabase.all():
+			id = int(mute["id"].split()[0])
+			output += bot.get_user(id).mention + "\n"
+	
+	embed = discord.Embed(title = ":mute: Muted", description = f"{output}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+	await ctx.send(embed = embed)
+	print(f"{bot.commandLabel} Muted")
+
 # predict command
 @bot.command(aliases = ["8ball"])
+@commands.cooldown(1, 5, BucketType.user) 
 async def predict(ctx, *, question: str):
-	responses = [   f"shut the fuck up {ctx.author.nick.lower()}",
+	await ctx.trigger_typing()
+	responses = [   f"shut the fuck up {ctx.author.name.lower()}",
 									"Yeah I can picture that ngl",
 									"Yeah fs dude",
 									"Yeah no doubt dude",
@@ -737,7 +964,6 @@ async def predict(ctx, *, question: str):
 	embed = discord.Embed(title = ":8ball: The Mighty 8Ball", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.add_field(name = "Question", value = question, inline = False)
 	embed.add_field(name = "Response", value = random.choice(responses), inline = False)
-	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_thumbnail(url = "https://i.imgur.com/LkSBSuR.gif")
 	await ctx.send(embed = embed)
@@ -745,7 +971,9 @@ async def predict(ctx, *, question: str):
 
 # flip command
 @bot.command(aliases = ["coinflip"])
+@commands.cooldown(1, 5, BucketType.user) 
 async def flip(ctx):
+	await ctx.trigger_typing()
 
 	responses = ["Heads", "Tails"]
 
@@ -753,14 +981,12 @@ async def flip(ctx):
 
 	if response == responses[0]:
 		embed = discord.Embed(title = "<:discord_coin:728695789316210860> Flip a Coin", description = f"It's `{response}`", color = 0xFFFFFE, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = "https://i.imgur.com/92xg7uR.png")
 		await ctx.send(embed = embed)
 	
 	else:
 		embed = discord.Embed(title = "<:discord_coin:728695789316210860> Flip a Coin", description = f"It's `{response}`", color = 0xFFFFFE, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = "https://i.imgur.com/TjqDdBI.png")
 		await ctx.send(embed = embed)
@@ -769,7 +995,9 @@ async def flip(ctx):
 
 # mute command
 @bot.command(aliases = ["stfu"])
+@commands.cooldown(1, 5, BucketType.user) 
 async def mute(ctx, user: str, mtime = None):
+	await ctx.trigger_typing()
 	if mtime == None:
 			mtime = -1
 
@@ -789,7 +1017,6 @@ async def mute(ctx, user: str, mtime = None):
 							sunit = "second"
 						
 						embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{stime}` {sunit}", color = 0x00FF00, timestamp = datetime.utcnow())
-						embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 						embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
 						embed.set_thumbnail(url = member.avatar_url)
 						await ctx.send(embed = embed)
@@ -818,7 +1045,6 @@ async def mute(ctx, user: str, mtime = None):
 								munit = "minute"
 						
 						embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{mtime}` {munit}", color = 0x00FF00, timestamp = datetime.utcnow())
-						embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 						embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
 						embed.set_thumbnail(url = member.avatar_url)
 						await ctx.send(embed = embed)
@@ -827,7 +1053,6 @@ async def mute(ctx, user: str, mtime = None):
 				
 				else:
 					embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `infinity` (`∞`)", color = 0x00FF00, timestamp = datetime.utcnow())
-					embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 					embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
 					embed.set_thumbnail(url = member.avatar_url)
 					await ctx.send(embed = embed)
@@ -848,7 +1073,6 @@ async def mute(ctx, user: str, mtime = None):
 						
 					if muteDatabase.search(query.id == (str(member.id) + " " + str(member.guild.id))) != []:
 						embed = discord.Embed(title = ":loud_sound: Unmuted", description = f"{member.mention}'s mute expired", color = 0x00FF00, timestamp = datetime.utcnow())
-						embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 						embed.set_footer(text = f"Originally muted by {ctx.author}", icon_url = ctx.author.avatar_url)
 						embed.set_thumbnail(url = member.avatar_url)
 						await ctx.send(embed = embed)
@@ -857,48 +1081,40 @@ async def mute(ctx, user: str, mtime = None):
 		else:
 			if (bot.adminRole in member.roles) or (bot.moderatorRole in member.roles) or (bot.botRole in member.roles):
 				embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Mute", description = f"Exempt Roles: \n• {bot.adminRole.mention} \n• {bot.moderatorRole.mention} \n• {bot.botRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow()) 
-				embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 				embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 				embed.set_thumbnail(url = member.avatar_url)
 				await ctx.send(embed = embed)
 		
 			else:
 				embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Mute", description = f"{member.mention} is already muted", color = 0xFF0000, timestamp = datetime.utcnow())
-				embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 				embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 				embed.set_thumbnail(url = member.avatar_url)
 				await ctx.send(embed = embed)
 	else:
 		embed = discord.Embed(title = f"{bot.errorEmoji} Missing Permissions", description = f"Required Roles: \n• {bot.adminRole.mention} \n• {bot.moderatorRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())   
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
 
-@bot.command()
-async def vcjoin(ctx):
-	if ctx.author.id == 410590963379994639:
-		channel = ctx.message.author.voice.channel
-		await channel.connect()
-		await ctx.send("i mean ok if you're that lonely ill join ig")
-	else:
-		await ctx.send("nah bro only for my owner")
-
 # players = {}
 # @bot.command()
+# @commands.cooldown(1, 5, BucketType.user) 
 # async def play(ctx, url):
-#     if ctx.author.id == 410590963379994639:
-#         voice_client = bot.voice_client_in(bot.server)
-#         player = await voice_client.create_ytdl_player(url)
-#         players[server.id] = player
-#         player.start()
-#     else:
-#         await ctx.send("nah")
+# 	await ctx.trigger_typing()
+#   if ctx.author.id == 410590963379994639:
+#   	voice_client = bot.voice_client_in(bot.server)
+#   	player = await voice_client.create_ytdl_player(url)
+#   	players[server.id] = player
+#   	player.start()
+#   else:
+#   	await ctx.send("nah")
 
 
 # unmute command
 @bot.command(aliases = ["unstfu"])
+@commands.cooldown(1, 5, BucketType.user) 
 async def unmute(ctx, user: str):
+	await ctx.trigger_typing()
 	member = ctx.message.mentions[0]
 	if (bot.adminRole in ctx.message.author.roles) or (bot.moderatorRole in ctx.message.author.roles):
 		if bot.mutedRole in member.roles:
@@ -906,14 +1122,12 @@ async def unmute(ctx, user: str):
 			if not bot.memberRole in member.roles:
 				await member.add_roles(bot.memberRole)
 			embed = discord.Embed(title = f":loud_sound: Unmuted", description = f"{member.mention} was unmuted", color = 0x00FF00, timestamp = datetime.utcnow())
-			embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 			embed.set_footer(text = f"Unmuted by {ctx.author}", icon_url = ctx.author.avatar_url)
 			embed.set_thumbnail(url = member.avatar_url)
 			await ctx.send(embed = embed)
 		
 		else:
 			embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Unmute", description = f"{member.mention} isn't even muted", color = 0xFF0000, timestamp = datetime.utcnow())
-			embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 			embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 			embed.set_thumbnail(url = member.avatar_url)
 			await ctx.send(embed = embed)
@@ -926,14 +1140,15 @@ async def unmute(ctx, user: str):
 	
 	else:
 		embed = discord.Embed(title = f"{bot.errorEmoji} Missing Permissions", description = f"Required Roles: \n• {bot.adminRole.mention} \n• {bot.moderatorRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())   
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
 
 # pp command
 @bot.command(aliases = ["dong"])
+@commands.cooldown(1, 5, BucketType.user) 
 async def pp(ctx):
+	await ctx.trigger_typing()
 	length = float(random.randint(0, 400)) / 10
 	output = ""
 	i = 0
@@ -942,119 +1157,96 @@ async def pp(ctx):
 		output += "="
 		i += 1
 
-	if length > 0 and length <= 8:
+	if length <= 8:
 		rating = "Atomlike"
 
-	if length > 2 and length <= 16:
+	elif length <= 16:
 		rating = "Smol"
 
-	if length > 6 and length <= 24:
+	elif length <= 24:
 		rating = "Average"
 
-	if length > 10 and length <= 32:
+	elif length <= 32:
 		rating = "Large"
 
-	if length > 15 and length <= 40:
+	elif length <= 40:
 		rating = "BBC"
 
 	embed = discord.Embed(title = ":eggplant: PP Rater", description = f"8{output}D \n**Length:** `{round(length, 2)}` inches \n**Rating:** `{rating}`", color = 0xFFFFFE, timestamp = datetime.utcnow())
-	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_thumbnail(url = ctx.author.avatar_url)
 	await ctx.send(embed = embed)
 
 	print(f"{bot.commandLabel} PP")
 
-# roles command
-@bot.command(aliases = ["ranks"])
-async def roles(ctx):
-	embed = discord.Embed(title = ":medal: Server Roles", color = 0xFFFFFE, timestamp = datetime.utcnow())
-	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-	embed.set_image(url = "https://i.gyazo.com/5d858524628ea71faaa9c7b922ec093d.png")
-	await ctx.send(embed = embed)
-	print(f"{bot.commandLabel} Roles")
-
 # ip command
 @bot.command(aliases = ["mcip"])
+@commands.cooldown(1, 5, BucketType.user) 
 async def ip(ctx):
-	embed = discord.Embed(title = "<:minecraft_icon:699029490332074015> Minecraft Server IPs", color = 0xFFFFFE, timestamp = datetime.utcnow())
-	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
+	await ctx.trigger_typing()
+	embed = discord.Embed(title = f"{bot.minecraftEmoji} Minecraft Server IPs", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 
-	# privateServer1BotStatus = "<:offline:736832948913045588>"
-	# privateServer2BotStatus = "<:offline:736832948913045588>"
+	a = "<a:dndGIF:791185650996346891>"
+	b = "<a:dndGIF:791185650996346891>"
 
-	# # private server 1 bot status
-	# if bot.privateServer1Bot.status == discord.Status.online:
-	#     privServer1BotStatus = "<:online:736832948980154379>"
+	if bot.survivalServerBot.status is discord.Status.online:
+	  a = "<a:onlineGIF:791185651311575051>"
 
 	# private server 2 bot status
-	# if bot.privateServer1Bot.status == discord.Status.online:
-	#     privServer2BotStatus = "<:online:736832948980154379>"
+	if bot.creativeServerBot.status is discord.Status.online:
+	  b = "<a:onlineGIF:791185651311575051>"
 
-	embed.add_field(name = f"Server 1 [1.16.3]", value = "[`swiftspirit1408.aternos.me`](https://swiftspirit1408.aternos.me) \nChat available [here](https://discordapp.com/channels/612059384721440789/659885014603005953)", inline = False)
-	embed.add_field(name = f"Server 2 [1.16.3]", value = "[`poopyucky.aternos.me`](https://poopyucky.aternos.me) \nChat available [here](https://discordapp.com/channels/612059384721440789/693321555366903851)", inline = False)
-	embed.add_field(name = "Other Servers [1.8+]", value = "BlocksMC: `blocksmc.com` \nPikaNetwork: `play.pika-network.net` \nMineBerry: `mc.mineberry.net`", inline = False)
+	embed.add_field(name = f"{a} Survival Server", value = "Version: `1.16.5`\nIP Address: `poopyucky.aternos.me`\nBridged Chat: <#693321555366903851>", inline = False)
+	embed.add_field(name = f"{b} Creative Server", value = "Version: `1.16.5`\nIP Address: `swiftspirit1408.aternos.me`\nBridged Chat: <#659885014603005953>", inline = False)
+
+	embed.add_field(name = f"{bot.plusEmoji} How to Join", value = "• join the IP\n• DM the code you get to <@693313699779313734>\n• once you're in, do `/register <password>`", inline = False)
+
 	await ctx.send(embed = embed)
 	print(f"{bot.commandLabel} IP")
 
 # promote command
 @bot.command(aliases = ["mod"])
+@commands.cooldown(1, 5, BucketType.user) 
 async def promote(ctx, member: discord.Member):
+	await ctx.trigger_typing()
 	if (bot.adminRole in ctx.message.author.roles) and (bot.memberRole in member.roles):
 		await member.add_roles(bot.moderatorRole)
 		await member.remove_roles(bot.memberRole)
 
 		embed = discord.Embed(title = f"<:upvote:732640878145044623> Promoted", description = f"{member.mention} is now a {bot.moderatorRole.mention}", color = 0x00FF00, timestamp = datetime.utcnow())       
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Promoted by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
 
-		await bot.staffOnlyChannel.send(f"<:upvote:732640878145044623> {member.mention} was promoted")
-		embed = discord.Embed(title = "Staff Guidelines", description = f"Below are some guidelines/rules for a {bot.moderatorRole.mention}! \nPlease **do not** abuse your powers, or you will be demoted", color = 0xFFFFFE, timestamp = datetime.utcnow())
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-		embed.set_thumbnail(url = member.avatar_url)
-		embed.add_field(name = "Warning", value = "warn when user violate rules lightly \n`!warn @user reason` \n`!infractions @user`", inline = False)
-		embed.add_field(name = "Muting & Unmting", value = "mute when user violates rules \n`!mute @user` (∞)\n`!mute @user 15` (15 minutes)\nUnmute → `!unmute @user`", inline = False)
-		embed.add_field(name = "Kicking/Banning/Unbanning", value = "do not kick or ban without asking <@410590963379994639> \n`!kick @user reason` \n`!ban @user reason` \n`!unban @user`", inline = False)
-		embed.add_field(name = "Pins & Announcements", value = "pin and announce only important stuff", inline = False)
-		embed.add_field(name = "Permissions", value = "• delete any user's messages \n• view and type in <#701630600347516999> and <#690072751628877865> \n• type in <#635302492132999168> and <#659885490790727716> \n• Operator in `Server 1`\* \n\n*run OP commands from <#659885490790727716> **without** the slash \n`time set day` :white_check_mark: \n`/time set day` :x:", inline = False)
-		await bot.staffOnlyChannel.send(embed = embed)
-		print(f"{bot.commandLabel} Promote")
+		# await bot.staffOnlyChannel.send(f"<:upvote:732640878145044623> {member.mention} was promoted")
+		# embed = discord.Embed(title = "Staff Guidelines", description = f"Below are some guidelines/rules for a {bot.moderatorRole.mention}! \nPlease **do not** abuse your powers, or you will be demoted", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		# embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+		# embed.set_thumbnail(url = member.avatar_url)
+		# embed.add_field(name = "Warning", value = "warn when user violate rules lightly \n`!warn @user reason` \n`!infractions @user`", inline = False)
+		# embed.add_field(name = "Muting & Unmting", value = "mute when user violates rules \n`!mute @user` (∞)\n`!mute @user 15` (15 minutes)\nUnmute → `!unmute @user`", inline = False)
+		# embed.add_field(name = "Kicking/Banning/Unbanning", value = "do not kick or ban without asking <@410590963379994639> \n`!kick @user reason` \n`!ban @user reason` \n`!unban @user`", inline = False)
+		# embed.add_field(name = "Pins & Announcements", value = "pin and announce only important stuff", inline = False)
+		# embed.add_field(name = "Permissions", value = "• delete any user's messages \n• view and type in <#701630600347516999> and <#690072751628877865> \n• type in <#635302492132999168> and <#659885490790727716> \n• Operator in `Server 1`\* \n\n*run OP commands from <#659885490790727716> **without** the slash \n`time set day` :white_check_mark: \n`/time set day` :x:", inline = False)
+		# await bot.staffOnlyChannel.send(embed = embed)
+		# print(f"{bot.commandLabel} Promote")
 
 	elif (bot.adminRole in ctx.message.author.roles) and (bot.moderatorRole in member.roles):
-		embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Promote", description = f"{member.mention} is already a {bot.moderatorRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())       
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-		embed.set_thumbnail(url = member.avatar_url)
-		await ctx.send(embed = embed)
-
-	elif (bot.adminRole in ctx.message.author.roles) and (bot.adminRole in member.roles):
-		embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Promote", description = f"You fool, you are literally the {bot.adminRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())       
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-		embed.set_thumbnail(url = member.avatar_url)
-		await ctx.send(embed = embed)
+		print(f"{bot.errorEmoji} They already are a moderator")
 
 	else:
-		embed = discord.Embed(title = f"{bot.errorEmoji} Missing Permissions", description = f"Required Role: \n• {bot.adminRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())  
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-		embed.set_thumbnail(url = member.avatar_url)
-		await ctx.send(embed = embed)
+		print(f"{bot.errorEmoji} Missing permissions")
 
 # demote command
 @bot.command(aliases = ["unmod"])
+@commands.cooldown(1, 5, BucketType.user) 
 async def demote(ctx, member: discord.Member):
+	await ctx.trigger_typing()
 	if (bot.adminRole in ctx.message.author.roles) and (bot.moderatorRole in member.roles):
 		await member.add_roles(bot.memberRole)
 		await member.remove_roles(bot.moderatorRole)
 
 		embed = discord.Embed(title = f"<:downvote:732640878249902161> Demoted", description = f"{member.mention} is now a {bot.memberRole.mention}", color = 0x00FF00, timestamp = datetime.utcnow())       
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 		embed.set_footer(text = f"Demoted by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
@@ -1063,39 +1255,28 @@ async def demote(ctx, member: discord.Member):
 		print(f"{bot.commandLabel} Demote")
 
 	elif (bot.adminRole in ctx.message.author.roles) and (bot.memberRole in member.roles):
-		embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Demote", description = f"{member.mention} is already a {bot.memberRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())    
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-		embed.set_thumbnail(url = member.avatar_url)
-		await ctx.send(embed = embed)
-
-	elif (bot.adminRole in ctx.message.author.roles) and (bot.adminRole in member.roles):
-		embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Promote", description = f"You fool, you literally are the {bot.adminRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())       
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-		embed.set_thumbnail(url = member.avatar_url)
-		await ctx.send(embed = embed)
+		print(f"{bot.errorEmoji} They already are a member")
 
 	else:
-		embed = discord.Embed(title = f"{bot.errorEmoji} Missing Permissions", description = f"Required Role: {bot.adminRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())    
-		embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-		embed.set_thumbnail(url = member.avatar_url)
-		await ctx.send(embed = embed)
+		print(f"{bot.errorEmoji} Missing permissions")
 
 # invite command
 @bot.command(aliases = ["inv"])
+@commands.cooldown(1, 5, BucketType.user) 
 async def invite(ctx):
-	embed = discord.Embed(title = ":inbox_tray: Server Invite Link", description = bot.serverInviteURL, color = 0xFFFFFE, timestamp = datetime.utcnow())
-	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-	embed.set_thumbnail(url = bot.server.icon_url)
-	await ctx.send(embed = embed)
-	print(f"{bot.commandLabel} Invite")
+	await ctx.trigger_typing()
+	await ctx.send("discord.gg/fG8vTrj")
+	# embed = discord.Embed(title = ":inbox_tray: Server Invite Link", description = bot.serverInviteURL, color = 0xFFFFFE, timestamp = datetime.utcnow())
+	# embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+	# embed.set_thumbnail(url = bot.server.icon_url)
+	# await ctx.send(embed = embed)
+	# print(f"{bot.commandLabel} Invite")
 
 # ping command
 @bot.command(aliases = ["latency"])
+@commands.cooldown(1, 5, BucketType.user) 
 async def ping(ctx):
+	await ctx.trigger_typing()
 	time = datetime.now() - bot.startTime
 	days = time.days
 	hours, remainder = divmod(time.seconds, 3600)
@@ -1119,7 +1300,6 @@ async def ping(ctx):
 		sunit += "s"
 
 	e = discord.Embed(title = "🏓 Pong!", color = 0xFFFFFE, timestamp = datetime.utcnow())
-	e.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 	e.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	e.add_field(name = ":signal_strength: Latency", value = f"`{round(bot.latency * 1000)}`ms", inline = True)
 	e.add_field(name = ":robot: Hardware", value = f"`{psutil.cpu_count()}` Cores \n`{round(psutil.cpu_percent())}`% CPU Usage \n`{round(psutil.virtual_memory().percent)}`% RAM Usage", inline = True)
@@ -1127,31 +1307,32 @@ async def ping(ctx):
 	await ctx.send(embed = e)
 	print(f"{bot.commandLabel} Ping")
 
-# help command
-@bot.command(aliases = ["info"])
-async def help(ctx):
-	embed = discord.Embed(title = "Help Section", color = 0xFFFFFE, timestamp = datetime.utcnow())
-	embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
-	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-	embed.set_thumbnail(url = bot.server.icon_url)
-	embed.add_field(name = ":bust_in_silhouette: User Profile", value = "`!profile` \n`!profile @user`", inline = True)
-	embed.add_field(name = ":8ball: The Magic 8Ball", value = "`!8ball <question>` \n`!predict <question>`", inline = True)
-	embed.add_field(name = "<:coin_discord:728695789316210860> Flip a Coin", value = "`!flip` \n`!coinflip`", inline = True)
-	embed.add_field(name = ":mute: Mute User", value = "`!mute @user <minutes>` \n`!stfu @user <minutes>`", inline = True)
-	embed.add_field(name = ":loud_sound: Unmute User", value = "`!unmute @user` \n`!unstfu @user`", inline = True)
-	embed.add_field(name = ":eggplant: PP Rater", value = "`!pp` \n`!dong`", inline = True)
-	embed.add_field(name = ":medal: Server Roles", value = "`!roles` \n`!ranks`", inline = True)
-	embed.add_field(name = "<:minecraft_icon:699029490332074015> Start Server(s)", value = "`!start 1` ([Server 1](https://swiftspirit1408.aternos.me/)) \n`!start 2` ([Server 2](https://poopyucky.aternos.me/))", inline = True)
-	embed.add_field(name = "<:minecraft_icon:699029490332074015> Server IP's", value = "`!ip` \n`!mcip`", inline = True)
-	embed.add_field(name = "<:krunker_icon:699029209988726885> Krunker Link", value = "`!krunker <link> <title>` \n`!k <link> <title>`", inline = True)
-	embed.add_field(name = "<:upvote:732640878145044623> Promote", value = "`!promote @user` \n`!mod @user`", inline = True)
-	embed.add_field(name = "<:downvote:732640878249902161> Demote", value = "`!demote @user` \n`!unmod @user`", inline = True)
-	embed.add_field(name = ":inbox_tray: Server Invite", value = "`!invite` \n`!inv`", inline = True)
-	embed.add_field(name = ":ping_pong: Bot Latency", value = "`!ping` \n`!latency`", inline = True)
-	embed.add_field(name = ":desktop: Help Page", value = "`!help` \n`!info`", inline = True)
-	embed.add_field(name = ":robot: Bot Info", value = "**Developer:** <@410590963379994639> \n**Language:** [`Python`](https://discordpy.readthedocs.io/en/latest/) \n**Hosting:** [`Dell Inspiron 15 Laptop`](https://g.co/kgs/CKznxn) \n**Github Repo:** [`Link`](https://github.com/hdadhich01/The-Butler-Discord-Bot)", inline = False)
-	await ctx.send(embed = embed)
-	print(f"{bot.commandLabel} Help")
+# # help command
+# @bot.command(aliases = ["info"])
+# @commands.cooldown(1, 5, BucketType.user) 
+# async def help(ctx):
+# 	await ctx.trigger_typing()
+# 	embed = discord.Embed(title = "Help Section", color = 0xFFFFFE, timestamp = datetime.utcnow())
+# 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+# 	embed.set_thumbnail(url = bot.server.icon_url)
+# 	embed.add_field(name = ":bust_in_silhouette: User Profile", value = "`!profile` \n`!profile @user`", inline = True)
+# 	embed.add_field(name = ":8ball: The Magic 8Ball", value = "`!8ball <question>` \n`!predict <question>`", inline = True)
+# 	embed.add_field(name = "<:coin_discord:728695789316210860> Flip a Coin", value = "`!flip` \n`!coinflip`", inline = True)
+# 	embed.add_field(name = ":mute: Mute User", value = "`!mute @user <minutes>` \n`!stfu @user <minutes>`", inline = True)
+# 	embed.add_field(name = ":loud_sound: Unmute User", value = "`!unmute @user` \n`!unstfu @user`", inline = True)
+# 	embed.add_field(name = ":eggplant: PP Rater", value = "`!pp` \n`!dong`", inline = True)
+# 	embed.add_field(name = ":medal: Server Roles", value = "`!roles` \n`!ranks`", inline = True)
+# 	embed.add_field(name = "<:minecraft_icon:699029490332074015> Start Server(s)", value = "`!start 1` ([Server 1](https://swiftspirit1408.aternos.me/)) \n`!start 2` ([Server 2](https://poopyucky.aternos.me/))", inline = True)
+# 	embed.add_field(name = "<:minecraft_icon:699029490332074015> Server IP's", value = "`!ip` \n`!mcip`", inline = True)
+# 	embed.add_field(name = "<:krunker_icon:699029209988726885> Krunker Link", value = "`!krunker <link> <title>` \n`!k <link> <title>`", inline = True)
+# 	embed.add_field(name = "<:upvote:732640878145044623> Promote", value = "`!promote @user` \n`!mod @user`", inline = True)
+# 	embed.add_field(name = "<:downvote:732640878249902161> Demote", value = "`!demote @user` \n`!unmod @user`", inline = True)
+# 	embed.add_field(name = ":inbox_tray: Server Invite", value = "`!invite` \n`!inv`", inline = True)
+# 	embed.add_field(name = ":ping_pong: Bot Latency", value = "`!ping` \n`!latency`", inline = True)
+# 	embed.add_field(name = ":desktop: Help Page", value = "`!help` \n`!info`", inline = True)
+# 	embed.add_field(name = ":robot: Bot Info", value = "**Developer:** <@410590963379994639> \n**Language:** [`Python`](https://discordpy.readthedocs.io/en/latest/) \n**Hosting:** [`Dell Inspiron 15 Laptop`](https://g.co/kgs/CKznxn) \n**Github Repo:** [`Link`](https://github.com/hdadhich01/The-Butler-Discord-Bot)", inline = False)
+# 	await ctx.send(embed = embed)
+# 	print(f"{bot.commandLabel} Help")
 
 # import token and run bot
 keepAlive()
