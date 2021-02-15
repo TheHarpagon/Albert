@@ -27,7 +27,7 @@ muteDatabase = tinydb.TinyDB("muteDatabase.json")
 query = tinydb.Query()
 
 async def assignments():
-  s = bot.get_guild(variables.serverID)
+	s = bot.get_guild(variables.serverID)
 	bot.server = bot.get_guild(variables.serverID)
 	bot.welcomeChannel = bot.get_channel(variables.welcomeChannelID)
 	bot.rolesChannel = bot.get_channel(variables.rolesChannelID)
@@ -158,12 +158,12 @@ async def on_ready():
 	await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{userCount(1)} Members • !help"))
 	# await bot.change_presence(activity = discord.Streaming(name = "Onlyfanz", url = "https://bit.ly/3lH4oSp"))
 	print(f"""
-  _____ _            ____        _   _           
- |_   _| |__   ___  | __ ) _   _| |_| | ___ _ __ 
-   | | | '_ \ / _ \ |  _ \| | | | __| |/ _ \ '__|
-   | | | | | |  __/ | |_) | |_| | |_| |  __/ |   
-   |_| |_| |_|\___| |____/ \__,_|\__|_|\___|_|   
-                                                 """)
+  _______ _            ____        _   _           
+ |__   __| |          |  _ \      | | | |          
+    | |  | |__   ___  | |_) |_   _| |_| | ___ _ __ 
+    | |  | '_ \ / _ \ |  _ <| | | | __| |/ _ \ '__|
+    | |  | | | |  __/ | |_) | |_| | |_| |  __/ |   
+    |_|  |_| |_|\___| |____/ \__,_|\__|_|\___|_|""")
 
 	subjectRolesMessage = await bot.rolesChannel.fetch_message(759521601170833469)
 	embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xFFFFFE)
@@ -911,24 +911,24 @@ async def profile(ctx, member: discord.Member = None):
 		
 		# output = ""
 		# for i in gameRoles:
-		#     if i in member.roles:
-		#         output += gameRoles[i].mention
+		#		 if i in member.roles:
+		#				 output += gameRoles[i].mention
 		# gameRoles = ""
 		
 		# if bot.krunkerRole in member.roles:
-		#     gameRoles += f"\n{bot.krunkerRole.mention}"
+		#		 gameRoles += f"\n{bot.krunkerRole.mention}"
 		
 		# if bot.minecraftRole in member.roles:
-		#     gameRoles += f"\n{bot.minecraftRole.mention}"
+		#		 gameRoles += f"\n{bot.minecraftRole.mention}"
 
 		# if bot.valorantRole in member.roles:
-		#     gameRoles += f"\n{bot.valorantRole.mention}"
+		#		 gameRoles += f"\n{bot.valorantRole.mention}"
 		
 		# if bot.amongUsRole in member.roles:
-		#     gameRoles += f"\n{bot.amongUsRole.mention}"
+		#		 gameRoles += f"\n{bot.amongUsRole.mention}"
 
 		# else:
-		#     gameRoles = "`None`"
+		#		 gameRoles = "`None`"
 
 		embed = discord.Embed(title=f":bust_in_silhouette: User Profile", description = f"`{member}`", color = topColor, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
@@ -979,7 +979,7 @@ async def muted(ctx):
 @commands.cooldown(1, 5, BucketType.user) 
 async def predict(ctx, *, question: str):
 	await ctx.trigger_typing()
-	responses = [   f"shut the fuck up {ctx.author.name.lower()}",
+	responses = [	 f"shut the fuck up {ctx.author.name.lower()}",
 									"Yeah I can picture that ngl",
 									"Yeah fs dude",
 									"Yeah no doubt dude",
@@ -1006,7 +1006,7 @@ async def predict(ctx, *, question: str):
 									"Go ask your mom buddy",
 									"My sources say no, but then again, they also say they hate you",
 									"My answer to your question lies [here](https://www.youtube.com/watch?v=ub82Xb1C8os)",
-									"The chance of that is lower than your penis size my dude"   ]
+									"The chance of that is lower than your penis size my dude"	 ]
 
 	embed = discord.Embed(title = ":8ball: The Mighty 8Ball", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.add_field(name = "Question", value = question, inline = False)
@@ -1058,7 +1058,7 @@ async def mute(ctx, user: str, mtime = None):
 				if mtime > 0:
 					if mtime < 1:
 						stime = round(mtime * 60)
-						sunit = "seconds"                    
+						sunit = "seconds"										
 
 						if stime == 1:
 							sunit = "second"
@@ -1138,7 +1138,7 @@ async def mute(ctx, user: str, mtime = None):
 				embed.set_thumbnail(url = member.avatar_url)
 				await ctx.send(embed = embed)
 	else:
-		embed = discord.Embed(title = f"{bot.errorEmoji} Missing Permissions", description = f"Required Roles: \n• {bot.adminRole.mention} \n• {bot.moderatorRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())   
+		embed = discord.Embed(title = f"{bot.errorEmoji} Missing Permissions", description = f"Required Roles: \n• {bot.adminRole.mention} \n• {bot.moderatorRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())	 
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
@@ -1148,13 +1148,13 @@ async def mute(ctx, user: str, mtime = None):
 # @commands.cooldown(1, 5, BucketType.user) 
 # async def play(ctx, url):
 # 	await ctx.trigger_typing()
-#   if ctx.author.id == 410590963379994639:
-#   	voice_client = bot.voice_client_in(bot.server)
-#   	player = await voice_client.create_ytdl_player(url)
-#   	players[server.id] = player
-#   	player.start()
-#   else:
-#   	await ctx.send("nah")
+#	 if ctx.author.id == 410590963379994639:
+#	 	voice_client = bot.voice_client_in(bot.server)
+#	 	player = await voice_client.create_ytdl_player(url)
+#	 	players[server.id] = player
+#	 	player.start()
+#	 else:
+#	 	await ctx.send("nah")
 
 
 # unmute command
@@ -1186,7 +1186,7 @@ async def unmute(ctx, user: str):
 		print(f"{bot.commandLabel} Unmute")
 	
 	else:
-		embed = discord.Embed(title = f"{bot.errorEmoji} Missing Permissions", description = f"Required Roles: \n• {bot.adminRole.mention} \n• {bot.moderatorRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())   
+		embed = discord.Embed(title = f"{bot.errorEmoji} Missing Permissions", description = f"Required Roles: \n• {bot.adminRole.mention} \n• {bot.moderatorRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())	 
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
@@ -1238,11 +1238,11 @@ async def ip(ctx):
 	b = "<a:dndGIF:791185650996346891>"
 
 	if bot.survivalServerBot.status is discord.Status.online:
-	  a = "<a:onlineGIF:791185651311575051>"
+		a = "<a:onlineGIF:791185651311575051>"
 
 	# private server 2 bot status
 	if bot.creativeServerBot.status is discord.Status.online:
-	  b = "<a:onlineGIF:791185651311575051>"
+		b = "<a:onlineGIF:791185651311575051>"
 
 	embed.add_field(name = f"{a} Survival Server", value = "Version: `1.16.5`\nIP Address: `ballin-survival.ddns.net`\nBridged Chat: <#693321555366903851>", inline = False)
 	embed.add_field(name = f"{b} Creative Server", value = "Version: `1.16.5`\nIP Address: `swiftspirit1408.aternos.me`\nBridged Chat: <#659885014603005953>", inline = False)
@@ -1261,7 +1261,7 @@ async def promote(ctx, member: discord.Member):
 		await member.add_roles(bot.moderatorRole)
 		await member.remove_roles(bot.memberRole)
 
-		embed = discord.Embed(title = f"<:upvote:732640878145044623> Promoted", description = f"{member.mention} is now a {bot.moderatorRole.mention}", color = 0x00FF00, timestamp = datetime.utcnow())       
+		embed = discord.Embed(title = f"<:upvote:732640878145044623> Promoted", description = f"{member.mention} is now a {bot.moderatorRole.mention}", color = 0x00FF00, timestamp = datetime.utcnow())			 
 		embed.set_footer(text = f"Promoted by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
@@ -1292,7 +1292,7 @@ async def demote(ctx, member: discord.Member):
 		await member.add_roles(bot.memberRole)
 		await member.remove_roles(bot.moderatorRole)
 
-		embed = discord.Embed(title = f"<:downvote:732640878249902161> Demoted", description = f"{member.mention} is now a {bot.memberRole.mention}", color = 0x00FF00, timestamp = datetime.utcnow())       
+		embed = discord.Embed(title = f"<:downvote:732640878249902161> Demoted", description = f"{member.mention} is now a {bot.memberRole.mention}", color = 0x00FF00, timestamp = datetime.utcnow())			 
 		embed.set_footer(text = f"Demoted by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
