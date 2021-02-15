@@ -27,7 +27,7 @@ muteDatabase = tinydb.TinyDB("muteDatabase.json")
 query = tinydb.Query()
 
 async def assignments():
-	s = bot.get_guild(variables.serverID)
+  s = bot.get_guild(variables.serverID)
 	bot.server = bot.get_guild(variables.serverID)
 	bot.welcomeChannel = bot.get_channel(variables.welcomeChannelID)
 	bot.rolesChannel = bot.get_channel(variables.rolesChannelID)
@@ -280,7 +280,7 @@ async def on_ready():
 		print(f"{bot.eventLabel} Unmuted (Automatic)")
 
 @bot.command()
-@commands.cooldown(1 , 15, BucketType.user) 
+@commands.cooldown(1, 15, BucketType.user) 
 async def weather(ctx, *, city = None):
 	await ctx.trigger_typing()
 	message = await ctx.send("<a:loadingColorful:765034824926232606> Searching...")
@@ -310,7 +310,7 @@ async def weather(ctx, *, city = None):
 		print(f"{bot.commandLabel} Weather")
 
 @bot.command()
-@commands.cooldown(1 , 15, BucketType.user) 
+@commands.cooldown(1, 15, BucketType.user) 
 async def joke(ctx):
 	await ctx.trigger_typing()
 	message = await ctx.send("<a:loadingColorful:765034824926232606> Searching...")
@@ -327,7 +327,7 @@ async def joke(ctx):
 	print(f"{bot.commandLabel} Joke")
 
 @bot.command()
-@commands.cooldown(1 , 15, BucketType.user) 
+@commands.cooldown(1, 15, BucketType.user) 
 async def fact(ctx):
 	await ctx.trigger_typing()
 	message = await ctx.send("<a:loadingColorful:765034824926232606> Searching...")
@@ -338,6 +338,7 @@ async def fact(ctx):
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await message.edit(content = "", embed = embed)
 	print(f"{bot.commandLabel} Fact")
+
 
 # @bot.command()
 # @commands.cooldown(1, 5, BucketType.user) 
@@ -580,8 +581,8 @@ async def on_message_edit(before, after):
 # on message sent event
 @bot.event
 async def on_message(message):
-	if bot.user.mentioned_in(message):
-		await message.channel.send("https://tenor.com/view/hell-no-bollywood-indian-hell-no-gif-5616245")
+	# if bot.user.mentioned_in(message):
+	# 	await message.channel.send("https://tenor.com/view/hell-no-bollywood-indian-hell-no-gif-5616245")
 	
 	if message.guild is None and message.author.id == 410590963379994639:
 		await bot.generalChannel.send(message.content)
@@ -625,6 +626,14 @@ async def on_command_error(ctx, erorr):
 # 	for i in range(0, 10):
 # 		embed.add_field(name = f"{i+1}) {data[0][i]}", value = f"Level {data[1][i]}", inline = False)
 # 	await ctx.send(embed = embed)
+
+@bot.command()
+@commands.cooldown(1, 5, BucketType.user)
+async def react(ctx, messageID):
+	msg = await ctx.channel.fetch_message(messageID)
+	character = "\U0001f1e6"
+	await msg.add_reaction(character)
+
 
 @bot.command(aliases = ["k"])
 @commands.cooldown(1, 5, BucketType.user) 
@@ -811,6 +820,44 @@ async def icon(ctx):
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_image(url = bot.server.icon_url)
 	await ctx.send(embed = embed)
+
+@bot.command(aliases = ["hijab"])
+@commands.cooldown(1, 5, BucketType.user) 
+async def allah(ctx, member: discord.Member):
+	await ctx.trigger_typing()
+	allah = bot.server.get_role(736358205994696846)
+	if ctx.author.id == 320369001005842435 and allah in ctx.author.roles:
+		if len(allah.members) < 5:
+			await member.add_roles(allah)
+			await ctx.send(f"{member.mention} is now allah :pray:")
+		else:
+			await ctx.send("there can only be 5 allahs at once :pray:")
+	else:
+		await ctx.send("shut up retard this is only for virajallah :pray:")
+
+@bot.command(aliases = ["unhijab"])
+@commands.cooldown(1, 5, BucketType.user) 
+async def unallah(ctx, member: discord.Member):
+	await ctx.trigger_typing()
+	allah = bot.server.get_role(736358205994696846)
+	if ctx.author.id == 320369001005842435 and allah in ctx.author.roles:
+		await member.remove_roles(allah)
+		await ctx.send(f"{member.mention} is not allah anymore :angry:")
+	else:
+		await ctx.send("shut up retard this is only for virajallah :pray:")
+
+@bot.command(aliases = ["hijabs"])
+@commands.cooldown(1, 5, BucketType.user) 
+async def allahs(ctx):
+	await ctx.trigger_typing()
+	allah = bot.server.get_role(736358205994696846)
+	output = ""
+	for member in allah.members:
+		output += f"\n{member.mention}"
+	embed = discord.Embed(title = ":pray: Allahs", description = output, color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+	await ctx.send(embed = embed)
+		
 
 # profile command
 @bot.command()
@@ -1197,7 +1244,7 @@ async def ip(ctx):
 	if bot.creativeServerBot.status is discord.Status.online:
 	  b = "<a:onlineGIF:791185651311575051>"
 
-	embed.add_field(name = f"{a} Survival Server", value = "Version: `1.16.5`\nIP Address: `poopyucky.aternos.me`\nBridged Chat: <#693321555366903851>", inline = False)
+	embed.add_field(name = f"{a} Survival Server", value = "Version: `1.16.5`\nIP Address: `ballin-survival.ddns.net`\nBridged Chat: <#693321555366903851>", inline = False)
 	embed.add_field(name = f"{b} Creative Server", value = "Version: `1.16.5`\nIP Address: `swiftspirit1408.aternos.me`\nBridged Chat: <#659885014603005953>", inline = False)
 
 	embed.add_field(name = f"{bot.plusEmoji} How to Join", value = "• join the IP\n• DM the code you get to <@693313699779313734>\n• once you're in, do `/register <password>`", inline = False)
@@ -1218,8 +1265,7 @@ async def promote(ctx, member: discord.Member):
 		embed.set_footer(text = f"Promoted by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await ctx.send(embed = embed)
-
-		# await bot.staffOnlyChannel.send(f"<:upvote:732640878145044623> {member.mention} was promoted")
+		await bot.staffOnlyChannel.send(f"<:upvote:732640878145044623> {member.mention} was promoted")
 		# embed = discord.Embed(title = "Staff Guidelines", description = f"Below are some guidelines/rules for a {bot.moderatorRole.mention}! \nPlease **do not** abuse your powers, or you will be demoted", color = 0xFFFFFE, timestamp = datetime.utcnow())
 		# embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		# embed.set_thumbnail(url = member.avatar_url)
@@ -1232,10 +1278,10 @@ async def promote(ctx, member: discord.Member):
 		# print(f"{bot.commandLabel} Promote")
 
 	elif (bot.adminRole in ctx.message.author.roles) and (bot.moderatorRole in member.roles):
-		print(f"{bot.errorEmoji} They already are a moderator")
+		await ctx.send(f"{bot.errorEmoji} They already are a moderator")
 
 	else:
-		print(f"{bot.errorEmoji} Missing permissions")
+		await ctx.send(f"{bot.errorEmoji} Missing permissions")
 
 # demote command
 @bot.command(aliases = ["unmod"])
@@ -1255,10 +1301,10 @@ async def demote(ctx, member: discord.Member):
 		print(f"{bot.commandLabel} Demote")
 
 	elif (bot.adminRole in ctx.message.author.roles) and (bot.memberRole in member.roles):
-		print(f"{bot.errorEmoji} They already are a member")
+		await ctx.send(f"{bot.errorEmoji} They already are a member")
 
 	else:
-		print(f"{bot.errorEmoji} Missing permissions")
+		await ctx.send(f"{bot.errorEmoji} Missing permissions")
 
 # invite command
 @bot.command(aliases = ["inv"])
