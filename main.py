@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType, CommandOnCooldown, CommandNotFound
 from discord.ext import tasks
+import html2text
 from keepAlive import keepAlive
 from ordinal import ordinal
 import os
@@ -91,6 +92,7 @@ async def assignments():
 	bot.minecraftEmoji = bot.get_emoji(variables.minecraftEmojiID)
 	bot.skribblEmoji = bot.get_emoji(variables.skribblEmojiID)
 	bot.valorantEmoji = bot.get_emoji(variables.valorantEmojiID)
+	bot.loadingEmoji = bot.get_emoji(variables.loadingEmojiID)
 	bot.errorEmoji = bot.get_emoji(variables.errorEmojiID)
 	bot.checkmarkEmoji = bot.get_emoji(variables.checkmarkEmojiID)
 	bot.plusEmoji = bot.get_emoji(variables.plusEmojiID)
@@ -283,7 +285,7 @@ async def on_ready():
 @commands.cooldown(1, 15, BucketType.user) 
 async def weather(ctx, *, city = None):
 	await ctx.trigger_typing()
-	message = await ctx.send("<a:loadingColorful:765034824926232606> Searching...")
+	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
 	if not city:
 		city = "San Ramon"
 	apiKey = "e83935ef7ce7823925eeb0bfd2db3f7f"
@@ -313,7 +315,7 @@ async def weather(ctx, *, city = None):
 @commands.cooldown(1, 15, BucketType.user) 
 async def joke(ctx):
 	await ctx.trigger_typing()
-	message = await ctx.send("<a:loadingColorful:765034824926232606> Searching...")
+	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
 	apiURL = "https://official-joke-api.appspot.com/jokes/random"
 	reply = requests.get(apiURL)
 	jokeDB = reply.json()
@@ -330,7 +332,7 @@ async def joke(ctx):
 @commands.cooldown(1, 15, BucketType.user) 
 async def fact(ctx):
 	await ctx.trigger_typing()
-	message = await ctx.send("<a:loadingColorful:765034824926232606> Searching...")
+	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
 	apiURL = "https://uselessfacts.jsph.pl/random.json?language=en"
 	reply = requests.get(apiURL)
 	factDB = reply.json()
@@ -344,7 +346,7 @@ async def fact(ctx):
 # @commands.cooldown(1, 5, BucketType.user) 
 # async def shorten(ctx, *, URL: str):
 # 	await ctx.trigger_typing()
-# 	message = await ctx.send("<a:loadingColorful:765034824926232606> Shortening URL...")
+# 	message = await ctx.send(f"{bot.loadingEmoji} Shortening URL...")
 # 	tokensPool = "a9c21c045c5d62380a54a7d3a22b06d8e6396c1c"
 # 	shortener = bitlyshortener.Shortener(token = tokensPool, max_cache = 256)
 # 	URLs = [URL]
@@ -359,80 +361,80 @@ async def fact(ctx):
 @commands.cooldown(1, 5, BucketType.user) 
 async def left(ctx):
 	await ctx.trigger_typing()
-	await ctx.send("lmao look at schedule (`!s`) shits all wack this week")
+	# await ctx.send("lmao look at schedule (`!s`) shits all wack this week")
 	# await ctx.trigger_typing()
-	# today = datetime.utcnow() - timedelta(hours = 8)
-	# totalMinutes = (int(today.time().strftime("%H")) * 60) + int(today.time().strftime("%M"))
-	# currPeriod = ""
-	# minutesLeft = 0
-	# isRunning = False
+	today = datetime.utcnow() - timedelta(hours = 8)
+	totalMinutes = (int(today.time().strftime("%H")) * 60) + int(today.time().strftime("%M"))
+	currPeriod = ""
+	minutesLeft = 0
+	isRunning = False
 
-	# monTimes = {525: ":books: Period `A`", 
-	# 						530: ":dividers: `Passing`", 
-	# 						560: ":books: Period `1`", 
-	# 						565: ":dividers: `Passing`", 
-	# 						595: ":books: Period `2`", 
-	# 						600: ":dividers: `Passing`", 
-	# 						630: ":books: Period `3`", 
-	# 						635: ":dividers: `Passing`", 
-	# 						665: ":books: Period `4`", 
-	# 						670: ":dividers: `Passing`", 
-	# 						695: ":sandwich: `Lunch`", 
-	# 						700: ":dividers: `Passing`", 
-	# 						730: ":books: Period `5`", 
-	# 						735: ":dividers: `Passing`", 
-	# 						765: ":books: Period `6`"}
-	# tuesThursTimes = {570: ":books: Period `A` (Async)", 
-	# 									580: ":dividers: `Passing`", 
-	# 									655: ":books: Period `1`", 
-	# 									670: ":dividers: `Passing`", 
-	# 									745: ":books: Period `3`", 
-	# 									780: ":sandwich: `Lunch`", 
-	# 									790: ":dividers: `Passing`", 
-	# 									865: ":books: Period `5`", 
-	# 									915: ":jigsaw: `Student Support`"}
-	# wedFriTimes = {570: ":books: Period `A`", 
-	# 							580: ":dividers: `Passing`", 
-	# 							655: ":books: Period `2`", 
-	# 							670: ":dividers: `Passing`", 
-	# 							745: ":books: Period `4`", 
-	# 							780: ":sandwich: `Lunch`", 
-	# 							790: ":dividers: `Passing`", 
-	# 							865: ":books: Period `6`", 
-	# 							915: ":jigsaw: `Student Support`"}
+	monTimes = {525: ":books: Period `A`", 
+							530: ":dividers: `Passing`", 
+							560: ":books: Period `1`", 
+							565: ":dividers: `Passing`", 
+							595: ":books: Period `2`", 
+							600: ":dividers: `Passing`", 
+							630: ":books: Period `3`", 
+							635: ":dividers: `Passing`", 
+							665: ":books: Period `4`", 
+							670: ":dividers: `Passing`", 
+							695: ":sandwich: `Lunch`", 
+							700: ":dividers: `Passing`", 
+							730: ":books: Period `5`", 
+							735: ":dividers: `Passing`", 
+							765: ":books: Period `6`"}
+	tuesThursTimes = {570: ":books: Period `A` (Async)", 
+										580: ":dividers: `Passing`", 
+										655: ":books: Period `1`", 
+										670: ":dividers: `Passing`", 
+										745: ":books: Period `3`", 
+										780: ":sandwich: `Lunch`", 
+										790: ":dividers: `Passing`", 
+										865: ":books: Period `5`", 
+										915: ":jigsaw: `Student Support`"}
+	wedFriTimes = {570: ":books: Period `A`", 
+								580: ":dividers: `Passing`", 
+								655: ":books: Period `2`", 
+								670: ":dividers: `Passing`", 
+								745: ":books: Period `4`", 
+								780: ":sandwich: `Lunch`", 
+								790: ":dividers: `Passing`", 
+								865: ":books: Period `6`", 
+								915: ":jigsaw: `Student Support`"}
 
-	# if today.isoweekday() == 1 and 525 <= totalMinutes <= 765:
-	# 	for i in monTimes:
-	# 		if i > totalMinutes:
-	# 			minutesLeft = i - totalMinutes
-	# 			currPeriod = monTimes[i]
-	# 			isRunning = True
-	# 			break
+	if today.isoweekday() == 1 and 525 <= totalMinutes <= 765:
+		for i in monTimes:
+			if i > totalMinutes:
+				minutesLeft = i - totalMinutes
+				currPeriod = monTimes[i]
+				isRunning = True
+				break
 	
-	# elif today.isoweekday() in [2, 4] and 570 <= totalMinutes <= 915:
-	# 	for i in tuesThursTimes:
-	# 		if i > totalMinutes:
-	# 			minutesLeft = i - totalMinutes
-	# 			currPeriod = tuesThursTimes[i]
-	# 			isRunning = True
-	# 			break
+	elif today.isoweekday() in [2, 4] and 570 <= totalMinutes <= 915:
+		for i in tuesThursTimes:
+			if i > totalMinutes:
+				minutesLeft = i - totalMinutes
+				currPeriod = tuesThursTimes[i]
+				isRunning = True
+				break
 	
-	# elif today.isoweekday() in [3, 5] and 570 <= totalMinutes <= 915:
-	# 	for i in wedFriTimes:
-	# 		if i > totalMinutes:
-	# 			minutesLeft = i - totalMinutes
-	# 			currPeriod = wedFriTimes[i]
-	# 			isRunning = True
-	# 			break
+	elif today.isoweekday() in [3, 5] and 570 <= totalMinutes <= 915:
+		for i in wedFriTimes:
+			if i > totalMinutes:
+				minutesLeft = i - totalMinutes
+				currPeriod = wedFriTimes[i]
+				isRunning = True
+				break
 	
-	# if isRunning is True:
-	# 	embed = discord.Embed(title = ":bell: Time Left", description = f"{currPeriod} has `{minutesLeft}` minutes left!", color = 0xFFFFFE, timestamp = datetime.utcnow())
-	# 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-	# 	embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
-	# 	await ctx.send(embed = embed)
-	# else:
-	# 	await ctx.send(f"{bot.errorEmoji} School is currently not in session")
-	# print(f"{bot.commandLabel} MLeft")
+	if isRunning is True:
+		embed = discord.Embed(title = ":bell: Time Left", description = f"{currPeriod} has `{minutesLeft}` minutes left!", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+		embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
+		await ctx.send(embed = embed)
+	else:
+		await ctx.send(f"{bot.errorEmoji} School is currently not in session")
+	print(f"{bot.commandLabel} MLeft")
 
 
 @tasks.loop(minutes = 1.0)
@@ -611,7 +613,7 @@ async def on_command_error(ctx, erorr):
 		if isinstance(erorr, CommandOnCooldown):
 			phrase = ["Hold your temptation for another", "Hold on I'm fucking vrushank, gimme another", "I'm finishin up with your mother, stand outside for another"]
 			await ctx.trigger_typing()
-			await ctx.send(f"{bot.errorEmoji} {random.choice(phrase)} `{round(erorr.retry_after, 2)}` seconds")
+			await ctx.send(f"{bot.errorEmoji} {random.choice(phrase)} `{round(erorr.retry_after, 1)}` seconds")
 		else:
 			await ctx.trigger_typing()
 			await ctx.send(f"```{erorr}```")
@@ -634,6 +636,66 @@ async def react(ctx, messageID):
 	character = "\U0001f1e6"
 	await msg.add_reaction(character)
 
+@bot.command(aliases = ["quiz", "question"])
+@commands.cooldown(1, 20, BucketType.user)
+async def trivia(ctx, difficulty = None):
+	await ctx.trigger_typing()
+	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
+	apiURL = "https://opentdb.com/api.php?amount=1&type=multiple"
+	if difficulty:
+		if difficulty in ["easy", "e"]:
+			apiURL = "https://opentdb.com/api.php?amount=1&difficulty=easy"
+		elif difficulty in ["medium", "m"]:
+			apiURL = "https://opentdb.com/api.php?amount=1&difficulty=medium"
+		elif difficulty in ["hard", "h"]:
+			apiURL = "https://opentdb.com/api.php?amount=1&difficulty=hard"
+		else:
+			await message.edit(content = f"{bot.errorEmoji} You can only choose an `easy`, `medium`, or `hard` question")
+			trivia.reset_cooldown(ctx)
+			return
+	
+	reply = requests.get(apiURL)
+	triviaDB = reply.json()
+	category = html2text.html2text(triviaDB["results"][0]["category"]).replace("\n", "")
+	difficulty = (triviaDB["results"][0]["difficulty"]).capitalize()
+	question = html2text.html2text(triviaDB["results"][0]["question"]).replace("\n", "")		
+	choices = [html2text.html2text(triviaDB["results"][0]["correct_answer"]).replace("\n", ""), 
+	html2text.html2text(triviaDB["results"][0]["incorrect_answers"][0]).replace("\n", ""), 
+	html2text.html2text(triviaDB["results"][0]["incorrect_answers"][1]).replace("\n", ""), 
+	html2text.html2text(triviaDB["results"][0]["incorrect_answers"][2]).replace("\n", "")]
+	# print(choices[0])
+	random.shuffle(choices)
+	correctIndex = choices.index(html2text.html2text(triviaDB["results"][0]["correct_answer"]).replace("\n", ""))
+	reactionsList = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]
+
+	embed = discord.Embed(title = ":thinking: Trivia", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nreact with the right answer within 15 seconds", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+	await message.edit(content = "", embed = embed)
+	for i in reactionsList:
+		await message.add_reaction(i)
+
+	def check(reaction, user):
+		return user == ctx.author and str(reaction.emoji) in reactionsList
+	try:
+		reaction, user = await bot.wait_for("reaction_add", timeout = 15, check = check)
+	except asyncio.TimeoutError:
+		await message.clear_reactions()
+		await message.edit(content = f"{bot.errorEmoji} You did not answer in time", embed = None)
+	else:
+		await message.clear_reactions()
+		if reactionsList.index(str(reaction.emoji)) == correctIndex:
+			reactionsList[correctIndex] = bot.checkmarkEmoji
+			embed = discord.Embed(title = f"{bot.checkmarkEmoji} Correct!", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+			embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+			await message.edit(content = "", embed = embed)
+		else:
+			reactionsList[reactionsList.index(str(reaction.emoji))] = bot.errorEmoji
+			reactionsList[correctIndex] = bot.checkmarkEmoji
+			embed = discord.Embed(title = f"{bot.errorEmoji} Incorrect!", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+			embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+			await message.edit(content = "", embed = embed)
+		print(f"{bot.commandLabel} Trivia")
+
 
 @bot.command(aliases = ["k"])
 @commands.cooldown(1, 5, BucketType.user) 
@@ -648,6 +710,12 @@ async def krunker(ctx, link):
 	else:
 		await ctx.send(f"{bot.errorEmoji} Invalid link")
 		print(f"{bot.commandLabel} Krunker")
+
+# @bot.command()
+# @commands.cooldown(1, 15, BucketType.user) 
+# async def test(ctx):
+# 	file  = discord.File(fp = "keepAlive.py", filename = "keepAlive.py")
+# 	await ctx.send(file = file)
 
 @bot.command(aliases = ["au"])
 @commands.cooldown(1, 5, BucketType.user) 
@@ -688,15 +756,24 @@ async def pfp(ctx, member: discord.Member = None):
 	embed.set_image(url = member.avatar_url)
 	await ctx.send(embed = embed)
 
-# @bot.command()
-# @commands.cooldown(1, 5, BucketType.user) 
-# async def emojis(ctx):
-# 	await ctx.trigger_typing()
-# 	message = ""
-# 	for emoji in bot.server.emojis:
-# 		message += str(emoji)
-# 	await ctx.send(f"`{len(bot.server.emojis)}` Emojis")
-# 	await ctx.send(message)
+@bot.command()
+@commands.cooldown(1, 15, BucketType.user) 
+async def emojis(ctx):
+	await ctx.trigger_typing()
+	num = len(bot.server.emojis)/2
+	firstHalf = ""
+	for output in bot.server.emojis[:num]:
+		firstHalf += str(output)
+	embed = discord.Embed(title = ":small_red_triangle: Emojis (Page 1/2)", description = firstHalf, color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+	await ctx.send(embed = embed)
+	await ctx.trigger_typing()
+	secondHalf = ""
+	for output in bot.server.emojis[num:]:
+		firstHalf += str(output)
+	embed = discord.Embed(title = ":small_red_triangle: Emojis (Page 2/2)", description = secondHalf, color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+	await ctx.send(embed = embed)
 
 @bot.command(aliases = ["s"])
 @commands.cooldown(1, 5, BucketType.user) 
@@ -723,7 +800,7 @@ async def nick(ctx, *, nickname):
 # async def resetnicks(ctx):
 # 	await ctx.trigger_typing()
 # 	if bot.adminRole in ctx.author.roles:
-# 		msg = await ctx.send("<a:loadingColorful:765034824926232606> Hold up...")
+# 		msg = await ctx.send(f"{bot.loadingEmoji} Hold up...")
 # 		for member in bot.server.members:
 # 			if member.bot is False and member.id != 410590963379994639:
 # 				await member.edit(nick = member.name)
