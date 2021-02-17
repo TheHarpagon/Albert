@@ -291,21 +291,21 @@ async def weather(ctx, *, city = None):
 	apiKey = "e83935ef7ce7823925eeb0bfd2db3f7f"
 	apiURL = "http://api.openweathermap.org/data/2.5/weather?" + "appid=" + apiKey + "&q=" + city
 	reply = requests.get(apiURL)
-	weatherDB = reply.json()
-	if weatherDB["cod"] == "404":
+	weatherDatabase = reply.json()
+	if weatherDatabase["cod"] == "404":
 		await message.edit(content = f"{bot.errorEmoji} Invalid city")
 	else:
-		sunrise = datetime.fromtimestamp(int(weatherDB["sys"]["sunrise"])) - timedelta(hours = 8)
-		sunset = datetime.fromtimestamp(int(weatherDB["sys"]["sunset"])) - timedelta(hours = 8)
+		sunrise = datetime.fromtimestamp(int(weatherDatabase["sys"]["sunrise"])) - timedelta(hours = 8)
+		sunset = datetime.fromtimestamp(int(weatherDatabase["sys"]["sunset"])) - timedelta(hours = 8)
 		embed = discord.Embed(title = ":partly_sunny: Weather", color = 0xFFFFFE, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-		embed.set_thumbnail(url = f"https://openweathermap.org/img/wn/{weatherDB['weather'][0]['icon']}@4x.png")
-		embed.add_field(name = "City", value = f"`{weatherDB['name']}`, `{weatherDB['sys']['country']}`", inline = True)
-		embed.add_field(name = "Condition", value = f"`{(weatherDB['weather'][0]['description']).title()}`", inline = True)
-		embed.add_field(name = "Cloudiness", value = f"`{weatherDB['clouds']['all']}`%", inline = True)
-		embed.add_field(name = "Temperature", value = f"`{round((1.8 * ((weatherDB['main']['temp']) - 273.15)) + 32)}`°F", inline = True)
-		embed.add_field(name = "Humidity", value = f"`{weatherDB['main']['humidity']}`%", inline = True)
-		embed.add_field(name = "Wind", value = f"`{round((weatherDB['wind']['speed'] * 2.24), 1)}`mph `{portolan.abbr(degree = weatherDB['wind']['deg'])}`", inline = True)
+		embed.set_thumbnail(url = f"https://openweathermap.org/img/wn/{weatherDatabase['weather'][0]['icon']}@4x.png")
+		embed.add_field(name = "City", value = f"`{weatherDatabase['name']}`, `{weatherDatabase['sys']['country']}`", inline = True)
+		embed.add_field(name = "Condition", value = f"`{(weatherDatabase['weather'][0]['description']).title()}`", inline = True)
+		embed.add_field(name = "Cloudiness", value = f"`{weatherDatabase['clouds']['all']}`%", inline = True)
+		embed.add_field(name = "Temperature", value = f"`{round((1.8 * ((weatherDatabase['main']['temp']) - 273.15)) + 32)}`°F", inline = True)
+		embed.add_field(name = "Humidity", value = f"`{weatherDatabase['main']['humidity']}`%", inline = True)
+		embed.add_field(name = "Wind", value = f"`{round((weatherDatabase['wind']['speed'] * 2.24), 1)}`mph `{portolan.abbr(degree = weatherDatabase['wind']['deg'])}`", inline = True)
 		embed.add_field(name = "Sunrise", value = f"{sunrise.strftime('`%I`:`%M` `%p`')} PST", inline = True)
 		embed.add_field(name = "Sunset", value = f"{sunset.strftime('`%I`:`%M` `%p`')} PST", inline = True)
 		await message.edit(content = "", embed = embed)
@@ -318,11 +318,11 @@ async def joke(ctx):
 	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
 	apiURL = "https://official-joke-api.appspot.com/jokes/random"
 	reply = requests.get(apiURL)
-	jokeDB = reply.json()
-	embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDB['setup']}**", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	jokeDatabase = reply.json()
+	embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDatabase['setup']}**", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await message.edit(content = "", embed = embed)
-	embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDB['setup']}**\n{jokeDB['punchline']}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDatabase['setup']}**\n{jokeDatabase['punchline']}", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await asyncio.sleep(2)
 	await message.edit(content = "", embed = embed)
@@ -335,8 +335,8 @@ async def fact(ctx):
 	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
 	apiURL = "https://uselessfacts.jsph.pl/random.json?language=en"
 	reply = requests.get(apiURL)
-	factDB = reply.json()
-	embed = discord.Embed(title = ":book: A useless fact", description = f"{factDB['text']}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	factDatabase = reply.json()
+	embed = discord.Embed(title = ":book: A useless fact", description = f"{factDatabase['text']}", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await message.edit(content = "", embed = embed)
 	print(f"{bot.commandLabel} Fact")
@@ -636,18 +636,18 @@ async def react(ctx, messageID):
 	character = "\U0001f1e6"
 	await msg.add_reaction(character)
 
-@bot.command(aliases = ["quiz", "question"])
+@bot.command(aliases = ["q", "question", "quiz"])
 @commands.cooldown(1, 20, BucketType.user)
 async def trivia(ctx, difficulty = None):
 	await ctx.trigger_typing()
 	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
 	apiURL = "https://opentdb.com/api.php?amount=1&type=multiple"
 	if difficulty:
-		if difficulty in ["easy", "e"]:
+		if difficulty.lower() in ["e", "easy", "ez"]:
 			apiURL = "https://opentdb.com/api.php?amount=1&difficulty=easy"
-		elif difficulty in ["medium", "m"]:
+		elif difficulty.lower() in ["m", "medium"]:
 			apiURL = "https://opentdb.com/api.php?amount=1&difficulty=medium"
-		elif difficulty in ["hard", "h"]:
+		elif difficulty.lower() in ["h", "hard"]:
 			apiURL = "https://opentdb.com/api.php?amount=1&difficulty=hard"
 		else:
 			await message.edit(content = f"{bot.errorEmoji} You can only choose an `easy`, `medium`, or `hard` question")
@@ -655,20 +655,22 @@ async def trivia(ctx, difficulty = None):
 			return
 	
 	reply = requests.get(apiURL)
-	triviaDB = reply.json()
-	category = html2text.html2text(triviaDB["results"][0]["category"]).replace("\n", "")
-	difficulty = (triviaDB["results"][0]["difficulty"]).capitalize()
-	question = html2text.html2text(triviaDB["results"][0]["question"]).replace("\n", "")		
-	choices = [html2text.html2text(triviaDB["results"][0]["correct_answer"]).replace("\n", ""), 
-	html2text.html2text(triviaDB["results"][0]["incorrect_answers"][0]).replace("\n", ""), 
-	html2text.html2text(triviaDB["results"][0]["incorrect_answers"][1]).replace("\n", ""), 
-	html2text.html2text(triviaDB["results"][0]["incorrect_answers"][2]).replace("\n", "")]
+	triviaDatabase = reply.json()
+	category = html2text.html2text(triviaDatabase["results"][0]["category"]).replace("\n", "")
+	difficulty = (triviaDatabase["results"][0]["difficulty"]).capitalize()
+	question = html2text.html2text(triviaDatabase["results"][0]["question"]).replace("\n", "")		
+	choices = [html2text.html2text(triviaDatabase["results"][0]["correct_answer"]).replace("\n", ""), 
+	html2text.html2text(triviaDatabase["results"][0]["incorrect_answers"][0]).replace("\n", ""), 
+	html2text.html2text(triviaDatabase["results"][0]["incorrect_answers"][1]).replace("\n", ""), 
+	html2text.html2text(triviaDatabase["results"][0]["incorrect_answers"][2]).replace("\n", "")]
 	# print(choices[0])
 	random.shuffle(choices)
-	correctIndex = choices.index(html2text.html2text(triviaDB["results"][0]["correct_answer"]).replace("\n", ""))
+	correctIndex = choices.index(html2text.html2text(triviaDatabase["results"][0]["correct_answer"]).replace("\n", ""))
 	reactionsList = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]
 
-	embed = discord.Embed(title = ":thinking: Trivia", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nreact with the right answer within 15 seconds", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	thinkList = ["<:thinkVivan:801531613082025995>", ":thinking:", "<:swaggerThink:809281292557746176>", "<:redThink:700463049013723136>", "<:breadThink:700463049852715048>"]
+
+	embed = discord.Embed(title = f"{random.choice(thinkList)} Trivia", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\n<a:timer15:811474945954938890> react with your answer within 15 seconds", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await message.edit(content = "", embed = embed)
 	for i in reactionsList:
@@ -683,11 +685,22 @@ async def trivia(ctx, difficulty = None):
 		await message.edit(content = f"{bot.errorEmoji} You did not answer in time", embed = None)
 	else:
 		await message.clear_reactions()
+		
+		# correct answer
 		if reactionsList.index(str(reaction.emoji)) == correctIndex:
+			# triviaPointsDatabase = tinydb.TinyDB("triviaPointsDatabase.json")
+			# query = tinydb.Query()
+
+			# if triviaPointsDatabase.search(query.id == ctx.author.id) == []:
+			# 	triviaPointsDatabase.insert({"id": ctx.author.id, "questions": 1, "points": 1})
+			# else:
+			# 	triviaPointsDatabase.update({"points": ((triviaPointsDatabase.search(query.id == ctx.author.id))["points"]) + 1}, query.id == ctx.author.id)
 			reactionsList[correctIndex] = bot.checkmarkEmoji
 			embed = discord.Embed(title = f"{bot.checkmarkEmoji} Correct!", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}", color = 0xFFFFFE, timestamp = datetime.utcnow())
 			embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 			await message.edit(content = "", embed = embed)
+		
+		# wrong answer
 		else:
 			reactionsList[reactionsList.index(str(reaction.emoji))] = bot.errorEmoji
 			reactionsList[correctIndex] = bot.checkmarkEmoji
