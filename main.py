@@ -114,6 +114,7 @@ async def assignments():
 	bot.schoolRRDict = {variables.brainEmojiID: bot.helpRole, variables.bellEmojiID: bot.bellScheduleRole, variables.oneEmojiID: bot.precalculusRole, variables.twoEmojiID: bot.apCalcABRole, variables.threeEmojiID: bot.apCalcBCRole, variables.fourEmojiID: bot.hPhysicsRole, variables.fiveEmojiID: bot.apPhysicsRole, variables.sixEmojiID: bot.apBiologyRole, variables.sevenEmojiID: bot.rushRole, variables.eightEmojiID: bot.apushRole, variables.nineEmojiID: bot.vsNetRole, variables.tenEmojiID: bot.apcsRole}
 
 	bot.gameRRDict = {variables.amongUsEmojiID: bot.amongUsRole, variables.chessEmojiID: bot.chessRole, variables.krunkerEmojiID: bot.krunkerRole, variables.minecraftEmojiID: bot.minecraftRole, variables.skribblEmojiID: bot.skribblRole, variables.valorantEmojiID: bot.valorantRole}
+	bot.categoryDB = requests.get("https://opentdb.com/api_category.php").json()
 
 # def leaderboardTask():
 # 	url = 'https://mee6.xyz/leaderboard/612059384721440789'
@@ -155,6 +156,7 @@ async def updateStatus():
 @bot.event
 async def on_ready():
 	await assignments()
+	await bot.generalChannel.send("im back bitches")
 	# bellSchedule.start()
 	bot.startTime = datetime.now()
 	await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{userCount(1)} Members • !help"))
@@ -280,6 +282,18 @@ async def on_ready():
 		await generalChannel.send(embed = embed)
 
 		print(f"{bot.eventLabel} Unmuted (Automatic)")
+
+# @bot.command()
+# @commands.cooldown(1, 5, BucketType.user) 
+# async def eval(ctx, code):
+# 	if ctx.author.id == 410590963379994639:
+# 		def evaluate(code):
+# 			return exec(code)
+# 		await ctx.send(evaluate())
+		
+
+# 	else:
+# 		await ctx.send(f"{bot.errorEmoji} You do not have access to this command")
 
 @bot.command()
 @commands.cooldown(1, 15, BucketType.user) 
@@ -636,24 +650,65 @@ async def react(ctx, messageID):
 	character = "\U0001f1e6"
 	await msg.add_reaction(character)
 
-@bot.command(aliases = ["q", "question", "quiz"])
+@bot.command(aliases = ["tf"])
 @commands.cooldown(1, 20, BucketType.user)
-async def trivia(ctx, difficulty = None):
+async def typefast(ctx):
 	await ctx.trigger_typing()
 	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
-	apiURL = "https://opentdb.com/api.php?amount=1&type=multiple"
+	apiURL = "https://random-word-api.herokuapp.com/word?number=1"
+	reply = requests.get(apiURL)
+	wordDB = reply.json()
+	embed = discord.Embed(title = ":keyboard: Type Fast", description = f"First to type `{wordDB[0]}` backwards wins!", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+	await message.edit(content = "", embed = embed)
+	def check(message):
+		return message.content == (wordDB[0])[::-1] and message.channel == ctx.channel
+	message = await bot.wait_for("message", timeout = 15, check = check)
+	await message.add_reaction(bot.checkmarkEmoji)
+	await ctx.send(f"{message.author.mention} wins!")
+
+@bot.command(aliases = ["cs"])
+@commands.cooldown(1, 5, BucketType.user)
+async def categories(ctx):
+	output = ""
+	for i in range (0, 24):
+		output += f"`{bot.categoryDB['trivia_categories'][i]['id'] - 8}` {bot.categoryDB['trivia_categories'][i]['name']}\n"
+	thinkList = ["<:thinkVivan:801531613082025995>", ":thinking:", "<:swaggerThink:809281292557746176>", "<:redThink:700463049013723136>", "<:breadThink:700463049852715048>"]
+	embed = discord.Embed(title = f"{random.choice(thinkList)} Trivia Categories", description = f"These are all the category codes\nAn empty argument will generate a random category/difficulty\n`!trivia [category] [difficulty]`\n\n{output}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+	await ctx.author.send(embed = embed)
+	await ctx.send(f"{bot.checkmarkEmoji} Sent in direct messages")
+
+@bot.command(aliases = ["q", "question", "quiz", "t"])
+@commands.cooldown(1, 20, BucketType.user)
+async def trivia(ctx, category: int = None, difficulty: str = None):
+	await ctx.trigger_typing()
+	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
+	if category:
+		if category in range(1, 25):
+			category = bot.categoryDB["trivia_categories"][category - 1]["id"]
+		else:
+			await message.edit(content = f"{bot.errorEmoji} You can only choose a category between `1` and `24`, run `!categories` to see what they are")
+			trivia.reset_cooldown(ctx)
+			return
+	else:
+		category = random.randint(9, 32)
+		
 	if difficulty:
-		if difficulty.lower() in ["e", "easy", "ez"]:
-			apiURL = "https://opentdb.com/api.php?amount=1&difficulty=easy"
-		elif difficulty.lower() in ["m", "medium"]:
-			apiURL = "https://opentdb.com/api.php?amount=1&difficulty=medium"
-		elif difficulty.lower() in ["h", "hard"]:
-			apiURL = "https://opentdb.com/api.php?amount=1&difficulty=hard"
+		if difficulty.startswith("e"):
+			difficulty = "easy"
+		elif difficulty.startswith("m"):
+			difficulty = "medium"
+		elif difficulty.startswith("h"):
+			difficulty = "hard"
 		else:
 			await message.edit(content = f"{bot.errorEmoji} You can only choose an `easy`, `medium`, or `hard` question")
 			trivia.reset_cooldown(ctx)
 			return
+	else:
+		difficulty = random.choice(["easy", "medium", "hard"])
 	
+	apiURL = f"https://opentdb.com/api.php?amount=1&category={category}&difficulty={difficulty}&type=multiple"
 	reply = requests.get(apiURL)
 	triviaDatabase = reply.json()
 	category = html2text.html2text(triviaDatabase["results"][0]["category"]).replace("\n", "")
@@ -691,12 +746,15 @@ async def trivia(ctx, difficulty = None):
 			# triviaPointsDatabase = tinydb.TinyDB("triviaPointsDatabase.json")
 			# query = tinydb.Query()
 
-			# if triviaPointsDatabase.search(query.id == ctx.author.id) == []:
+			# print(triviaPointsDatabase.search(query.id == ctx.author.id))
+
+			# if triviaPointsDatabase.search(query.id == ctx.author.id) is None:
 			# 	triviaPointsDatabase.insert({"id": ctx.author.id, "questions": 1, "points": 1})
 			# else:
 			# 	triviaPointsDatabase.update({"points": ((triviaPointsDatabase.search(query.id == ctx.author.id))["points"]) + 1}, query.id == ctx.author.id)
+			
 			reactionsList[correctIndex] = bot.checkmarkEmoji
-			embed = discord.Embed(title = f"{bot.checkmarkEmoji} Correct!", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+			embed = discord.Embed(title = f"{bot.checkmarkEmoji} Correct!", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}", color = 0x3FB97C, timestamp = datetime.utcnow())
 			embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 			await message.edit(content = "", embed = embed)
 		
@@ -704,7 +762,7 @@ async def trivia(ctx, difficulty = None):
 		else:
 			reactionsList[reactionsList.index(str(reaction.emoji))] = bot.errorEmoji
 			reactionsList[correctIndex] = bot.checkmarkEmoji
-			embed = discord.Embed(title = f"{bot.errorEmoji} Incorrect!", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+			embed = discord.Embed(title = f"{bot.errorEmoji} Incorrect!", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}", color = 0xFF383E, timestamp = datetime.utcnow())
 			embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 			await message.edit(content = "", embed = embed)
 		print(f"{bot.commandLabel} Trivia")
@@ -918,8 +976,11 @@ async def allah(ctx, member: discord.Member):
 	allah = bot.server.get_role(736358205994696846)
 	if ctx.author.id == 320369001005842435 and allah in ctx.author.roles:
 		if len(allah.members) < 5:
-			await member.add_roles(allah)
-			await ctx.send(f"{member.mention} is now allah :pray:")
+			if allah not in member.roles:
+				await member.add_roles(allah)
+				await ctx.send(f"{member.mention} is now allah :pray:")
+			else:
+				await ctx.send("you retard they already allah :pray:")
 		else:
 			await ctx.send("there can only be 5 allahs at once :pray:")
 	else:
@@ -1106,6 +1167,8 @@ async def predict(ctx, *, question: str):
 	await ctx.send(embed = embed)
 	print(f"{bot.commandLabel} 8Ball")
 
+
+
 # flip command
 @bot.command(aliases = ["coinflip"])
 @commands.cooldown(1, 5, BucketType.user) 
@@ -1245,6 +1308,26 @@ async def mute(ctx, user: str, mtime = None):
 #	 	player.start()
 #	 else:
 #	 	await ctx.send("nah")
+
+# unmute command
+@bot.command()
+@commands.cooldown(1, 5, BucketType.user) 
+async def disable(ctx, command):
+	if ctx.author.id == 410590963379994639:
+		bot.remove_command(command)
+		await ctx.send(f"{bot.checkmarkEmoji} Disabled the `{command}` command")
+	else:
+		await ctx.send(f"{bot.errorEmoji} Missing permissions")
+
+# # unmute command
+# @bot.command()
+# @commands.cooldown(1, 5, BucketType.user) 
+# async def enable(ctx, command):
+# 	if ctx.author.id == 410590963379994639:
+# 		bot.add_command(command)
+# 		await ctx.send(f"{bot.checkmarkEmoji} Enabled the `{command}` command")
+# 	else:
+# 		await ctx.send(f"{bot.errorEmoji} Missing permissions")
 
 
 # unmute command
