@@ -607,9 +607,8 @@ async def on_message(message):
 	
 	if message.author.id == 320369001005842435:
 		if "ask" in message.content.lower():
-			role = bot.server.get_role(736358205994696846)
-			await message.channel.send("that's it, i took ur allah role lmao")
-			await message.author.remove_roles(role)
+			await message.channel.send("if you say did i ask again it means you hate vrushank")
+			
 	
 	await bot.process_commands(message)
 
@@ -800,7 +799,7 @@ async def trivia(ctx, category: int = None, difficulty: str = None):
 		
 		# correct answer
 		if reactionsList.index(str(reaction.emoji)) == correctIndex:
-			# triviaPointsDatabase = tinydb.TinyDB("triviaPointsDatabase.json")
+			# triviaPointsDatabase = tinydb.TinyDB("triviaPointsDatabase.json")triviaPointsDatabase = tinydb.TinyDB("triviaPointsDatabase.json")
 			# query = tinydb.Query()
 
 			# print(triviaPointsDatabase.search(query.id == ctx.author.id))
@@ -1050,7 +1049,7 @@ async def icon(ctx):
 async def allah(ctx, member: discord.Member):
 	await ctx.trigger_typing()
 	allah = bot.server.get_role(736358205994696846)
-	if ctx.author.id == 320369001005842435 and allah in ctx.author.roles:
+	if (ctx.author.id == 320369001005842435 and allah in ctx.author.roles) or ctx.author.id == 410590963379994639:
 		if len(allah.members) < 5:
 			if allah not in member.roles:
 				await member.add_roles(allah)
@@ -1062,12 +1061,30 @@ async def allah(ctx, member: discord.Member):
 	else:
 		await ctx.send("shut up retard this is only for virajallah :pray:")
 
+# @bot.command()
+# @commands.cooldown(1, 5, BucketType.user) 
+# async def nomedia(ctx, member: discord.Member):
+# 	if ctx.author.id == 410590963379994639:
+# 		await ctx.channel.set_permissions(member, attach_files = False, embed_links = False, external_emojis = False)
+# 		await ctx.send(f"{bot.checkmarkEmoji} Media perms gone, reduced to atoms")
+# 	else:
+# 		await ctx.send(f"{bot.errorEmoji} Missing permissions")
+
+# @bot.command()
+# @commands.cooldown(1, 5, BucketType.user) 
+# async def media(ctx, member: discord.Member):
+# 	if ctx.author.id == 410590963379994639:
+# 		await ctx.channel.set_permissions(member, permissions = 0)
+# 		await ctx.send(f"{bot.checkmarkEmoji} Media perms given bcak")
+# 	else:
+# 		await ctx.send(f"{bot.errorEmoji} Missing permissions")
+
 @bot.command(aliases = ["unhijab"])
 @commands.cooldown(1, 5, BucketType.user) 
 async def unallah(ctx, member: discord.Member):
 	await ctx.trigger_typing()
 	allah = bot.server.get_role(736358205994696846)
-	if ctx.author.id == 320369001005842435 and allah in ctx.author.roles:
+	if (ctx.author.id == 320369001005842435 and allah in ctx.author.roles) or ctx.author.id == 410590963379994639:
 		await member.remove_roles(allah)
 		await ctx.send(f"{member.mention} is not allah anymore :angry:")
 	else:
