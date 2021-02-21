@@ -15,8 +15,10 @@ import portolan
 import psutil
 import random
 import requests
+from requests.auth import HTTPBasicAuth
 import tinydb
 import variables
+from uuid import uuid4
 
 # set prefix and remove default help command
 intents = discord.Intents.all()
@@ -156,7 +158,7 @@ async def updateStatus():
 @bot.event
 async def on_ready():
 	await assignments()
-	await bot.generalChannel.send("im back bitches")
+	await bot.generalChannel.send("oa")
 	# bellSchedule.start()
 	bot.startTime = datetime.now()
 	await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{userCount(1)} Members • !help"))
@@ -599,13 +601,15 @@ async def on_message_edit(before, after):
 async def on_message(message):
 	# if bot.user.mentioned_in(message):
 	# 	await message.channel.send("https://tenor.com/view/hell-no-bollywood-indian-hell-no-gif-5616245")
-	
+
 	if message.guild is None and message.author.id == 410590963379994639:
 		await bot.generalChannel.send(message.content)
 	
 	if message.author.id == 320369001005842435:
 		if "ask" in message.content.lower():
-			await message.channel.send("but did i ask if you asked that if i asked in the scenario that we asked")
+			role = bot.server.get_role(736358205994696846)
+			await message.channel.send("that's it, i took ur allah role lmao")
+			await message.author.remove_roles(role)
 	
 	await bot.process_commands(message)
 
@@ -622,15 +626,19 @@ async def on_voice_state_update(member, before, after):
 		await bot.logChannel.send(f":red_circle: `{member}` went live in `{after.channel.name}` VC")
 
 @bot.event
-async def on_command_error(ctx, erorr):
-	if not isinstance(erorr, CommandNotFound):
-		if isinstance(erorr, CommandOnCooldown):
-			phrase = ["Hold your temptation for another", "Hold on I'm fucking vrushank, gimme another", "I'm finishin up with your mother, stand outside for another"]
+async def on_command_error(ctx, error):
+	if not isinstance(error, CommandNotFound):
+		if isinstance(error, CommandOnCooldown):
 			await ctx.trigger_typing()
-			await ctx.send(f"{bot.errorEmoji} {random.choice(phrase)} `{round(erorr.retry_after, 1)}` seconds")
+			await ctx.send(f"{bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 1)}` seconds")
 		else:
 			await ctx.trigger_typing()
-			await ctx.send(f"```{erorr}```")
+			await ctx.send(f"```{error}```")
+			if ctx.command:
+				ctx.command.reset_cooldown(ctx)
+	else:
+		if "\"rank\"" not in str(error):
+			await ctx.send(f"```{error}```")
 
 # @bot.command()
 # @commands.cooldown(1, 5, BucketType.user) 
@@ -643,29 +651,56 @@ async def on_command_error(ctx, erorr):
 # 		embed.add_field(name = f"{i+1}) {data[0][i]}", value = f"Level {data[1][i]}", inline = False)
 # 	await ctx.send(embed = embed)
 
-@bot.command()
-@commands.cooldown(1, 5, BucketType.user)
-async def react(ctx, messageID):
-	msg = await ctx.channel.fetch_message(messageID)
-	character = "\U0001f1e6"
-	await msg.add_reaction(character)
+# @bot.command()
+# @commands.cooldown(1, 5, BucketType.user)
+# async def react(ctx, character):
+# 	for message in ctx.channel.history(limit = 2):
+# 		if message != ctx.message:
+# 			await ctx.channel.last_message.add_reaction(character)
+# 			return
 
-@bot.command(aliases = ["tf"])
-@commands.cooldown(1, 20, BucketType.user)
+@bot.command(aliases = ["ts"])
+@commands.cooldown(1, 10, BucketType.user)
 async def typefast(ctx):
 	await ctx.trigger_typing()
 	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
-	apiURL = "https://random-word-api.herokuapp.com/word?number=1"
-	reply = requests.get(apiURL)
-	wordDB = reply.json()
-	embed = discord.Embed(title = ":keyboard: Type Fast", description = f"First to type `{wordDB[0]}` backwards wins!", color = 0xFFFFFE, timestamp = datetime.utcnow())
-	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-	await message.edit(content = "", embed = embed)
-	def check(message):
-		return message.content == (wordDB[0])[::-1] and message.channel == ctx.channel
-	message = await bot.wait_for("message", timeout = 15, check = check)
-	await message.add_reaction(bot.checkmarkEmoji)
-	await ctx.send(f"{message.author.mention} wins!")
+
+	# math
+	if random.choice([0, 1]) == 0:
+		numbers = [random.randint(50, 100), random.randint(50, 100)]
+		operation = random.choice(["+", "-"])
+		embed = discord.Embed(title = ":zap: Typing Showdown", description = f"First to type the answer to `{numbers[0]}{operation}{numbers[1]}` wins!", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+		await message.edit(content = "", embed = embed)
+		def check(message):
+			if operation == "+":
+				return message.content == str(numbers[0] + numbers[1]) and message.channel == ctx.channel
+			return message.content == str(numbers[0] - numbers[1]) and message.channel == ctx.channel
+		try:
+			message = await bot.wait_for("message", timeout = 15, check = check)
+		except asyncio.TimeoutError:
+			await message.edit(content = f"{bot.errorEmoji} Event has expired", embed = None)
+		else:
+			await message.add_reaction(bot.checkmarkEmoji)
+			await ctx.send(f"{message.author.mention} wins!")
+	
+	# word
+	else:
+		apiURL = "https://random-word-api.herokuapp.com/word?number=1"
+		reply = requests.get(apiURL)
+		wordDB = reply.json()
+		embed = discord.Embed(title = ":zap: Typing Showdown", description = f"First to type `{wordDB[0]}` backwards wins!", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+		await message.edit(content = "", embed = embed)
+		def check(message):
+			return message.content == (wordDB[0])[::-1] and message.channel == ctx.channel
+		try:
+			message = await bot.wait_for("message", timeout = 15, check = check)
+		except asyncio.TimeoutError:
+			await message.edit(content = f"{bot.errorEmoji} Event has expired", embed = None)
+		else:
+			await message.add_reaction(bot.checkmarkEmoji)
+			await ctx.send(f"{message.author.mention} wins!")
 
 @bot.command(aliases = ["cs"])
 @commands.cooldown(1, 5, BucketType.user)
@@ -678,6 +713,28 @@ async def categories(ctx):
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await ctx.author.send(embed = embed)
 	await ctx.send(f"{bot.checkmarkEmoji} Sent in direct messages")
+
+# @bot.command()
+# @commands.cooldown(1, 10, BucketType.user)
+# async def rr(ctx):
+# 	if ctx.author.id == 410590963379994639:
+# 		message = await ctx.send("react to this message with anything to play russian roulette\none person is randomly muted\nneeds 4 ppl to activate")
+# 		await message.add_reaction(bot.checkmarkEmoji)
+# 		def check(reaction, user):
+# 			return len(message.reactions) == 4
+# 		try:
+# 			reaction, user = await bot.wait_for("reaction_add", timeout = 15, check = check)
+# 		except asyncio.TimeoutError:
+# 			await message.edit(content = "not enough ppl reacted")
+# 		else:
+# 			allMembers = []
+# 			for reaction in message.reactions:
+# 				for user in reaction.users:
+# 					allMembers.append(user.mention)
+# 			mute(ctx, random.choice(random.choice(allMembers)), 1)
+
+# 	else:
+# 		await ctx.send("in testing")
 
 @bot.command(aliases = ["q", "question", "quiz", "t"])
 @commands.cooldown(1, 20, BucketType.user)
@@ -748,7 +805,7 @@ async def trivia(ctx, category: int = None, difficulty: str = None):
 
 			# print(triviaPointsDatabase.search(query.id == ctx.author.id))
 
-			# if triviaPointsDatabase.search(query.id == ctx.author.id) is None:
+			# if triviaPointsDatabase.search(query.id == ctx.author.id)[0] is None:
 			# 	triviaPointsDatabase.insert({"id": ctx.author.id, "questions": 1, "points": 1})
 			# else:
 			# 	triviaPointsDatabase.update({"points": ((triviaPointsDatabase.search(query.id == ctx.author.id))["points"]) + 1}, query.id == ctx.author.id)
@@ -767,6 +824,25 @@ async def trivia(ctx, category: int = None, difficulty: str = None):
 			await message.edit(content = "", embed = embed)
 		print(f"{bot.commandLabel} Trivia")
 
+
+@bot.command()
+@commands.cooldown(1, 5, BucketType.user) 
+async def test(ctx, username, password):
+	if ctx.author.id == 410590963379994639:
+		url = f"https://dvhs.schoolloop.com/mapi/login?version=3&devToken={uuid4()}&devOS=iPhone9,4&year={datetime.now().year}"
+		result = requests.get(url, auth = HTTPBasicAuth(username, password))
+		if result.status_code != 200:
+			await ctx.send(result.text)
+			return
+		studentID = result.json().get("userID")
+		url = f"https://dvhs.schoolloop.com/mapi/report_card?studentID={studentID}"
+		result = requests.get(url, auth = HTTPBasicAuth(username, password))
+		if result.status_code != 200:
+			await ctx.send(result.text)
+			return
+		print(f"```json\n{result.json()}```")
+	else:
+		await ctx.send("no")
 
 @bot.command(aliases = ["k"])
 @commands.cooldown(1, 5, BucketType.user) 
@@ -1005,6 +1081,8 @@ async def allahs(ctx):
 	output = ""
 	for member in allah.members:
 		output += f"\n{member.mention}"
+		if member.id == 320369001005842435:
+			output += " :crown:"
 	embed = discord.Embed(title = ":pray: Allahs", description = output, color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await ctx.send(embed = embed)
