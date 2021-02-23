@@ -636,7 +636,7 @@ async def on_command_error(ctx, error):
 			if ctx.command:
 				ctx.command.reset_cooldown(ctx)
 	else:
-		if "\"rank\"" not in str(error):
+		if not any(x in str(error) for x in ["\"ban\"", "\"kick\"", "\"rank\"", "\"slowmode\"", "\"warn\""]):
 			await ctx.send(f"```{error}```")
 
 # @bot.command()
@@ -658,21 +658,22 @@ async def on_command_error(ctx, error):
 # 			await ctx.channel.last_message.add_reaction(character)
 # 			return
 
-@bot.command(aliases = ["ts"])
+@bot.command(aliases = ["f", "race", "r"])
 @commands.cooldown(1, 10, BucketType.user)
-async def typefast(ctx):
+async def fast(ctx):
 	await ctx.trigger_typing()
 	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
+	choice = random.choice(["math", "word", "find"])
 
 	# math
-	if random.choice([0, 1]):
-		operation = random.choice(["*", "/", "+", "-"])
+	if choice == "math":
+		operation = random.choice(["×", "÷", "+", "-"])
 		numbers = []
 		answer = 0
-		if operation == "*":
+		if operation == "×":
 			numbers = [random.randint(0, 20), random.randint(0, 20)]
 			answer = numbers[0] * numbers[1]
-		elif operation == "/":
+		elif operation == "÷":
 			numbers = [random.randint(0, 20), random.randint(1, 20)]
 			while numbers[0] + numbers[1] == 0:
 				numbers = [random.randint(0, 20), random.randint(1, 20)]
@@ -690,11 +691,9 @@ async def typefast(ctx):
 				numbers[0], numbers[1] = numbers[1], numbers[0]
 			answer = numbers[0] - numbers[1]
 		
-		embed = discord.Embed(title = ":zap: Typing Showdown", description = f"First to solve the following wins!\n```py\n{numbers[0]} {operation} {numbers[1]}```", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		embed = discord.Embed(title = ":zap: Math Showdown", description = f"First to solve the following wins!\n```py\n{numbers[0]} {operation} {numbers[1]}```", color = 0xFFFFFE, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		await message.edit(content = None, embed = embed)
-
-		print(answer)
 		
 		def check(message):
 			return message.content == str(int(answer)) and message.channel == ctx.channel
@@ -705,12 +704,13 @@ async def typefast(ctx):
 		else:
 			await message.add_reaction(bot.checkmarkEmoji)
 			await ctx.send(f"{message.author.mention} wins!")
+	
 	# word
-	else:
+	elif choice == "word":
 		apiURL = "https://random-word-api.herokuapp.com/word?number=1"
 		reply = requests.get(apiURL)
 		wordDB = reply.json()
-		embed = discord.Embed(title = ":zap: Typing Showdown", description = f"First to type `{wordDB[0]}` backwards wins!", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		embed = discord.Embed(title = ":zap: Word Showdown", description = f"First to type the following backwards wins!\n```yaml\n{wordDB[0]}```", color = 0xFFFFFE, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		await message.edit(content = None, embed = embed)
 		def check(message):
@@ -722,6 +722,34 @@ async def typefast(ctx):
 		else:
 			await message.add_reaction(bot.checkmarkEmoji)
 			await ctx.send(f"{message.author.mention} wins!")
+	
+	# find
+	else:
+		table = [[":red_square:", ":red_square:", ":red_square:"], [":red_square:", ":red_square:", ":red_square:"], [":red_square:", ":red_square:", ":red_square:"]]
+		row = random.randint(0, 2)
+		column = random.randint(0, 2)
+		table[row][column] = ":green_square:"
+		rowPH = ["A", "B", "C"]
+		printedTable = "⠀⠀`1`⠀`2`⠀`3`\n"
+		for i in range(0, 3):
+			printedTable += f"`{rowPH[i]}` "
+			for j in range(0, 3):
+				printedTable += f"||{table[i][j]}|| "
+			printedTable += "\n"
+		answer = (rowPH[row] + str(column + 1)).lower()
+		embed = discord.Embed(title = ":zap: Bubble Wrap", description = f"First to type the location to the :green_square: wins!\n(ex: `B2` or `2B`)\n\n{printedTable}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+		await message.edit(content = None, embed = embed)
+		def check(message):
+			return message.content.lower() in [answer, answer[::-1]] and message.channel == ctx.channel
+		try:
+			message = await bot.wait_for("message", timeout = 15, check = check)
+		except asyncio.TimeoutError:
+			await message.edit(content = f"{bot.errorEmoji} Event has expired", embed = None)
+		else:
+			await message.add_reaction(bot.checkmarkEmoji)
+			await ctx.send(f"{message.author.mention} wins!")
+
 
 @bot.command(aliases = ["cs"])
 @commands.cooldown(1, 5, BucketType.user)
@@ -799,7 +827,7 @@ async def trivia(ctx, category: int = None, difficulty: str = None):
 	# print(choices[0])
 	random.shuffle(choices)
 	correctIndex = choices.index(html2text.html2text(triviaDatabase["results"][0]["correct_answer"]).replace("\n", ""))
-	reactionsList = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]
+	reactionsList = ["🇦", "🇧", "🇨", "🇩"]
 
 	thinkList = ["<:thinkVivan:801531613082025995>", ":thinking:", "<:swaggerThink:809281292557746176>", "<:redThink:700463049013723136>", "<:breadThink:700463049852715048>"]
 
