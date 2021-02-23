@@ -292,17 +292,17 @@ async def on_ready():
 # 	if ctx.author.id == 410590963379994639:
 # 		def evaluate(code):
 # 			return exec(code)
-# 		await ctx.reply(evaluate())
+# 		await ctx.send(evaluate())
 		
 
 # 	else:
-# 		await ctx.reply(f"{bot.errorEmoji} You do not have access to this command")
+# 		await ctx.send(f"{bot.errorEmoji} You do not have access to this command")
 
 @bot.command()
 @commands.cooldown(1, 15, BucketType.user) 
 async def weather(ctx, *, city = None):
 	await ctx.trigger_typing()
-	message = await ctx.reply(f"{bot.loadingEmoji} Loading...")
+	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
 	if not city:
 		city = "San Ramon"
 	apiKey = "e83935ef7ce7823925eeb0bfd2db3f7f"
@@ -332,7 +332,7 @@ async def weather(ctx, *, city = None):
 @commands.cooldown(1, 15, BucketType.user) 
 async def joke(ctx):
 	await ctx.trigger_typing()
-	message = await ctx.reply(f"{bot.loadingEmoji} Loading...")
+	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
 	apiURL = "https://official-joke-api.appspot.com/jokes/random"
 	reply = requests.get(apiURL)
 	jokeDatabase = reply.json()
@@ -349,7 +349,7 @@ async def joke(ctx):
 @commands.cooldown(1, 15, BucketType.user) 
 async def fact(ctx):
 	await ctx.trigger_typing()
-	message = await ctx.reply(f"{bot.loadingEmoji} Loading...")
+	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
 	apiURL = "https://uselessfacts.jsph.pl/random.json?language=en"
 	reply = requests.get(apiURL)
 	factDatabase = reply.json()
@@ -363,7 +363,7 @@ async def fact(ctx):
 # @commands.cooldown(1, 5, BucketType.user) 
 # async def shorten(ctx, *, URL: str):
 # 	await ctx.trigger_typing()
-# 	message = await ctx.reply(f"{bot.loadingEmoji} Shortening URL...")
+# 	message = await ctx.send(f"{bot.loadingEmoji} Shortening URL...")
 # 	tokensPool = "a9c21c045c5d62380a54a7d3a22b06d8e6396c1c"
 # 	shortener = bitlyshortener.Shortener(token = tokensPool, max_cache = 256)
 # 	URLs = [URL]
@@ -378,7 +378,7 @@ async def fact(ctx):
 @commands.cooldown(1, 5, BucketType.user) 
 async def left(ctx):
 	await ctx.trigger_typing()
-	# await ctx.reply("lmao look at schedule (`!s`) shits all wack this week")
+	# await ctx.send("lmao look at schedule (`!s`) shits all wack this week")
 	# await ctx.trigger_typing()
 	today = datetime.utcnow() - timedelta(hours = 8)
 	totalMinutes = (int(today.time().strftime("%H")) * 60) + int(today.time().strftime("%M"))
@@ -448,9 +448,9 @@ async def left(ctx):
 		embed = discord.Embed(title = ":bell: Time Left", description = f"{currPeriod} has `{minutesLeft}` minutes left!", color = 0xFFFFFE, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
-		await ctx.reply(embed = embed)
+		await ctx.send(embed = embed)
 	else:
-		await ctx.reply(f"{bot.errorEmoji} School is currently not in session")
+		await ctx.send(f"{bot.errorEmoji} School is currently not in session")
 	print(f"{bot.commandLabel} MLeft")
 
 
@@ -608,7 +608,7 @@ async def on_message(message):
 	
 	if message.author.id == 320369001005842435:
 		if "ask" in message.content.lower():
-			await message.channel.send(random.choice(["I will not be silenced.", "I'm sorry but I didn't order a glass of your ass statement.", "Cool story man, in what chapter do you shut the fuck up?", "As if you're significant enough to command my response", "No, but you don't have to be a little bitch about it."]))
+			await message.channel.send(random.choice(["I will not be silenced.", "I'm sorry but I didn't order a glass of your ass statement.", "Cool story man, in what chapter do you shut the fuck up?", "As if you're significant enough to command my response.", "No, but you don't have to be a little bitch about it."]))
 			
 	
 	await bot.process_commands(message)
@@ -630,15 +630,15 @@ async def on_command_error(ctx, error):
 	if not isinstance(error, CommandNotFound):
 		if isinstance(error, CommandOnCooldown):
 			await ctx.trigger_typing()
-			await ctx.reply(f"{bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 1)}` seconds")
+			await ctx.send(f"{bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 1)}` seconds")
 		else:
 			await ctx.trigger_typing()
-			await ctx.reply(f"```{error}```")
+			await ctx.send(f"```{error}```")
 			if ctx.command:
 				ctx.command.reset_cooldown(ctx)
 	else:
 		if not any(x in str(error) for x in ["\"ban\"", "\"kick\"", "\"rank\"", "\"slowmode\"", "\"warn\""]):
-			await ctx.reply(f"```{error}```")
+			await ctx.send(f"```{error}```")
 
 # @bot.command()
 # @commands.cooldown(1, 5, BucketType.user) 
@@ -649,7 +649,7 @@ async def on_command_error(ctx, error):
 # 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 # 	for i in range(0, 10):
 # 		embed.add_field(name = f"{i+1}) {data[0][i]}", value = f"Level {data[1][i]}", inline = False)
-# 	await ctx.reply(embed = embed)
+# 	await ctx.send(embed = embed)
 
 # @bot.command()
 # @commands.cooldown(1, 5, BucketType.user)
@@ -663,7 +663,7 @@ async def on_command_error(ctx, error):
 @commands.cooldown(1, 10, BucketType.user)
 async def fast(ctx):
 	await ctx.trigger_typing()
-	message = await ctx.reply(f"{bot.loadingEmoji} Loading...")
+	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
 	choice = random.choice(["math", "word", "find"])
 
 	# math
@@ -675,13 +675,9 @@ async def fast(ctx):
 			numbers = [random.randint(0, 20), random.randint(0, 20)]
 			answer = numbers[0] * numbers[1]
 		elif operation == "÷":
-			numbers = [random.randint(0, 20), random.randint(1, 20)]
-			while numbers[0] + numbers[1] == 0:
-				numbers = [random.randint(0, 20), random.randint(1, 20)]
-			while numbers[0] % numbers[1] != 0:
-				# <->
-				numbers = [random.randint(0, 20), random.randint(1, 20)]
-			answer = numbers[0] / numbers[1]
+			denominator = random.randint(1, 20)
+			answer = random.randint(1, 20)
+			numbers = [denominator * answer, denominator]
 		
 		elif operation == "+":
 			numbers = [random.randint(50, 100), random.randint(50, 100)]
@@ -704,7 +700,7 @@ async def fast(ctx):
 			await message.edit(content = f"{bot.errorEmoji} Event has expired", embed = None)
 		else:
 			await message.add_reaction(bot.checkmarkEmoji)
-			await ctx.reply(f"{message.author.mention} wins!")
+			await ctx.send(f"{message.author.mention} wins!")
 	
 	# word
 	elif choice == "word":
@@ -722,14 +718,14 @@ async def fast(ctx):
 			await message.edit(content = f"{bot.errorEmoji} Event has expired", embed = None)
 		else:
 			await message.add_reaction(bot.checkmarkEmoji)
-			await ctx.reply(f"{message.author.mention} wins!")
+			await ctx.send(f"{message.author.mention} wins!")
 	
 	# find
 	else:
-		table = [[":red_square:", ":red_square:", ":red_square:"], [":red_square:", ":red_square:", ":red_square:"], [":red_square:", ":red_square:", ":red_square:"]]
-		row = random.randint(0, 2)
-		column = random.randint(0, 2)
-		table[row][column] = ":green_square:"
+		wrong, right = random.choice(bot.emojis), random.choice(bot.emojis)
+		table = [[wrong, wrong, wrong], [wrong, wrong, wrong], [wrong, wrong, wrong]]
+		row, column = random.randint(0, 2), random.randint(0, 2)
+		table[row][column] = right
 		rowPH = ["A", "B", "C"]
 		printedTable = "⠀⠀`1`⠀`2`⠀`3`\n"
 		for i in range(0, 3):
@@ -738,7 +734,7 @@ async def fast(ctx):
 				printedTable += f"||{table[i][j]}|| "
 			printedTable += "\n"
 		answer = (rowPH[row] + str(column + 1)).lower()
-		embed = discord.Embed(title = ":zap: Bubble Wrap", description = f"First to type the location to the :green_square: wins!\n(ex: `B2` or `2B`)\n\n{printedTable}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		embed = discord.Embed(title = ":zap: Bubble Wrap", description = f"First to type the location to {right} wins!\n(ex: `B2` or `2B`)\n\n{printedTable}", color = 0xFFFFFE, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		await message.edit(content = None, embed = embed)
 		def check(message):
@@ -749,7 +745,7 @@ async def fast(ctx):
 			await message.edit(content = f"{bot.errorEmoji} Event has expired", embed = None)
 		else:
 			await message.add_reaction(bot.checkmarkEmoji)
-			await ctx.reply(f"{message.author.mention} wins!")
+			await ctx.send(f"{message.author.mention} wins!")
 
 
 @bot.command(aliases = ["cs"])
@@ -762,13 +758,13 @@ async def categories(ctx):
 	embed = discord.Embed(title = f"{random.choice(thinkList)} Trivia Categories", description = f"These are all the category codes\nAn empty argument will generate a random category/difficulty\n`!trivia [category] [difficulty]`\n\n{output}", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await ctx.author.send(embed = embed)
-	await ctx.reply(f"{bot.checkmarkEmoji} Sent in direct messages")
+	await ctx.send(f"{bot.checkmarkEmoji} Sent in direct messages")
 
 # @bot.command()
 # @commands.cooldown(1, 10, BucketType.user)
 # async def rr(ctx):
 # 	if ctx.author.id == 410590963379994639:
-# 		message = await ctx.reply("react to this message with anything to play russian roulette\none person is randomly muted\nneeds 4 ppl to activate")
+# 		message = await ctx.send("react to this message with anything to play russian roulette\none person is randomly muted\nneeds 4 ppl to activate")
 # 		await message.add_reaction(bot.checkmarkEmoji)
 # 		def check(reaction, user):
 # 			return len(message.reactions) == 4
@@ -784,13 +780,26 @@ async def categories(ctx):
 # 			mute(ctx, random.choice(random.choice(allMembers)), 1)
 
 # 	else:
-# 		await ctx.reply("in testing")
+# 		await ctx.send("in testing")
+
+@bot.command(aliases = ["roast", "insultme", "insult"])
+@commands.cooldown(1, 10, BucketType.user)
+async def roastme(ctx):
+	await ctx.trigger_typing()
+	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
+	apiURL = "https://evilinsult.com/generate_insult.php?lang=en&type=json"
+	reply = requests.get(apiURL)
+	roastDatabase = reply.json()
+	embed = discord.Embed(title = ":pensive: An insult", description = roastDatabase["insult"], color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+	await message.edit(content = None, embed = embed)
+
 
 @bot.command(aliases = ["q", "question", "quiz", "t"])
 @commands.cooldown(1, 20, BucketType.user)
 async def trivia(ctx, category: int = None, difficulty: str = None):
 	await ctx.trigger_typing()
-	message = await ctx.reply(f"{bot.loadingEmoji} Loading...")
+	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
 	if category:
 		if category in range(1, 25):
 			category = bot.categoryDB["trivia_categories"][category - 1]["id"]
@@ -882,17 +891,17 @@ async def test(ctx, username, password):
 		url = f"https://dvhs.schoolloop.com/mapi/login?version=3&devToken={uuid4()}&devOS=iPhone9,4&year={datetime.now().year}"
 		result = requests.get(url, auth = HTTPBasicAuth(username, password))
 		if result.status_code != 200:
-			await ctx.reply(result.text)
+			await ctx.send(result.text)
 			return
 		studentID = result.json().get("userID")
 		url = f"https://dvhs.schoolloop.com/mapi/report_card?studentID={studentID}"
 		result = requests.get(url, auth = HTTPBasicAuth(username, password))
 		if result.status_code != 200:
-			await ctx.reply(result.text)
+			await ctx.send(result.text)
 			return
 		print(f"```json\n{result.json()}```")
 	else:
-		await ctx.reply("no")
+		await ctx.send("no")
 
 @bot.command(aliases = ["k"])
 @commands.cooldown(1, 5, BucketType.user) 
@@ -903,16 +912,16 @@ async def krunker(ctx, link):
 		embed.set_footer(text = f"Posted by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = "https://cdn.discordapp.com/emojis/699029209988726885.png?v=1")
 		await bot.joinGameChannel.send(embed = embed)
-		await ctx.reply(f"{bot.checkmarkEmoji} Posted in {bot.joinGameChannel.mention}")
+		await ctx.send(f"{bot.checkmarkEmoji} Posted in {bot.joinGameChannel.mention}")
 	else:
-		await ctx.reply(f"{bot.errorEmoji} Invalid link")
+		await ctx.send(f"{bot.errorEmoji} Invalid link")
 		print(f"{bot.commandLabel} Krunker")
 
 # @bot.command()
 # @commands.cooldown(1, 15, BucketType.user) 
 # async def test(ctx):
 # 	file  = discord.File(fp = "keepAlive.py", filename = "keepAlive.py")
-# 	await ctx.reply(file = file)
+# 	await ctx.send(file = file)
 
 @bot.command(aliases = ["au"])
 @commands.cooldown(1, 5, BucketType.user) 
@@ -923,9 +932,9 @@ async def amongus(ctx, code):
 		embed.set_footer(text = f"Posted by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = "https://cdn.discordapp.com/emojis/781258129329094666.png?v=1")
 		await bot.joinGameChannel.send(embed = embed)
-		await ctx.reply(f"{bot.checkmarkEmoji} Posted in {bot.joinGameChannel.mention}")
+		await ctx.send(f"{bot.checkmarkEmoji} Posted in {bot.joinGameChannel.mention}")
 	else:
-		await ctx.reply(f"{bot.errorEmoji} Invalid code")
+		await ctx.send(f"{bot.errorEmoji} Invalid code")
 		print(f"{bot.commandLabel} Among Us")
 
 @bot.command(aliases = ["c"])
@@ -937,9 +946,9 @@ async def chess(ctx, link):
 		embed.set_footer(text = f"Posted by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = "https://cdn.discordapp.com/emojis/781259278417395732.png?v=1")
 		await bot.joinGameChannel.send(embed = embed)
-		await ctx.reply(f"{bot.checkmarkEmoji} Posted in {bot.joinGameChannel.mention}")
+		await ctx.send(f"{bot.checkmarkEmoji} Posted in {bot.joinGameChannel.mention}")
 	else:
-		await ctx.reply(f"{bot.errorEmoji} Invalid link")
+		await ctx.send(f"{bot.errorEmoji} Invalid link")
 		print(f"{bot.commandLabel} Among Us")
 
 # pfp command
@@ -951,7 +960,7 @@ async def pfp(ctx, member: discord.Member = None):
 	embed = discord.Embed(title = ":frame_photo: Profile Picture", description = member.mention, color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_image(url = member.avatar_url)
-	await ctx.reply(embed = embed)
+	await ctx.send(embed = embed)
 
 @bot.command()
 @commands.cooldown(1, 15, BucketType.user) 
@@ -963,14 +972,14 @@ async def emojis(ctx):
 		firstHalf += str(output)
 	embed = discord.Embed(title = ":small_red_triangle: Emojis (Page 1/2)", description = firstHalf, color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-	await ctx.reply(embed = embed)
+	await ctx.send(embed = embed)
 	await ctx.trigger_typing()
 	secondHalf = ""
 	for output in bot.server.emojis[num:]:
 		firstHalf += str(output)
 	embed = discord.Embed(title = ":small_red_triangle: Emojis (Page 2/2)", description = secondHalf, color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-	await ctx.reply(embed = embed)
+	await ctx.send(embed = embed)
 
 @bot.command(aliases = ["s"])
 @commands.cooldown(1, 5, BucketType.user) 
@@ -979,7 +988,7 @@ async def schedule(ctx):
 	embed = discord.Embed(title = ":bell: DVHS Bell Schedule", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_image(url = "https://i.imgur.com/ES49tLo.jpg")
-	await ctx.reply(embed = embed)
+	await ctx.send(embed = embed)
 
 @bot.command(aliases = ["nickname"])
 @commands.cooldown(1, 5, BucketType.user) 
@@ -987,9 +996,9 @@ async def nick(ctx, *, nickname):
 	await ctx.trigger_typing()
 	if len(nickname) >= 1 and len(nickname) <= 32:
 		await ctx.author.edit(nick = nickname)
-		await ctx.reply(f"{bot.checkmarkEmoji} Your nickname was set to `{nickname}`!")
+		await ctx.send(f"{bot.checkmarkEmoji} Your nickname was set to `{nickname}`!")
 	else:
-		await ctx.reply(f"{bot.errorEmoji} Nicknames can only be upto `32` characters long!")
+		await ctx.send(f"{bot.errorEmoji} Nicknames can only be upto `32` characters long!")
 
 
 # @bot.command()
@@ -997,13 +1006,13 @@ async def nick(ctx, *, nickname):
 # async def resetnicks(ctx):
 # 	await ctx.trigger_typing()
 # 	if bot.adminRole in ctx.author.roles:
-# 		msg = await ctx.reply(f"{bot.loadingEmoji} Hold up...")
+# 		msg = await ctx.send(f"{bot.loadingEmoji} Hold up...")
 # 		for member in bot.server.members:
 # 			if member.bot is False and member.id != 410590963379994639:
 # 				await member.edit(nick = member.name)
 # 		await msg.edit(f"{bot.checkmarkEmoji} Done!")
 # 	else:
-# 		await ctx.reply(f"{bot.errorEmoji} You do not have access to use this command!")
+# 		await ctx.send(f"{bot.errorEmoji} You do not have access to use this command!")
 
 
 @bot.command()
@@ -1013,13 +1022,13 @@ async def setstatus(ctx, *, argument):
 	if ctx.author.id == 410590963379994639:
 		if argument.lower() == "normal":
 			await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{userCount(1)} Members • !help"))
-			await ctx.reply(f"{bot.checkmarkEmoji} Set!")
+			await ctx.send(f"{bot.checkmarkEmoji} Set!")
 		else:
 			await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = argument))
-			await ctx.reply(f"{bot.checkmarkEmoji} Set!")
+			await ctx.send(f"{bot.checkmarkEmoji} Set!")
 		print(f"{bot.commandLabel} SetStatus")
 	else:
-		await ctx.reply(f"{bot.errorEmoji} You do not have access to use this command!")
+		await ctx.send(f"{bot.errorEmoji} You do not have access to use this command!")
 
 
 @bot.command()
@@ -1027,19 +1036,19 @@ async def setstatus(ctx, *, argument):
 async def kill(ctx):
 	await ctx.trigger_typing()
 	if ctx.author.id == 410590963379994639:
-		await ctx.reply(f"{bot.checkmarkEmoji} Ending process! (start manually in repl)")
+		await ctx.send(f"{bot.checkmarkEmoji} Ending process! (start manually in repl)")
 		await bot.close()
 	else:
-		await ctx.reply(f"{bot.errorEmoji} You do not have access to use this command!")
+		await ctx.send(f"{bot.errorEmoji} You do not have access to use this command!")
 
 @bot.command()
 @commands.cooldown(1, 5, BucketType.user) 
 async def randomperson(ctx):
 	await ctx.trigger_typing()
 	if ctx.author.id == 410590963379994639:
-		await ctx.reply(random.choice(bot.server.members).mention + " is the random person!")
+		await ctx.send(random.choice(bot.server.members).mention + " is the random person!")
 	else:
-		await ctx.reply(f"{bot.errorEmoji} You do not have access to use this command!")
+		await ctx.send(f"{bot.errorEmoji} You do not have access to use this command!")
 
 # @bot.command()
 # @commands.cooldown(1, 5, BucketType.user) 
@@ -1050,7 +1059,7 @@ async def randomperson(ctx):
 # 			if member.bot == False:
 # 				await member.send("<a:spinningToilet:775547013047648297> Happy New Years!")
 # 	else:
-# 		await ctx.reply(f"{bot.errorEmoji} You do not have access to use this command!")
+# 		await ctx.send(f"{bot.errorEmoji} You do not have access to use this command!")
 
 # @bot.command()
 # @commands.cooldown(1, 5, BucketType.user) 
@@ -1063,17 +1072,17 @@ async def randomperson(ctx):
 # 			if argument.lower() == "mute":
 # 				for member in members:
 # 						await member.edit(mute = True)
-# 				await ctx.reply(f"{bot.checkmarkEmoji} Server Muted everyone in **{(channel.mention - "#")}**")
+# 				await ctx.send(f"{bot.checkmarkEmoji} Server Muted everyone in **{(channel.mention - "#")}**")
 # 			if argument.lower() == "unmute":
 # 				for member in members:
 # 						await member.edit(mute = False)
-# 						await ctx.reply(f"{bot.checkmarkEmoji} Server Unmuted everyone in **{(channel.mention - "#")}**")
+# 						await ctx.send(f"{bot.checkmarkEmoji} Server Unmuted everyone in **{(channel.mention - "#")}**")
 # 			else:
-# 				await ctx.reply(f"{bot.errorEmoji} Invalid Argument!")
+# 				await ctx.send(f"{bot.errorEmoji} Invalid Argument!")
 # 		else:
-# 			await ctx.reply(f"{bot.errorEmoji} You have to be in a voice channel to use this command!")
+# 			await ctx.send(f"{bot.errorEmoji} You have to be in a voice channel to use this command!")
 # 	else:
-# 		await ctx.reply(f"{bot.errorEmoji} You do not have access to use this command!")
+# 		await ctx.send(f"{bot.errorEmoji} You do not have access to use this command!")
 
 # dm command
 @bot.command()
@@ -1082,10 +1091,10 @@ async def dm(ctx, member: discord.Member, *, message):
 	await ctx.trigger_typing()
 	if bot.vipRole in ctx.author.roles:
 		await member.send(message + f"\n- from {ctx.author.mention}")
-		await ctx.reply(f"{bot.checkmarkEmoji} Sent!")
+		await ctx.send(f"{bot.checkmarkEmoji} Sent!")
 		print(f"{bot.commandLabel} DM")
 	else:
-		await ctx.reply(f"{bot.errorEmoji} You do not have access to use this command!")
+		await ctx.send(f"{bot.errorEmoji} You do not have access to use this command!")
 
 @bot.command(aliases = ["servericon"])
 @commands.cooldown(1, 5, BucketType.user) 
@@ -1093,7 +1102,7 @@ async def icon(ctx):
 	embed = discord.Embed(title = ":frame_photo: Server Icon", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_image(url = bot.server.icon_url)
-	await ctx.reply(embed = embed)
+	await ctx.send(embed = embed)
 
 @bot.command(aliases = ["hijab"])
 @commands.cooldown(1, 5, BucketType.user) 
@@ -1104,31 +1113,31 @@ async def allah(ctx, member: discord.Member):
 		if len(allah.members) < 5:
 			if allah not in member.roles:
 				await member.add_roles(allah)
-				await ctx.reply(f"{member.mention} is now allah :pray:")
+				await ctx.send(f"{member.mention} is now allah :pray:")
 			else:
-				await ctx.reply("you retard they already allah :pray:")
+				await ctx.send("you retard they already allah :pray:")
 		else:
-			await ctx.reply("there can only be 5 allahs at once :pray:")
+			await ctx.send("there can only be 5 allahs at once :pray:")
 	else:
-		await ctx.reply("shut up retard this is only for virajallah :pray:")
+		await ctx.send("shut up retard this is only for virajallah :pray:")
 
 # @bot.command()
 # @commands.cooldown(1, 5, BucketType.user) 
 # async def nomedia(ctx, member: discord.Member):
 # 	if ctx.author.id == 410590963379994639:
 # 		await ctx.channel.set_permissions(member, attach_files = False, embed_links = False, external_emojis = False)
-# 		await ctx.reply(f"{bot.checkmarkEmoji} Media perms gone, reduced to atoms")
+# 		await ctx.send(f"{bot.checkmarkEmoji} Media perms gone, reduced to atoms")
 # 	else:
-# 		await ctx.reply(f"{bot.errorEmoji} Missing permissions")
+# 		await ctx.send(f"{bot.errorEmoji} Missing permissions")
 
 # @bot.command()
 # @commands.cooldown(1, 5, BucketType.user) 
 # async def media(ctx, member: discord.Member):
 # 	if ctx.author.id == 410590963379994639:
 # 		await ctx.channel.set_permissions(member, permissions = 0)
-# 		await ctx.reply(f"{bot.checkmarkEmoji} Media perms given bcak")
+# 		await ctx.send(f"{bot.checkmarkEmoji} Media perms given bcak")
 # 	else:
-# 		await ctx.reply(f"{bot.errorEmoji} Missing permissions")
+# 		await ctx.send(f"{bot.errorEmoji} Missing permissions")
 
 @bot.command(aliases = ["unhijab"])
 @commands.cooldown(1, 5, BucketType.user) 
@@ -1137,9 +1146,9 @@ async def unallah(ctx, member: discord.Member):
 	allah = bot.server.get_role(736358205994696846)
 	if (ctx.author.id == 320369001005842435 and allah in ctx.author.roles) or ctx.author.id == 410590963379994639:
 		await member.remove_roles(allah)
-		await ctx.reply(f"{member.mention} is not allah anymore :angry:")
+		await ctx.send(f"{member.mention} is not allah anymore :angry:")
 	else:
-		await ctx.reply("shut up retard this is only for virajallah :pray:")
+		await ctx.send("shut up retard this is only for virajallah :pray:")
 
 @bot.command(aliases = ["hijabs"])
 @commands.cooldown(1, 5, BucketType.user) 
@@ -1153,7 +1162,7 @@ async def allahs(ctx):
 			output += " :crown:"
 	embed = discord.Embed(title = ":pray: Allahs", description = output, color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-	await ctx.reply(embed = embed)
+	await ctx.send(embed = embed)
 		
 
 # profile command
@@ -1238,7 +1247,7 @@ async def profile(ctx, member: discord.Member = None):
 		embed.add_field(name = "Game Roles", value = "Under Dev", inline = True)
 		embed.add_field(name = "Account Creation", value = f"{member.created_at.strftime('`%a`, `%B` `%#d`, `%Y`')}", inline = True)
 		embed.add_field(name = "Server Joined", value = f"{member.joined_at.strftime('`%a`, `%B` `%#d`, `%Y`')}", inline = True)
-		await ctx.reply(embed = embed)
+		await ctx.send(embed = embed)
 
 		print(f"{bot.commandLabel} Member Profile")
 
@@ -1252,7 +1261,7 @@ async def profile(ctx, member: discord.Member = None):
 		embed.add_field(name = "Join Position", value = f"#`{joinPosition}` (out of `{len(bot.users)}`)", inline = True)
 		embed.add_field(name = "Account Creation", value = f"{member.created_at.strftime('`%a`, `%B` `%#d`, `%Y`')}", inline = True)
 		embed.add_field(name = "Server Joined", value = f"{member.joined_at.strftime('`%a`, `%B` `%#d`, `%Y`')}", inline = True)
-		await ctx.reply(embed = embed)
+		await ctx.send(embed = embed)
 		print(f"{bot.commandLabel} Bot Profile")
 
 @bot.command(aliases = ["silenced", "banished"])
@@ -1268,7 +1277,7 @@ async def muted(ctx):
 	
 	embed = discord.Embed(title = ":mute: Muted", description = f"{output}", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-	await ctx.reply(embed = embed)
+	await ctx.send(embed = embed)
 	print(f"{bot.commandLabel} Muted")
 
 # predict command
@@ -1310,7 +1319,7 @@ async def predict(ctx, *, question: str):
 	embed.add_field(name = "Response", value = random.choice(responses), inline = False)
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_thumbnail(url = "https://i.imgur.com/LkSBSuR.gif")
-	await ctx.reply(embed = embed)
+	await ctx.send(embed = embed)
 	print(f"{bot.commandLabel} 8Ball")
 
 
@@ -1329,13 +1338,13 @@ async def flip(ctx):
 		embed = discord.Embed(title = "<:discord_coin:728695789316210860> Flip a Coin", description = f"It's `{response}`", color = 0xFFFFFE, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = "https://i.imgur.com/92xg7uR.png")
-		await ctx.reply(embed = embed)
+		await ctx.send(embed = embed)
 	
 	else:
 		embed = discord.Embed(title = "<:discord_coin:728695789316210860> Flip a Coin", description = f"It's `{response}`", color = 0xFFFFFE, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = "https://i.imgur.com/TjqDdBI.png")
-		await ctx.reply(embed = embed)
+		await ctx.send(embed = embed)
 	
 	print(f"{bot.commandLabel} Flip")
 
@@ -1365,7 +1374,7 @@ async def mute(ctx, user: str, mtime = None):
 						embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{stime}` {sunit}", color = 0x00FF00, timestamp = datetime.utcnow())
 						embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
 						embed.set_thumbnail(url = member.avatar_url)
-						await ctx.reply(embed = embed)
+						await ctx.send(embed = embed)
 
 						print(f"{bot.commandLabel} Mute ({stime} {sunit.capitalize()})")
 					
@@ -1380,7 +1389,7 @@ async def mute(ctx, user: str, mtime = None):
 						embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
 						embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
 						embed.set_thumbnail(url = member.avatar_url)
-						await ctx.reply(embed = embed)
+						await ctx.send(embed = embed)
 
 						print(f"{bot.commandLabel} Mute ({htime} {hunit.capitalize()})")
 					
@@ -1393,7 +1402,7 @@ async def mute(ctx, user: str, mtime = None):
 						embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{mtime}` {munit}", color = 0x00FF00, timestamp = datetime.utcnow())
 						embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
 						embed.set_thumbnail(url = member.avatar_url)
-						await ctx.reply(embed = embed)
+						await ctx.send(embed = embed)
 
 						print(f"{bot.commandLabel} Mute ({mtime} {munit.capitalize()})")
 				
@@ -1401,7 +1410,7 @@ async def mute(ctx, user: str, mtime = None):
 					embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `infinity` (`∞`)", color = 0x00FF00, timestamp = datetime.utcnow())
 					embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
 					embed.set_thumbnail(url = member.avatar_url)
-					await ctx.reply(embed = embed)
+					await ctx.send(embed = embed)
 
 					print(f"{bot.commandLabel} Mute (Infinity ∞)")
 				
@@ -1421,7 +1430,7 @@ async def mute(ctx, user: str, mtime = None):
 						embed = discord.Embed(title = ":loud_sound: Unmuted", description = f"{member.mention}'s mute expired", color = 0x00FF00, timestamp = datetime.utcnow())
 						embed.set_footer(text = f"Originally muted by {ctx.author}", icon_url = ctx.author.avatar_url)
 						embed.set_thumbnail(url = member.avatar_url)
-						await ctx.reply(embed = embed)
+						await ctx.send(embed = embed)
 						muteDatabase.remove(query.id == (str(member.id) + " " + str(member.guild.id)))
 		
 		else:
@@ -1429,18 +1438,18 @@ async def mute(ctx, user: str, mtime = None):
 				embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Mute", description = f"Exempt Roles: \n• {bot.adminRole.mention} \n• {bot.moderatorRole.mention} \n• {bot.botRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow()) 
 				embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 				embed.set_thumbnail(url = member.avatar_url)
-				await ctx.reply(embed = embed)
+				await ctx.send(embed = embed)
 		
 			else:
 				embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Mute", description = f"{member.mention} is already muted", color = 0xFF0000, timestamp = datetime.utcnow())
 				embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 				embed.set_thumbnail(url = member.avatar_url)
-				await ctx.reply(embed = embed)
+				await ctx.send(embed = embed)
 	else:
 		embed = discord.Embed(title = f"{bot.errorEmoji} Missing Permissions", description = f"Required Roles: \n• {bot.adminRole.mention} \n• {bot.moderatorRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())	 
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
-		await ctx.reply(embed = embed)
+		await ctx.send(embed = embed)
 
 # players = {}
 # @bot.command()
@@ -1453,7 +1462,7 @@ async def mute(ctx, user: str, mtime = None):
 #	 	players[server.id] = player
 #	 	player.start()
 #	 else:
-#	 	await ctx.reply("nah")
+#	 	await ctx.send("nah")
 
 # unmute command
 @bot.command()
@@ -1461,9 +1470,9 @@ async def mute(ctx, user: str, mtime = None):
 async def disable(ctx, command):
 	if ctx.author.id == 410590963379994639:
 		bot.remove_command(command)
-		await ctx.reply(f"{bot.checkmarkEmoji} Disabled the `{command}` command")
+		await ctx.send(f"{bot.checkmarkEmoji} Disabled the `{command}` command")
 	else:
-		await ctx.reply(f"{bot.errorEmoji} Missing permissions")
+		await ctx.send(f"{bot.errorEmoji} Missing permissions")
 
 # # unmute command
 # @bot.command()
@@ -1471,9 +1480,9 @@ async def disable(ctx, command):
 # async def enable(ctx, command):
 # 	if ctx.author.id == 410590963379994639:
 # 		bot.add_command(command)
-# 		await ctx.reply(f"{bot.checkmarkEmoji} Enabled the `{command}` command")
+# 		await ctx.send(f"{bot.checkmarkEmoji} Enabled the `{command}` command")
 # 	else:
-# 		await ctx.reply(f"{bot.errorEmoji} Missing permissions")
+# 		await ctx.send(f"{bot.errorEmoji} Missing permissions")
 
 
 # unmute command
@@ -1490,13 +1499,13 @@ async def unmute(ctx, user: str):
 			embed = discord.Embed(title = f":loud_sound: Unmuted", description = f"{member.mention} was unmuted", color = 0x00FF00, timestamp = datetime.utcnow())
 			embed.set_footer(text = f"Unmuted by {ctx.author}", icon_url = ctx.author.avatar_url)
 			embed.set_thumbnail(url = member.avatar_url)
-			await ctx.reply(embed = embed)
+			await ctx.send(embed = embed)
 		
 		else:
 			embed = discord.Embed(title = f"{bot.errorEmoji} Unable to Unmute", description = f"{member.mention} isn't even muted", color = 0xFF0000, timestamp = datetime.utcnow())
 			embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 			embed.set_thumbnail(url = member.avatar_url)
-			await ctx.reply(embed = embed)
+			await ctx.send(embed = embed)
 		
 		if not bot.memberRole in member.roles:
 			await member.add_roles(bot.memberRole)
@@ -1508,7 +1517,7 @@ async def unmute(ctx, user: str):
 		embed = discord.Embed(title = f"{bot.errorEmoji} Missing Permissions", description = f"Required Roles: \n• {bot.adminRole.mention} \n• {bot.moderatorRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())	 
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
-		await ctx.reply(embed = embed)
+		await ctx.send(embed = embed)
 
 # pp command
 @bot.command(aliases = ["dong"])
@@ -1541,7 +1550,7 @@ async def pp(ctx):
 	embed = discord.Embed(title = ":eggplant: PP Rater", description = f"8{output}D \n**Length:** `{round(length, 2)}` inches \n**Rating:** `{rating}`", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_thumbnail(url = ctx.author.avatar_url)
-	await ctx.reply(embed = embed)
+	await ctx.send(embed = embed)
 
 	print(f"{bot.commandLabel} PP")
 
@@ -1568,7 +1577,7 @@ async def ip(ctx):
 
 	embed.add_field(name = f"{bot.plusEmoji} How to Join", value = "• join the IP\n• DM the code you get to <@693313699779313734>\n• once you're in, do `/register <password>`", inline = False)
 
-	await ctx.reply(embed = embed)
+	await ctx.send(embed = embed)
 	print(f"{bot.commandLabel} IP")
 
 # promote command
@@ -1583,7 +1592,7 @@ async def promote(ctx, member: discord.Member):
 		embed = discord.Embed(title = f"<:upvote:732640878145044623> Promoted", description = f"{member.mention} is now a {bot.moderatorRole.mention}", color = 0x00FF00, timestamp = datetime.utcnow())			 
 		embed.set_footer(text = f"Promoted by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
-		await ctx.reply(embed = embed)
+		await ctx.send(embed = embed)
 		await bot.staffOnlyChannel.send(f"<:upvote:732640878145044623> {member.mention} was promoted")
 		# embed = discord.Embed(title = "Staff Guidelines", description = f"Below are some guidelines/rules for a {bot.moderatorRole.mention}! \nPlease **do not** abuse your powers, or you will be demoted", color = 0xFFFFFE, timestamp = datetime.utcnow())
 		# embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
@@ -1597,10 +1606,10 @@ async def promote(ctx, member: discord.Member):
 		# print(f"{bot.commandLabel} Promote")
 
 	elif (bot.adminRole in ctx.message.author.roles) and (bot.moderatorRole in member.roles):
-		await ctx.reply(f"{bot.errorEmoji} They already are a moderator")
+		await ctx.send(f"{bot.errorEmoji} They already are a moderator")
 
 	else:
-		await ctx.reply(f"{bot.errorEmoji} Missing permissions")
+		await ctx.send(f"{bot.errorEmoji} Missing permissions")
 
 # demote command
 @bot.command(aliases = ["unmod"])
@@ -1614,27 +1623,27 @@ async def demote(ctx, member: discord.Member):
 		embed = discord.Embed(title = f"<:downvote:732640878249902161> Demoted", description = f"{member.mention} is now a {bot.memberRole.mention}", color = 0x00FF00, timestamp = datetime.utcnow())			 
 		embed.set_footer(text = f"Demoted by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
-		await ctx.reply(embed = embed)
+		await ctx.send(embed = embed)
 
 		await bot.staffOnlyChannel.send(f"<:downvote:732640878249902161> {member.mention} was demoted")
 		print(f"{bot.commandLabel} Demote")
 
 	elif (bot.adminRole in ctx.message.author.roles) and (bot.memberRole in member.roles):
-		await ctx.reply(f"{bot.errorEmoji} They already are a member")
+		await ctx.send(f"{bot.errorEmoji} They already are a member")
 
 	else:
-		await ctx.reply(f"{bot.errorEmoji} Missing permissions")
+		await ctx.send(f"{bot.errorEmoji} Missing permissions")
 
 # invite command
 @bot.command(aliases = ["inv"])
 @commands.cooldown(1, 5, BucketType.user) 
 async def invite(ctx):
 	await ctx.trigger_typing()
-	await ctx.reply("discord.gg/fG8vTrj")
+	await ctx.send("discord.gg/fG8vTrj")
 	# embed = discord.Embed(title = ":inbox_tray: Server Invite Link", description = bot.serverInviteURL, color = 0xFFFFFE, timestamp = datetime.utcnow())
 	# embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	# embed.set_thumbnail(url = bot.server.icon_url)
-	# await ctx.reply(embed = embed)
+	# await ctx.send(embed = embed)
 	# print(f"{bot.commandLabel} Invite")
 
 # ping command
@@ -1669,7 +1678,7 @@ async def ping(ctx):
 	e.add_field(name = ":signal_strength: Latency", value = f"`{round(bot.latency * 1000)}`ms", inline = True)
 	e.add_field(name = ":robot: Hardware", value = f"`{psutil.cpu_count()}` Cores \n`{round(psutil.cpu_percent())}`% CPU Usage \n`{round(psutil.virtual_memory().percent)}`% RAM Usage", inline = True)
 	e.add_field(name = ":chart_with_upwards_trend: Uptime", value = f"`{days}` {dunit} \n`{hours}` {hunit} \n`{minutes}` {munit} \n`{seconds}` {sunit}", inline = True)
-	await ctx.reply(embed = e)
+	await ctx.send(embed = e)
 	print(f"{bot.commandLabel} Ping")
 
 # # help command
@@ -1696,7 +1705,7 @@ async def ping(ctx):
 # 	embed.add_field(name = ":ping_pong: Bot Latency", value = "`!ping` \n`!latency`", inline = True)
 # 	embed.add_field(name = ":desktop: Help Page", value = "`!help` \n`!info`", inline = True)
 # 	embed.add_field(name = ":robot: Bot Info", value = "**Developer:** <@410590963379994639> \n**Language:** [`Python`](https://discordpy.readthedocs.io/en/latest/) \n**Hosting:** [`Dell Inspiron 15 Laptop`](https://g.co/kgs/CKznxn) \n**Github Repo:** [`Link`](https://github.com/hdadhich01/The-Butler-Discord-Bot)", inline = False)
-# 	await ctx.reply(embed = embed)
+# 	await ctx.send(embed = embed)
 # 	print(f"{bot.commandLabel} Help")
 
 # import token and run bot
