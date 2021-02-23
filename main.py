@@ -159,7 +159,7 @@ async def updateStatus():
 async def on_ready():
 	await assignments()
 	await bot.generalChannel.send("oa")
-	# bellSchedule.start()
+	bellSchedule.start()
 	bot.startTime = datetime.now()
 	await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{userCount(1)} Members • !help"))
 	# await bot.change_presence(activity = discord.Streaming(name = "Onlyfanz", url = "https://bit.ly/3lH4oSp"))
@@ -324,7 +324,7 @@ async def weather(ctx, *, city = None):
 		embed.add_field(name = "Wind", value = f"`{round((weatherDatabase['wind']['speed'] * 2.24), 1)}`mph `{portolan.abbr(degree = weatherDatabase['wind']['deg'])}`", inline = True)
 		embed.add_field(name = "Sunrise", value = f"{sunrise.strftime('`%I`:`%M` `%p`')} PST", inline = True)
 		embed.add_field(name = "Sunset", value = f"{sunset.strftime('`%I`:`%M` `%p`')} PST", inline = True)
-		await message.edit(content = "", embed = embed)
+		await message.edit(content = None, embed = embed)
 		print(f"{bot.commandLabel} Weather")
 
 @bot.command()
@@ -337,11 +337,11 @@ async def joke(ctx):
 	jokeDatabase = reply.json()
 	embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDatabase['setup']}**", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-	await message.edit(content = "", embed = embed)
+	await message.edit(content = None, embed = embed)
 	embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDatabase['setup']}**\n{jokeDatabase['punchline']}", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await asyncio.sleep(2)
-	await message.edit(content = "", embed = embed)
+	await message.edit(content = None, embed = embed)
 	print(f"{bot.commandLabel} Joke")
 
 @bot.command()
@@ -354,7 +354,7 @@ async def fact(ctx):
 	factDatabase = reply.json()
 	embed = discord.Embed(title = ":book: A useless fact", description = f"{factDatabase['text']}", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-	await message.edit(content = "", embed = embed)
+	await message.edit(content = None, embed = embed)
 	print(f"{bot.commandLabel} Fact")
 
 
@@ -371,7 +371,7 @@ async def fact(ctx):
 # 	embed = discord.Embed(title = ":link: Shortened Link", description = shortenedURL[0], color = 0xFFFFFE, timestamp = datetime.utcnow())
 # 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = bot.user.avatar_url)
 # 	embed.set_thumbnail(url = "https://i.imgur.com/YmjXC7s.png")
-# 	await message.edit(content = "", embed = embed)
+# 	await message.edit(content = None, embed = embed)
 
 @bot.command(aliases = ["minsleft", "bruh"])
 @commands.cooldown(1, 5, BucketType.user) 
@@ -607,7 +607,7 @@ async def on_message(message):
 	
 	if message.author.id == 320369001005842435:
 		if "ask" in message.content.lower():
-			await message.channel.send("if you say did i ask again it means you hate vrushank")
+			await message.channel.send("i did")
 			
 	
 	await bot.process_commands(message)
@@ -665,16 +665,39 @@ async def typefast(ctx):
 	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
 
 	# math
-	if random.choice([0, 1]) == 0:
-		numbers = [random.randint(50, 100), random.randint(50, 100)]
-		operation = random.choice(["+", "-"])
-		embed = discord.Embed(title = ":zap: Typing Showdown", description = f"First to type the answer to `{numbers[0]}{operation}{numbers[1]}` wins!", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	if random.choice([0, 1]):
+		operation = random.choice(["*", "/", "+", "-"])
+		numbers = []
+		answer = 0
+		if operation == "*":
+			numbers = [random.randint(0, 20), random.randint(0, 20)]
+			answer = numbers[0] * numbers[1]
+		elif operation == "/":
+			numbers = [random.randint(0, 20), random.randint(1, 20)]
+			while numbers[0] + numbers[1] == 0:
+				numbers = [random.randint(0, 20), random.randint(1, 20)]
+			while numbers[0] % numbers[1] != 0:
+				# <->
+				numbers = [random.randint(0, 20), random.randint(1, 20)]
+			answer = numbers[0] / numbers[1]
+		
+		elif operation == "+":
+			numbers = [random.randint(50, 100), random.randint(50, 100)]
+			answer = numbers[0] + numbers[1]
+		else:
+			numbers = [random.randint(50, 100), random.randint(50, 100)]
+			if numbers[0] < numbers[1]:
+				numbers[0], numbers[1] = numbers[1], numbers[0]
+			answer = numbers[0] - numbers[1]
+		
+		embed = discord.Embed(title = ":zap: Typing Showdown", description = f"First to solve the following wins!\n```py\n{numbers[0]} {operation} {numbers[1]}```", color = 0xFFFFFE, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-		await message.edit(content = "", embed = embed)
+		await message.edit(content = None, embed = embed)
+
+		print(answer)
+		
 		def check(message):
-			if operation == "+":
-				return message.content == str(numbers[0] + numbers[1]) and message.channel == ctx.channel
-			return message.content == str(numbers[0] - numbers[1]) and message.channel == ctx.channel
+			return message.content == str(int(answer)) and message.channel == ctx.channel
 		try:
 			message = await bot.wait_for("message", timeout = 15, check = check)
 		except asyncio.TimeoutError:
@@ -682,7 +705,6 @@ async def typefast(ctx):
 		else:
 			await message.add_reaction(bot.checkmarkEmoji)
 			await ctx.send(f"{message.author.mention} wins!")
-	
 	# word
 	else:
 		apiURL = "https://random-word-api.herokuapp.com/word?number=1"
@@ -690,7 +712,7 @@ async def typefast(ctx):
 		wordDB = reply.json()
 		embed = discord.Embed(title = ":zap: Typing Showdown", description = f"First to type `{wordDB[0]}` backwards wins!", color = 0xFFFFFE, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-		await message.edit(content = "", embed = embed)
+		await message.edit(content = None, embed = embed)
 		def check(message):
 			return message.content == (wordDB[0])[::-1] and message.channel == ctx.channel
 		try:
@@ -781,9 +803,9 @@ async def trivia(ctx, category: int = None, difficulty: str = None):
 
 	thinkList = ["<:thinkVivan:801531613082025995>", ":thinking:", "<:swaggerThink:809281292557746176>", "<:redThink:700463049013723136>", "<:breadThink:700463049852715048>"]
 
-	embed = discord.Embed(title = f"{random.choice(thinkList)} Trivia", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\n<a:timer15:811474945954938890> react with your answer within 15 seconds", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = f"{random.choice(thinkList)} Trivia", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nreact with your answer within <a:timer15:811474945954938890> seconds", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-	await message.edit(content = "", embed = embed)
+	await message.edit(content = None, embed = embed)
 	for i in reactionsList:
 		await message.add_reaction(i)
 
@@ -812,7 +834,7 @@ async def trivia(ctx, category: int = None, difficulty: str = None):
 			reactionsList[correctIndex] = bot.checkmarkEmoji
 			embed = discord.Embed(title = f"{bot.checkmarkEmoji} Correct!", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}", color = 0x3FB97C, timestamp = datetime.utcnow())
 			embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-			await message.edit(content = "", embed = embed)
+			await message.edit(content = None, embed = embed)
 		
 		# wrong answer
 		else:
@@ -820,7 +842,7 @@ async def trivia(ctx, category: int = None, difficulty: str = None):
 			reactionsList[correctIndex] = bot.checkmarkEmoji
 			embed = discord.Embed(title = f"{bot.errorEmoji} Incorrect!", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}", color = 0xFF383E, timestamp = datetime.utcnow())
 			embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-			await message.edit(content = "", embed = embed)
+			await message.edit(content = None, embed = embed)
 		print(f"{bot.commandLabel} Trivia")
 
 
