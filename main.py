@@ -551,20 +551,20 @@ async def on_voice_state_update(member, before, after):
 	if after.self_stream:
 		await bot.logChannel.send(f":red_circle: `{member}` went live in `{after.channel.name}` VC")
 
-@bot.event
-async def on_command_error(ctx, error):
-	if not isinstance(error, CommandNotFound):
-		if isinstance(error, CommandOnCooldown):
-			await ctx.trigger_typing()
-			await ctx.send(f"{bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 1)}` seconds")
-		else:
-			await ctx.trigger_typing()
-			await ctx.send(f"```{error}```")
-			if ctx.command:
-				ctx.command.reset_cooldown(ctx)
-	else:
-		if not any(x in str(error) for x in ["\"ban\"", "\"kick\"", "\"levels\"", "\"rank\"", "\"slowmode\"", "\"warn\"", "\"unban\""]):
-			await ctx.send(f"```{error}```")
+# @bot.event
+# async def on_command_error(ctx, error):
+# 	if not isinstance(error, CommandNotFound):
+# 		if isinstance(error, CommandOnCooldown):
+# 			await ctx.trigger_typing()
+# 			await ctx.send(f"{bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 1)}` seconds")
+# 		else:
+# 			await ctx.trigger_typing()
+# 			await ctx.send(f"```{error}```")
+# 			if ctx.command:
+# 				ctx.command.reset_cooldown(ctx)
+# 	else:
+# 		if not any(x in str(error) for x in ["\"ban\"", "\"kick\"", "\"levels\"", "\"rank\"", "\"slowmode\"", "\"warn\"", "\"unban\""]):
+# 			await ctx.send(f"```{error}```")
 
 # @bot.command()
 # @commands.cooldown(1, 5, BucketType.user) 
@@ -738,9 +738,9 @@ async def annoy(ctx):
 	else:
 		await ctx.send(f"{bot.errorEmoji} yasolike no")
 
-@bot.command(aliases = ["tlb", "ttop", "t^"])
+@bot.command(aliases = ["lb", "top", "^"])
 @commands.cooldown(1, 10, BucketType.user)
-async def trivialeaderboard(ctx):
+async def leaderboard(ctx):
 	with open("points.json", "r") as file:
 		data = json.load(file)
 		data = dict(sorted(data.items(), key = lambda item: item[1]))
@@ -748,10 +748,12 @@ async def trivialeaderboard(ctx):
 		data = dict(reversed(list(data.items())))
 		outputArr = []
 		for i in data:
+			if ctx.author.id == int(i):
+				outputArr.append(f"__<@{i}>__ • **Points**: `{data[i]}`")
 			outputArr.append(f"<@{i}> • **Points**: `{data[i]}`")
 		emoji = [":first_place:", ":second_place:", ":third_place:"]
 		output = ""
-		if len(outputArr) <= 10:
+		if len(outputArr) <= 15:
 			for i in outputArr:
 				if outputArr.index(i) <= 2:
 					output += f"\n{emoji[outputArr.index(i)]}"
@@ -766,7 +768,7 @@ async def trivialeaderboard(ctx):
 					output += f"\n**{ordinal(i)}**"
 				output += outputArr[outputArr.index(i)]
 	
-	embed = discord.Embed(title = ":medal: Leaderboard", description = output, color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":trophy: Leaderboard", description = output, color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await ctx.send(embed = embed)
 
@@ -846,7 +848,7 @@ async def trivia(ctx, category: int = None, difficulty: str = None):
 				json.dump(data, file, indent = 2)
 			
 			reactionsList[correctIndex] = bot.checkmarkEmoji
-			embed = discord.Embed(title = f"{bot.checkmarkEmoji} Correct!", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\n+`{diffPoints[difficulty]}` points (view leaderboard with `!tlb|ttop`", color = 0x3FB97C, timestamp = datetime.utcnow())
+			embed = discord.Embed(title = f"{bot.checkmarkEmoji} Correct! (+{diffPoints[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview leaderboard with `!lb|top|^`", color = 0x3FB97C, timestamp = datetime.utcnow())
 			embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 			await message.edit(content = None, embed = embed)
 		
