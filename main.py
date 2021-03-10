@@ -551,20 +551,20 @@ async def on_voice_state_update(member, before, after):
 	if after.self_stream:
 		await bot.logChannel.send(f":red_circle: `{member}` went live in `{after.channel.name}` VC")
 
-# @bot.event
-# async def on_command_error(ctx, error):
-# 	if not isinstance(error, CommandNotFound):
-# 		if isinstance(error, CommandOnCooldown):
-# 			await ctx.trigger_typing()
-# 			await ctx.send(f"{bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 1)}` seconds")
-# 		else:
-# 			await ctx.trigger_typing()
-# 			await ctx.send(f"```{error}```")
-# 			if ctx.command:
-# 				ctx.command.reset_cooldown(ctx)
-# 	else:
-# 		if not any(x in str(error) for x in ["\"ban\"", "\"kick\"", "\"levels\"", "\"rank\"", "\"slowmode\"", "\"warn\"", "\"unban\""]):
-# 			await ctx.send(f"```{error}```")
+@bot.event
+async def on_command_error(ctx, error):
+	if not isinstance(error, CommandNotFound):
+		if isinstance(error, CommandOnCooldown):
+			await ctx.trigger_typing()
+			await ctx.send(f"{bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 1)}` seconds")
+		else:
+			await ctx.trigger_typing()
+			await ctx.send(f"```{error}```")
+			if ctx.command:
+				ctx.command.reset_cooldown(ctx)
+	else:
+		if not any(x in str(error) for x in ["\"ban\"", "\"kick\"", "\"levels\"", "\"rank\"", "\"slowmode\"", "\"warn\"", "\"unban\""]):
+			await ctx.send(f"```{error}```")
 
 # @bot.command()
 # @commands.cooldown(1, 5, BucketType.user) 
