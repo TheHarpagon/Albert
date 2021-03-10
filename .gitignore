@@ -1,6 +1,6 @@
 .env
 muteDatabase.json
-triviaPointsDatabase.json
+points.json
 variables.py
 __pycache__/
 *.py[cod]
