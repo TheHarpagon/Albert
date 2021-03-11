@@ -1,1 +1,1 @@
-pogga
+<p>A simple application for my <a href="https://discord.link/harsh" rel="noopener noreferrer" target="_blank">Discord Server</a> used for trivia, schedule reminders, etc.</p>

@@ -752,7 +752,7 @@ async def leaderboard(ctx):
 			if data[i] == 1:
 				noun = "point"
 			if ctx.author.id == int(i):
-				outputArr.append(f"<@{i}> (`{data[i]}` {noun}) :arrow_left:")
+				outputArr.append(f"<@{i}> (`{data[i]}` {noun}) <a:arrowLeft:819464288007749642>")
 			else:
 				outputArr.append(f"<@{i}> (`{data[i]}` {noun})")
 		emoji = [":first_place:", ":second_place:", ":third_place:"]
@@ -781,6 +781,10 @@ async def leaderboard(ctx):
 @commands.cooldown(1, 20, BucketType.user)
 async def trivia(ctx, difficulty: str = None):
 	await ctx.trigger_typing()
+	if ctx.channel.id != 636071901906731010:
+		await ctx.send(f"{bot.errorEmoji} Man go to <#636071901906731010>")
+		return
+
 	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
 	if difficulty:
 		if difficulty.startswith("e"):
@@ -800,7 +804,6 @@ async def trivia(ctx, difficulty: str = None):
 	reply = requests.get(apiURL)
 	triviaDatabase = reply.json()
 	category = html2text.html2text(triviaDatabase["results"][0]["category"]).replace("\n", "")
-	difficulty = (triviaDatabase["results"][0]["difficulty"]).capitalize()
 	question = html2text.html2text(triviaDatabase["results"][0]["question"]).replace("\n", "")		
 	choices = [html2text.html2text(triviaDatabase["results"][0]["correct_answer"]).replace("\n", ""), 
 	html2text.html2text(triviaDatabase["results"][0]["incorrect_answers"][0]).replace("\n", ""), 
@@ -811,7 +814,7 @@ async def trivia(ctx, difficulty: str = None):
 	correctIndex = choices.index(html2text.html2text(triviaDatabase["results"][0]["correct_answer"]).replace("\n", ""))
 	reactionsList = ["🇦", "🇧", "🇨", "🇩"]
 
-	embed = discord.Embed(title = "<a:rotatingThink:819446234401472542> Trivia", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nreact with your answer within <a:timer15:811474945954938890> seconds", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = "<a:lightbulb:819465502320623657> Trivia", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nreact with your answer within `10` seconds", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await message.edit(content = None, embed = embed)
 	
@@ -822,7 +825,7 @@ async def trivia(ctx, difficulty: str = None):
 		return user == ctx.author and str(reaction.emoji) in reactionsList
 	
 	try:
-		reaction, user = await bot.wait_for("reaction_add", timeout = 15, check = check)
+		reaction, user = await bot.wait_for("reaction_add", timeout = 10, check = check)
 	
 	except asyncio.TimeoutError:
 		await message.clear_reactions()
@@ -833,7 +836,7 @@ async def trivia(ctx, difficulty: str = None):
 		# correct answer
 		if reactionsList.index(str(reaction.emoji)) == correctIndex:
 			# points system
-			diffPoints = {"Easy": 1, "Medium": 2, "Hard": 3}
+			diffPoints = {"easy": 1, "medium": 2, "hard": 3}
 			with open("points.json", "r") as file:
 				data = json.load(file)
 				if str(ctx.author.id) not in data:
@@ -845,14 +848,14 @@ async def trivia(ctx, difficulty: str = None):
 			
 			# embed
 			reactionsList[correctIndex] = bot.checkmarkEmoji
-			embed = discord.Embed(title = f"{bot.checkmarkEmoji} Correct! (+{diffPoints[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview leaderboard with `!top`", color = 0x3FB97C, timestamp = datetime.utcnow())
+			embed = discord.Embed(title = f"{bot.checkmarkEmoji} Correct! (+{diffPoints[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview leaderboard with `!top`", color = 0x3FB97C, timestamp = datetime.utcnow())
 			embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 			await message.edit(content = None, embed = embed)
 		
 		# wrong answer
 		else:
 			# points system
-			diffPoints = {"Easy": 1, "Medium": 2, "Hard": 3}
+			diffPoints = {"easy": 1, "medium": 2, "hard": 3}
 			with open("points.json", "r") as file:
 				data = json.load(file)
 				if str(ctx.author.id) in data:
@@ -866,7 +869,7 @@ async def trivia(ctx, difficulty: str = None):
 			# embed
 			reactionsList[reactionsList.index(str(reaction.emoji))] = bot.errorEmoji
 			reactionsList[correctIndex] = bot.checkmarkEmoji
-			embed = discord.Embed(title = f"{bot.errorEmoji} Incorrect! (-{diffPoints[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview leaderboard with `!top`", color = 0xFF383E, timestamp = datetime.utcnow())
+			embed = discord.Embed(title = f"{bot.errorEmoji} Incorrect! (-{diffPoints[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview leaderboard with `!top`", color = 0xFF383E, timestamp = datetime.utcnow())
 			embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 			await message.edit(content = None, embed = embed)
 		print(f"{bot.commandLabel} Trivia")
