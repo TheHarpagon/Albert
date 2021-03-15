@@ -5,7 +5,7 @@ import asyncio
 from datetime import datetime, timedelta
 import discord
 from discord.ext import commands
-from discord.ext.commands import BucketType, CommandOnCooldown, CommandNotFound
+from discord.ext.commands import BucketType, CheckFailure, CommandOnCooldown, CommandNotFound
 from discord.ext import tasks
 from discord import Webhook, RequestsWebhookAdapter
 import html2text
@@ -15,6 +15,7 @@ from ordinal import ordinal
 import os
 import portolan
 import psutil
+import pytz
 import random
 import requests
 from requests.auth import HTTPBasicAuth
@@ -122,10 +123,25 @@ async def assignments():
 	bot.gameRRDict = {variables.amongUsEmojiID: bot.amongUsRole, variables.chessEmojiID: bot.chessRole, variables.krunkerEmojiID: bot.krunkerRole, variables.minecraftEmojiID: bot.minecraftRole, variables.skribblEmojiID: bot.skribblRole, variables.valorantEmojiID: bot.valorantRole}
 	bot.categoryDB = requests.get("https://opentdb.com/api_category.php").json()
 
-	bot.monTimes = {"08:10": "A", "08:40 AM": "Passing", "08:45 AM": "1", "09:15 AM": ":Passing","09:20 AM": "2", "09:50 AM": "Passing", "09:55 AM": "3", "10:25 AM": "Passing", "10:30 AM": "4", "11:00 AM": "Lunch", "11:30 AM": "Passing", "11:35 AM": "5", "12:05 PM": "Passing", "12:10 PM": "6"}
+	bot.monTimes = {"08:10 AM": "A", "08:40 AM": "Passing", "08:45 AM": "1", "09:15 AM": ":Passing","09:20 AM": "2", "09:50 AM": "Passing", "09:55 AM": "3", "10:25 AM": "Passing", "10:30 AM": "4", "11:00 AM": "Lunch", "11:30 AM": "Passing", "11:35 AM": "5", "12:05 PM": "Passing", "12:10 PM": "6"}
 	bot.tuesThursTimes = {"09:35 AM": "1", "10:50 AM": "Passing", "11:05 AM": "3", "12:20 PM": "Lunch", "12:55 PM": "Passing", "01:05 PM": "5", "02:20 PM": "Passing", "02:30 PM": "Student Support"}
 	bot.wedFriTimes = {"08:10 AM": "A", "09:25 AM": "Passing", "09:35 AM": "2", "10:50 AM": "Passing", "11:05 AM": "4", "12:20 PM": "Lunch", "12:55 PM": "Passing", "01:05 PM": "6", "02:20 PM": "Passing", "02:30 PM": "Student Support"}
 	bot.daySchedule = {1: bot.monTimes, 2: bot.tuesThursTimes, 3: bot.wedFriTimes, 4: bot.tuesThursTimes, 5: bot.wedFriTimes}
+
+	bot.monTimesMinutes = {}
+	bot.tuesThursTimesMinutes = {}
+	bot.wedFriTimesMinutes = {}
+
+  # stringTime = time.strftime("%I:%M %p")
+	for i in bot.monTimes:
+		bot.monTimesMinutes[datetime.strptime(i, "%I:%M %p")] = bot.monTimes[i]
+	for i in bot.tuesThursTimes:
+		bot.tuesThursTimesMinutes[datetime.strptime(i, "%I:%M %p")] = bot.tuesThursTimes[i]
+	for i in bot.wedFriTimes:
+		bot.wedFriTimesMinutes[datetime.strptime(i, "%I:%M %p")] = bot.wedFriTimes[i]
+	bot.dayScheduleMinutes = {1: bot.monTimesMinutes, 2: bot.tuesThursTimesMinutes, 3: bot.wedFriTimesMinutes, 4: bot.tuesThursTimesMinutes, 5: bot.wedFriTimesMinutes}
+	
+
 
 # def leaderboardTask():
 # 	url = 'https://mee6.xyz/leaderboard/612059384721440789'
@@ -146,6 +162,14 @@ async def assignments():
 # 	return [usernamesList, levelsList]
 
 # counts humans or bots in the server
+
+def botOwner(ctx):
+	return ctx.author.id == 410590963379994639
+
+def staff(ctx):
+	staff = [bot.adminRole, bot.moderatorRole]
+	return any(role in ctx.author.roles for role in staff)
+
 def userCount(userType: int):
 	if userType == 1:
 		humanCount = 0
@@ -168,7 +192,7 @@ async def updateStatus():
 async def on_ready():
 	print(discord.__version__)
 	await assignments()
-	await bot.generalChannel.send("oa")
+	await bot.server.get_member(410590963379994639).send("Online")
 	bellSchedule.start()
 	bot.startTime = datetime.now()
 	await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{userCount(1)} Members • !help"))
@@ -385,7 +409,8 @@ async def fact(ctx):
 
 @tasks.loop(minutes = 1)
 async def bellSchedule():
-	time = datetime.utcnow() - timedelta(hours = 8)
+	timezone = pytz.timezone("America/Los_Angeles")
+	time = datetime.now(timezone)
 	stringTime = time.strftime("%I:%M %p")
 	# adjust day if schedule is off
 	day = time.isoweekday()
@@ -403,7 +428,7 @@ async def bellSchedule():
 			else:
 				output = "Period "
 				ping = True
-			embed = discord.Embed(title = ":hourglass: Reminder", description = output + f"`{bot.daySchedule[day][stringTime]}` starts in `5` minutes!", color = 0xFFFFFE, timestamp = datetime.utcnow())
+			embed = discord.Embed(title = "<a:rotatingHourglass:817538734597341235> Reminder", description = output + f"`{bot.daySchedule[day][stringTime]}` starts in 5 minutes!", color = 0xFFFFFE, timestamp = datetime.utcnow())
 			embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 			embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
 			if ping:
@@ -411,19 +436,44 @@ async def bellSchedule():
 				return
 			await bot.generalChannel.send(embed = embed)
 
-# @bot.command(aliases = ["minsleft", "bruh"])
-# @commands.cooldown(1, 5, BucketType.user) 
-# async def left(ctx):
-# 	await ctx.trigger_typing()
-# 	time = datetime.utcnow() - timedelta(hours = 8)
-
-# 	embed = discord.Embed(title = ":bell: Time Left", description = f"{currPeriod} has `{minutesLeft}` minutes left!", color = 0xFFFFFE, timestamp = datetime.utcnow())
-# 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-# 	embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
-# 	await ctx.send(embed = embed)
-# 	# else:
-# 	# 	await ctx.send(f"{bot.errorEmoji} School is currently not in session")
-# 	print(f"{bot.commandLabel} MLeft")
+@bot.command(aliases = ["minsleft", "bruh"])
+@commands.check(botOwner)
+@commands.cooldown(1, 5, BucketType.user) 
+async def left(ctx):
+	# time.strftime("%I:%M %p")
+	def timeInMinutes(datetimeObject):
+		return (int(datetimeObject.strftime("%H")) * 60) + (int(datetimeObject.strftime("%M")))
+	timezone = pytz.timezone("America/Los_Angeles")
+	current = datetime.now(timezone)
+	currentMinutes = timeInMinutes(current)
+	# adjust day if schedule is off
+	day = current.isoweekday()
+	inSession = False
+	minutesLeft = 0
+	currentPeriod = ""
+	if day in bot.daySchedule:
+		if day == 1 and 495 <= currentMinutes <= 765:
+			inSession = True
+			for i in bot.monTimesMinutes:
+				if i > currentMinutes:
+					minutesLeft = timeInMinutes(i) - currentMinutes
+					currentPeriod = bot.monTimesMinutes[i]
+					break
+		elif day != 1 and 495 <= currentMinutes <= 915:
+			inSession = True
+			for i in bot.dayScheduleMinutes[day]:
+				if i > currentMinutes:
+					minutesLeft = timeInMinutes(i) - currentMinutes
+					currentPeriod = bot.dayScheduleMinutes[day][i]
+					break
+	if inSession:
+		embed = discord.Embed(title = "<a:rotatingHourglass:817538734597341235> Time Left", description = f"{currentPeriod} has `{minutesLeft}` minutes left!", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+		embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
+		await ctx.send(embed = embed)
+	else:
+		await ctx.send(f"{bot.errorEmoji} School is currently not in session")
+		print(f"{bot.commandLabel} MLeft")
 
 # reaction roles (add)
 @bot.event
@@ -553,7 +603,10 @@ async def on_voice_state_update(member, before, after):
 
 @bot.event
 async def on_command_error(ctx, error):
-	if not isinstance(error, CommandNotFound):
+	if isinstance(error, CheckFailure):
+		await ctx.trigger_typing()
+		await ctx.send(f"{bot.errorEmoji} Missing permissions")
+	elif not isinstance(error, CommandNotFound):
 		if isinstance(error, CommandOnCooldown):
 			await ctx.trigger_typing()
 			await ctx.send(f"{bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 1)}` seconds")
@@ -674,17 +727,17 @@ async def fast(ctx):
 			await ctx.send(f"{message.author.mention} wins!")
 
 
-@bot.command(aliases = ["cs"])
-@commands.cooldown(1, 5, BucketType.user)
-async def categories(ctx):
-	output = ""
-	for i in range (0, 24):
-		output += f"`{bot.categoryDB['trivia_categories'][i]['id'] - 8}` {bot.categoryDB['trivia_categories'][i]['name']}\n"
-	thinkList = ["<:thinkVivan:801531613082025995>", ":thinking:", "<:swaggerThink:809281292557746176>", "<:redThink:700463049013723136>", "<:breadThink:700463049852715048>"]
-	embed = discord.Embed(title = f"{random.choice(thinkList)} Trivia Categories", description = f"These are all the category codes\nAn empty argument will generate a random category/difficulty\n`!trivia [category] [difficulty]`\n\n{output}", color = 0xFFFFFE, timestamp = datetime.utcnow())
-	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-	await ctx.author.send(embed = embed)
-	await ctx.send(f"{bot.checkmarkEmoji} Sent in direct messages")
+# @bot.command(aliases = ["cs"])
+# @commands.cooldown(1, 5, BucketType.user)
+# async def categories(ctx):
+# 	output = ""
+# 	for i in range (0, 24):
+# 		output += f"`{bot.categoryDB['trivia_categories'][i]['id'] - 8}` {bot.categoryDB['trivia_categories'][i]['name']}\n"
+# 	thinkList = ["<:thinkVivan:801531613082025995>", ":thinking:", "<:swaggerThink:809281292557746176>", "<:redThink:700463049013723136>", "<:breadThink:700463049852715048>"]
+# 	embed = discord.Embed(title = f"{random.choice(thinkList)} Trivia Categories", description = f"These are all the category codes\nAn empty argument will generate a random category/difficulty\n`!trivia [category] [difficulty]`\n\n{output}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+# 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+# 	await ctx.author.send(embed = embed)
+# 	await ctx.send(f"{bot.checkmarkEmoji} Sent in direct messages")
 
 # @bot.command()
 # @commands.cooldown(1, 10, BucketType.user)
@@ -729,14 +782,11 @@ async def roastme(ctx):
 	await message.edit(content = None, embed = embed)
 
 @bot.command(aliases = [])
+@commands.check(botOwner)
 @commands.cooldown(1, 5, BucketType.user)
-async def annoy(ctx):
-	if ctx.author.id == 410590963379994639:
-		webhook = Webhook.partial(819093847844978688, "hidden cuz yeah", adapter = RequestsWebhookAdapter())
-		for i in range(5):
-			webhook.send("<@320369001005842435>\n<@335083840001540119>")
-	else:
-		await ctx.send(f"{bot.errorEmoji} yasolike no")
+async def say(ctx, message):
+	webhook = Webhook.partial(819665087929384990, "9xk511gc17f5c0-Ux9rhaY9P2C8VoQCGcJ4XYGGrKGQ-qzhE_s5vWxCEOkp8mRM28AKI", adapter = RequestsWebhookAdapter())
+	webhook.send(message)
 
 @bot.command(aliases = ["lb", "top", "^"])
 @commands.cooldown(1, 10, BucketType.user)
@@ -752,7 +802,7 @@ async def leaderboard(ctx):
 			if data[i] == 1:
 				noun = "point"
 			if ctx.author.id == int(i):
-				outputArr.append(f"<@{i}> (`{data[i]}` {noun}) <a:arrowLeft:819464288007749642>")
+				outputArr.append(f"<@{i}> (`{data[i]}` {noun}) :arrow_left::arrow_left::arrow_left:")
 			else:
 				outputArr.append(f"<@{i}> (`{data[i]}` {noun})")
 		emoji = [":first_place:", ":second_place:", ":third_place:"]
@@ -783,6 +833,7 @@ async def trivia(ctx, difficulty: str = None):
 	await ctx.trigger_typing()
 	if ctx.channel.id != 636071901906731010:
 		await ctx.send(f"{bot.errorEmoji} Man go to <#636071901906731010>")
+		trivia.reset_cooldown(ctx)
 		return
 
 	message = await ctx.send(f"{bot.loadingEmoji} Loading...")
@@ -827,9 +878,25 @@ async def trivia(ctx, difficulty: str = None):
 	try:
 		reaction, user = await bot.wait_for("reaction_add", timeout = 10, check = check)
 	
+	# question expired (10 seconds)
 	except asyncio.TimeoutError:
 		await message.clear_reactions()
-		await message.edit(content = f"{bot.errorEmoji} You did not answer in time", embed = None)
+		# points system
+		diffPoints = {"easy": 1, "medium": 2, "hard": 3}
+		with open("points.json", "r") as file:
+			data = json.load(file)
+			if str(ctx.author.id) in data:
+				if data[str(ctx.author.id)] > diffPoints[difficulty]:
+					data[str(ctx.author.id)] -= diffPoints[difficulty]
+				else:
+					data[str(ctx.author.id)] = 0
+		with open("points.json", "w") as file:
+			json.dump(data, file, indent = 2)
+		
+		reactionsList[correctIndex] = bot.checkmarkEmoji
+		embed = discord.Embed(title = f":alarm_clock: Expired! (-{diffPoints[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview leaderboard with `!top`", color = 0xFF383E, timestamp = datetime.utcnow())
+		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+		await message.edit(content = None, embed = embed)
 	
 	else:
 		await message.clear_reactions()
@@ -859,17 +926,21 @@ async def trivia(ctx, difficulty: str = None):
 			with open("points.json", "r") as file:
 				data = json.load(file)
 				if str(ctx.author.id) in data:
-					if data[str(ctx.author.id)] > diffPoints[difficulty]:
-						data[str(ctx.author.id)] -= diffPoints[difficulty]
+					if data[str(ctx.author.id)] > 0:
+						data[str(ctx.author.id)] -= 1
 					else:
 						data[str(ctx.author.id)] = 0
+					# if data[str(ctx.author.id)] > diffPoints[difficulty]:
+					# 	data[str(ctx.author.id)] -= diffPoints[difficulty]
+					# else:
+					# 	data[str(ctx.author.id)] = 0
 			with open("points.json", "w") as file:
 				json.dump(data, file, indent = 2)
 			
 			# embed
 			reactionsList[reactionsList.index(str(reaction.emoji))] = bot.errorEmoji
 			reactionsList[correctIndex] = bot.checkmarkEmoji
-			embed = discord.Embed(title = f"{bot.errorEmoji} Incorrect! (-{diffPoints[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview leaderboard with `!top`", color = 0xFF383E, timestamp = datetime.utcnow())
+			embed = discord.Embed(title = f"{bot.errorEmoji} Incorrect! (-1 point)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview leaderboard with `!top`", color = 0xFF383E, timestamp = datetime.utcnow())
 			embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 			await message.edit(content = None, embed = embed)
 		print(f"{bot.commandLabel} Trivia")
