@@ -124,7 +124,7 @@ async def assignments():
 	# bot.categoryDB = requests.get("https://opentdb.com/api_category.php").json()
 
 	bot.monTimes = {"08:10 AM": "A", "08:40 AM": "Passing", "08:45 AM": "1", "09:15 AM": ":Passing","09:20 AM": "2", "09:50 AM": "Passing", "09:55 AM": "3", "10:25 AM": "Passing", "10:30 AM": "4", "11:00 AM": "Lunch", "11:30 AM": "Passing", "11:35 AM": "5", "12:05 PM": "Passing", "12:10 PM": "6"}
-	bot.tuesThursTimes = {"09:35 AM": "1", "10:50 AM": "Passing", "11:05 AM": "3", "12:20 PM": "Lunch", "12:55 PM": "Passing", "01:05 PM": "5", "02:20 PM": "Passing", "02:30 PM": "Student Support"}
+	bot.tuesThursTimes = {"08:10 AM": "1", "09:25 AM": "Passing", "09:35 AM": "1", "10:50 AM": "Passing", "11:05 AM": "3", "12:20 PM": "Lunch", "12:55 PM": "Passing", "01:05 PM": "5", "02:20 PM": "Passing", "02:30 PM": "Student Support"}
 	bot.wedFriTimes = {"08:10 AM": "A", "09:25 AM": "Passing", "09:35 AM": "2", "10:50 AM": "Passing", "11:05 AM": "4", "12:20 PM": "Lunch", "12:55 PM": "Passing", "01:05 PM": "6", "02:20 PM": "Passing", "02:30 PM": "Student Support"}
 	bot.daySchedule = {1: bot.monTimes, 2: bot.tuesThursTimes, 3: bot.wedFriTimes, 4: bot.tuesThursTimes, 5: bot.wedFriTimes}
 
@@ -132,13 +132,16 @@ async def assignments():
 	bot.tuesThursTimesMinutes = {}
 	bot.wedFriTimesMinutes = {}
 
+	def timeInMinutes(datetimeObject):
+		return (int(datetimeObject.strftime("%H")) * 60) + (int(datetimeObject.strftime("%M"))) + 5
+
   # stringTime = time.strftime("%I:%M %p")
 	for i in bot.monTimes:
-		bot.monTimesMinutes[datetime.strptime(i, "%I:%M %p")] = bot.monTimes[i]
+		bot.monTimesMinutes[timeInMinutes(datetime.strptime(i, "%I:%M %p"))] = bot.monTimes[i]
 	for i in bot.tuesThursTimes:
-		bot.tuesThursTimesMinutes[datetime.strptime(i, "%I:%M %p")] = bot.tuesThursTimes[i]
+		bot.tuesThursTimesMinutes[timeInMinutes(datetime.strptime(i, "%I:%M %p"))] = bot.tuesThursTimes[i]
 	for i in bot.wedFriTimes:
-		bot.wedFriTimesMinutes[datetime.strptime(i, "%I:%M %p")] = bot.wedFriTimes[i]
+		bot.wedFriTimesMinutes[timeInMinutes(datetime.strptime(i, "%I:%M %p"))] = bot.wedFriTimes[i]
 	bot.dayScheduleMinutes = {1: bot.monTimesMinutes, 2: bot.tuesThursTimesMinutes, 3: bot.wedFriTimesMinutes, 4: bot.tuesThursTimesMinutes, 5: bot.wedFriTimesMinutes}
 	
 
@@ -441,11 +444,9 @@ async def bellSchedule():
 @commands.cooldown(1, 5, BucketType.user) 
 async def left(ctx):
 	# time.strftime("%I:%M %p")
-	def timeInMinutes(datetimeObject):
-		return (int(datetimeObject.strftime("%H")) * 60) + (int(datetimeObject.strftime("%M")))
 	timezone = pytz.timezone("America/Los_Angeles")
 	current = datetime.now(timezone)
-	currentMinutes = timeInMinutes(current)
+	currentMinutes = (int(current.strftime("%H")) * 60) + (int(current.strftime("%M")))
 	# adjust day if schedule is off
 	day = current.isoweekday()
 	inSession = False
@@ -456,18 +457,27 @@ async def left(ctx):
 			inSession = True
 			for i in bot.monTimesMinutes:
 				if i > currentMinutes:
-					minutesLeft = timeInMinutes(i) - currentMinutes
-					currentPeriod = bot.monTimesMinutes[i]
+					minutesLeft = i - currentMinutes
+					currentPeriod = list(bot.monTimesMinutes.values())[list(bot.monTimesMinutes.keys()).index(i) - 1]
 					break
 		elif day != 1 and 495 <= currentMinutes <= 915:
 			inSession = True
 			for i in bot.dayScheduleMinutes[day]:
 				if i > currentMinutes:
-					minutesLeft = timeInMinutes(i) - currentMinutes
-					currentPeriod = bot.dayScheduleMinutes[day][i]
+					minutesLeft = i - currentMinutes
+					currentPeriod = list(bot.dayScheduleMinutes[day].values())[list(bot.dayScheduleMinutes[day].keys()).index(i) - 1]
 					break
 	if inSession:
-		embed = discord.Embed(title = "<a:rotatingHourglass:817538734597341235> Time Left", description = f"{currentPeriod} has `{minutesLeft}` minutes left!", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		emoji = ""
+		if "Passing" in currentPeriod:
+			emoji = ":dividers:"
+		elif "Lunch" in currentPeriod:
+			emoji = ":dividers:"
+		elif "Student Support" in currentPeriod:
+			emoji = ":jigsaw:"
+		else:
+			emoji = ":books: Period"
+		embed = discord.Embed(title = "<a:rotatingHourglass:817538734597341235> Time Left", description = f"{emoji} `{currentPeriod}` has `{minutesLeft}` minutes left!", color = 0xFFFFFE, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
 		await ctx.send(embed = embed)
@@ -601,23 +611,23 @@ async def on_voice_state_update(member, before, after):
 	if after.self_stream:
 		await bot.logChannel.send(f":red_circle: `{member}` went live in `{after.channel.name}` VC")
 
-@bot.event
-async def on_command_error(ctx, error):
-	if isinstance(error, CheckFailure):
-		await ctx.trigger_typing()
-		await ctx.send(f"{bot.errorEmoji} Missing permissions")
-	elif not isinstance(error, CommandNotFound):
-		if isinstance(error, CommandOnCooldown):
-			await ctx.trigger_typing()
-			await ctx.send(f"{bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 1)}` seconds")
-		else:
-			await ctx.trigger_typing()
-			await ctx.send(f"```{error}```")
-			if ctx.command:
-				ctx.command.reset_cooldown(ctx)
-	else:
-		if not any(x in str(error) for x in ["\"ban\"", "\"kick\"", "\"levels\"", "\"rank\"", "\"slowmode\"", "\"warn\"", "\"unban\""]):
-			await ctx.send(f"```{error}```")
+# @bot.event
+# async def on_command_error(ctx, error):
+# 	if isinstance(error, CheckFailure):
+# 		await ctx.trigger_typing()
+# 		await ctx.send(f"{bot.errorEmoji} Missing permissions")
+# 	elif not isinstance(error, CommandNotFound):
+# 		if isinstance(error, CommandOnCooldown):
+# 			await ctx.trigger_typing()
+# 			await ctx.send(f"{bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 1)}` seconds")
+# 		else:
+# 			await ctx.trigger_typing()
+# 			await ctx.send(f"```{error}```")
+# 			if ctx.command:
+# 				ctx.command.reset_cooldown(ctx)
+# 	else:
+# 		if not any(x in str(error) for x in ["\"ban\"", "\"kick\"", "\"levels\"", "\"rank\"", "\"slowmode\"", "\"warn\"", "\"unban\""]):
+# 			await ctx.send(f"```{error}```")
 
 # @bot.command()
 # @commands.cooldown(1, 5, BucketType.user) 
