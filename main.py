@@ -121,7 +121,7 @@ async def assignments():
 	bot.schoolRRDict = {variables.brainEmojiID: bot.helpRole, variables.bellEmojiID: bot.bellScheduleRole, variables.oneEmojiID: bot.precalculusRole, variables.twoEmojiID: bot.apCalcABRole, variables.threeEmojiID: bot.apCalcBCRole, variables.fourEmojiID: bot.hPhysicsRole, variables.fiveEmojiID: bot.apPhysicsRole, variables.sixEmojiID: bot.apBiologyRole, variables.sevenEmojiID: bot.rushRole, variables.eightEmojiID: bot.apushRole, variables.nineEmojiID: bot.vsNetRole, variables.tenEmojiID: bot.apcsRole}
 
 	bot.gameRRDict = {variables.amongUsEmojiID: bot.amongUsRole, variables.chessEmojiID: bot.chessRole, variables.krunkerEmojiID: bot.krunkerRole, variables.minecraftEmojiID: bot.minecraftRole, variables.skribblEmojiID: bot.skribblRole, variables.valorantEmojiID: bot.valorantRole}
-	bot.categoryDB = requests.get("https://opentdb.com/api_category.php").json()
+	# bot.categoryDB = requests.get("https://opentdb.com/api_category.php").json()
 
 	bot.monTimes = {"08:10 AM": "A", "08:40 AM": "Passing", "08:45 AM": "1", "09:15 AM": ":Passing","09:20 AM": "2", "09:50 AM": "Passing", "09:55 AM": "3", "10:25 AM": "Passing", "10:30 AM": "4", "11:00 AM": "Lunch", "11:30 AM": "Passing", "11:35 AM": "5", "12:05 PM": "Passing", "12:10 PM": "6"}
 	bot.tuesThursTimes = {"09:35 AM": "1", "10:50 AM": "Passing", "11:05 AM": "3", "12:20 PM": "Lunch", "12:55 PM": "Passing", "01:05 PM": "5", "02:20 PM": "Passing", "02:30 PM": "Student Support"}
@@ -781,6 +781,41 @@ async def roastme(ctx):
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await message.edit(content = None, embed = embed)
 
+@bot.command(aliases = ["p"])
+@commands.check(botOwner)
+@commands.cooldown(1, 5, BucketType.user)
+async def points(ctx, action, member: discord.Member, amount):
+	if action.lower() == "add":
+		if int(amount) > 0:
+			with open("points.json", "r") as file:
+					data = json.load(file)
+					if str(member.id) not in data:
+						data[str(member.id)] = int(amount)
+					else:
+						data[str(member.id)] += int(amount)
+			with open("points.json", "w") as file:
+				json.dump(data, file, indent = 2)
+			await ctx.send(f"{bot.checkmarkEmoji} Added `{amount}` points to {member.mention}!")
+		else:
+			await ctx.send(f"{bot.errorEmoji} Enter an amount greater than `0`")
+	elif action.lower() == "remove":
+		if int(amount) > 0:
+			with open("points.json", "r") as file:
+				data = json.load(file)
+				if str(member.id) in data:
+					if data[str(member.id)] > 0:
+						data[str(member.id)] -= int(amount)
+					else:
+						data[str(member.id)] = 0
+			with open("points.json", "w") as file:
+				json.dump(data, file, indent = 2)
+			await ctx.send(f"{bot.checkmarkEmoji} Removed `{amount}` points from {member.mention}!")
+		else:
+			await ctx.send(f"{bot.errorEmoji} Enter an amount greater than `0`")
+	else:
+		await ctx.send(f"{bot.errorEmoji} Invalid argument")
+
+
 @bot.command(aliases = [])
 @commands.check(botOwner)
 @commands.cooldown(1, 5, BucketType.user)
@@ -887,7 +922,7 @@ async def trivia(ctx, difficulty: str = None):
 			data = json.load(file)
 			if str(ctx.author.id) in data:
 				if data[str(ctx.author.id)] > diffPoints[difficulty]:
-					data[str(ctx.author.id)] -= diffPoints[difficulty]
+					data[str(ctx.author.id)] -= 1
 				else:
 					data[str(ctx.author.id)] = 0
 		with open("points.json", "w") as file:
