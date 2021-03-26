@@ -1,7 +1,5 @@
-# importing libraries
+from art import *
 import asyncio
-# import bitlyshortener
-# from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import discord
 from discord.ext import commands
@@ -23,15 +21,13 @@ import tinydb
 import variables
 from uuid import uuid4
 
-# set prefix and remove default help command
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix = "!", intents = intents, case_insensitive = True)
-
-# mute json logging setup
 mutes = {}
 muteDatabase = tinydb.TinyDB("muteDatabase.json")
 query = tinydb.Query()
 
+# i know this is inefficient, i'll implement changes later
 async def assignments():
 	s = bot.get_guild(variables.serverID)
 	bot.server = bot.get_guild(variables.serverID)
@@ -83,6 +79,7 @@ async def assignments():
 	bot.minecraftRole = s.get_role(variables.minecraftRoleID)
 	bot.skribblRole = s.get_role(variables.skribblRoleID)
 	bot.valorantRole = s.get_role(variables.valorantRoleID)
+	bot.vcRole = s.get_role(variables.vcRoleID)
 
 	bot.dividerThreeRole = s.get_role(variables.dividerThreeRoleID)
 	bot.counterRookieRole = s.get_role(variables.counterRookieRoleID)
@@ -99,6 +96,7 @@ async def assignments():
 	bot.minecraftEmoji = bot.get_emoji(variables.minecraftEmojiID)
 	bot.skribblEmoji = bot.get_emoji(variables.skribblEmojiID)
 	bot.valorantEmoji = bot.get_emoji(variables.valorantEmojiID)
+	bot.vcEmoji = bot.get_emoji(variables.vcEmojiID)
 	bot.loadingEmoji = bot.get_emoji(variables.loadingEmojiID)
 	bot.errorEmoji = bot.get_emoji(variables.errorEmojiID)
 	bot.checkmarkEmoji = bot.get_emoji(variables.checkmarkEmojiID)
@@ -120,11 +118,11 @@ async def assignments():
 
 	bot.schoolRRDict = {variables.brainEmojiID: bot.helpRole, variables.bellEmojiID: bot.bellScheduleRole, variables.oneEmojiID: bot.precalculusRole, variables.twoEmojiID: bot.apCalcABRole, variables.threeEmojiID: bot.apCalcBCRole, variables.fourEmojiID: bot.hPhysicsRole, variables.fiveEmojiID: bot.apPhysicsRole, variables.sixEmojiID: bot.apBiologyRole, variables.sevenEmojiID: bot.rushRole, variables.eightEmojiID: bot.apushRole, variables.nineEmojiID: bot.vsNetRole, variables.tenEmojiID: bot.apcsRole}
 
-	bot.gameRRDict = {variables.amongUsEmojiID: bot.amongUsRole, variables.chessEmojiID: bot.chessRole, variables.krunkerEmojiID: bot.krunkerRole, variables.minecraftEmojiID: bot.minecraftRole, variables.skribblEmojiID: bot.skribblRole, variables.valorantEmojiID: bot.valorantRole}
+	bot.gameRRDict = {variables.amongUsEmojiID: bot.amongUsRole, variables.chessEmojiID: bot.chessRole, variables.krunkerEmojiID: bot.krunkerRole, variables.minecraftEmojiID: bot.minecraftRole, variables.skribblEmojiID: bot.skribblRole, variables.valorantEmojiID: bot.valorantRole, variables.vcEmojiID: bot.vcRole}
 	# bot.categoryDB = requests.get("https://opentdb.com/api_category.php").json()
 
-	bot.monTimes = {"08:10 AM": "A", "08:40 AM": "Passing", "08:45 AM": "1", "09:15 AM": ":Passing","09:20 AM": "2", "09:50 AM": "Passing", "09:55 AM": "3", "10:25 AM": "Passing", "10:30 AM": "4", "11:00 AM": "Lunch", "11:30 AM": "Passing", "11:35 AM": "5", "12:05 PM": "Passing", "12:10 PM": "6"}
-	bot.tuesThursTimes = {"08:10 AM": "1", "09:25 AM": "Passing", "09:35 AM": "1", "10:50 AM": "Passing", "11:05 AM": "3", "12:20 PM": "Lunch", "12:55 PM": "Passing", "01:05 PM": "5", "02:20 PM": "Passing", "02:30 PM": "Student Support"}
+	bot.monTimes = {"08:10 AM": "A", "08:40 AM": "Passing", "08:45 AM": "1", "09:15 AM": "Passing","09:20 AM": "2", "09:50 AM": "Passing", "09:55 AM": "3", "10:25 AM": "Passing", "10:30 AM": "4", "11:00 AM": "Lunch", "11:30 AM": "Passing", "11:35 AM": "5", "12:05 PM": "Passing", "12:10 PM": "6"}
+	bot.tuesThursTimes = {"08:10 AM": "A", "09:25 AM": "Passing", "09:35 AM": "1", "10:50 AM": "Passing", "11:05 AM": "3", "12:20 PM": "Lunch", "12:55 PM": "Passing", "01:05 PM": "5", "02:20 PM": "Passing", "02:30 PM": "Student Support"}
 	bot.wedFriTimes = {"08:10 AM": "A", "09:25 AM": "Passing", "09:35 AM": "2", "10:50 AM": "Passing", "11:05 AM": "4", "12:20 PM": "Lunch", "12:55 PM": "Passing", "01:05 PM": "6", "02:20 PM": "Passing", "02:30 PM": "Student Support"}
 	bot.daySchedule = {1: bot.monTimes, 2: bot.tuesThursTimes, 3: bot.wedFriTimes, 4: bot.tuesThursTimes, 5: bot.wedFriTimes}
 
@@ -143,31 +141,22 @@ async def assignments():
 	for i in bot.wedFriTimes:
 		bot.wedFriTimesMinutes[timeInMinutes(datetime.strptime(i, "%I:%M %p"))] = bot.wedFriTimes[i]
 	bot.dayScheduleMinutes = {1: bot.monTimesMinutes, 2: bot.tuesThursTimesMinutes, 3: bot.wedFriTimesMinutes, 4: bot.tuesThursTimesMinutes, 5: bot.wedFriTimesMinutes}
-	
 
-
-# def leaderboardTask():
-# 	url = 'https://mee6.xyz/leaderboard/612059384721440789'
-# 	page = requests.get(url)
-# 	soup = BeautifulSoup(page.text.replace("</script\n", "</script>"), 'html.parser')
-# 	results = soup.find(class_ = "leaderboardPlayersListContainer")
-	
-# 	usernames = results.find_all(class_ = "leaderboardPlayerUsername")
-# 	usernamesList = []
-# 	for i in range (0, 10):
-# 		usernamesList.append(usernames[i].text.strip())
-
-# 	levels = results.find_all(class_ = "leaderboardPlayerStatText")
-# 	levelsList = []
-# 	for i in range (0, 10):
-# 		levelsList.append(levels[i].text.strip())
-
-# 	return [usernamesList, levelsList]
-
-# counts humans or bots in the server
+	with open("afks.json", "r") as file:
+		data = json.load(file)
+		for id in list(data):
+			if not bot.server.get_member(int(id)).display_name.startswith("[AFK] "):
+				del data[str(id)]
+		for member in s.members:
+			if str(member.id) not in data and member.display_name.startswith("[AFK] "):
+				data[str(member.id)] = None
+	with open("afks.json", "w") as file:
+		json.dump(data, file, indent = 2)
 
 def botOwner(ctx):
 	return ctx.author.id == 410590963379994639
+def altCheck(ctx):
+	return ctx.author.id == 582313253208850433
 
 def staff(ctx):
 	staff = [bot.adminRole, bot.moderatorRole]
@@ -193,146 +182,55 @@ async def updateStatus():
 # bot startup event
 @bot.event
 async def on_ready():
-	print(discord.__version__)
 	await assignments()
-	await bot.server.get_member(410590963379994639).send("Online")
 	bellSchedule.start()
 	bot.startTime = datetime.now()
 	await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{userCount(1)} Members • !help"))
-	# await bot.change_presence(activity = discord.Streaming(name = "Onlyfanz", url = "https://bit.ly/3lH4oSp"))
-	print(f"""
-  _______ _            ____        _   _           
- |__   __| |          |  _ \      | | | |          
-    | |  | |__   ___  | |_) |_   _| |_| | ___ _ __ 
-    | |  | '_ \ / _ \ |  _ <| | | | __| |/ _ \ '__|
-    | |  | | | |  __/ | |_) | |_| | |_| |  __/ |   
-    |_|  |_| |_|\___| |____/ \__,_|\__|_|\___|_|""")
-
-	subjectRolesMessage = await bot.rolesChannel.fetch_message(759521601170833469)
-	embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xFFFFFE)
-	embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
-	embed.set_thumbnail(url = bot.server.icon_url)
-	await subjectRolesMessage.edit(embed = embed)
-
-	gameRolesMessage = await bot.rolesChannel.fetch_message(759534246607585300)
-	embed = discord.Embed(title = "Game Roles :video_game:", description = f"""Pick up some roles for any games you play! 
-	
-	{bot.amongUsEmoji} {bot.amongUsRole.mention} 
-	{bot.chessEmoji} {bot.chessRole.mention} 
-	{bot.krunkerEmoji} {bot.krunkerRole.mention} 
-	{bot.minecraftEmoji} {bot.minecraftRole.mention} 
-	{bot.skribblEmoji} {bot.skribblRole.mention} 
-	{bot.valorantEmoji} {bot.valorantRole.mention}""", color = 0xFFFFFE)
-	embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
-	embed.set_thumbnail(url = bot.server.icon_url)
-	await gameRolesMessage.edit(embed = embed)
-
-	rulesMessage = await bot.rulesChannel.fetch_message(790036264648441897)
-	embed = discord.Embed(title = "Rules :scroll:", color = 0xFFFFFE)
-	embed.set_footer(text = "Server Rules", icon_url = bot.server.icon_url)
-	embed.set_thumbnail(url = bot.server.icon_url)
-	embed.add_field(name = "Common Sense", value = f"""
-• no self promo
-• follow [Discord TOS](https://discord.com/terms)
-• do not diss <@533153734373539840>
-• have some [common sense](https://youtu.be/YSDTPPM9qsc)
-• avoid being blatantly offensive
-• no annoying/unnecessary pinging
-• respect da staff cuz they're kinda hot
-• don't be an asshole/annoying person
-• use the right channel for your topic of discussion
-• no nsfw or crazy spamming (except in <#777040210005065739>)
-• arguing is allowed, but if it gets too spicy, go to <#744374005280276522>""", inline = False)
-	embed.add_field(name = "More Info", value = f"""
-• run `!help` to see server commands
-• staff can mute you at their discretion
-• ignorance of the rules above is not a valid excuse
-• bans and kicks generally happen after discussion in {bot.generalChannel.mention}
-• rules for the **minecraft servers** are pinned (<#659885014603005953> & <#693321555366903851>)""", inline = False)
-	await rulesMessage.edit(embed = embed)
-
-	channelsMessage1 = await bot.channelsChannel.fetch_message(790467696860594207)
-	embed = discord.Embed(title = "Channels :computer:", description = "ayo wtf are these channels for??", color = 0xFFFFFE)
-	embed.set_footer(text = "Server Channels", icon_url = bot.server.icon_url)
-	embed.set_thumbnail(url = bot.server.icon_url)
-	embed.add_field(name = "Text Channels", value = f"""
-• {bot.welcomeChannel.mention} user welcome and adios messages
-• {bot.rolesChannel.mention} reaction roles 
-• {bot.rulesChannel.mention} the constitution
-• {bot.channelsChannel.mention} info on all channels
-• <#635302492132999168> announcements and updates
-• <#732997653394227220> suggestions posted with `s!suggest <suggestion>`
-• <#745337266943164446> messages with four or more :star: reactions
-• {bot.generalChannel.mention} communicate with other idiots
-• <#612384531999096832> play some bangers with <@630199558294470676>""", inline = False)
-	await channelsMessage1.edit(embed = embed)
-
-	channelsMessage2 = await bot.channelsChannel.fetch_message(790467697841274890)
-	embed = discord.Embed(title = "Channels :computer:", color = 0xFFFFFE)
-	embed.set_footer(text = "Server Channels", icon_url = bot.server.icon_url)
-	embed.set_thumbnail(url = bot.server.icon_url)
-	embed.add_field(name = "Text Channels Continued...", value = f"""
-• <#744374005280276522> verbally duel with another person
-• <#744374515328614421> weeb territory
-• <#777040210005065739> in the name, just don't be mad weird when it comes to nsfw
-• <#700074631935295532> academic related discussion
-• <#690647361139245136> count till the end of time and space
-• <#746951407546007643> auto-posted {bot.amongUsEmoji}, {bot.chessEmoji}, and {bot.krunkerEmoji} join codes/links
-• <#636071901906731010> use all bots
-• <#659885014603005953> minecraft creative world chat
-• <#693321555366903851> minecraft survival world chat""", inline = False)
-	await channelsMessage2.edit(embed = embed)
-	
-	# await gameRolesMessage.add_reaction(bot.amongUsEmoji)
-	# await gameRolesMessage.add_reaction(bot.chessEmoji)
-	# await gameRolesMessage.add_reaction(bot.krunkerEmoji)
-	# await gameRolesMessage.add_reaction(bot.minecraftEmoji)
-	# await gameRolesMessage.add_reaction(bot.skribblEmoji)
-	# await gameRolesMessage.add_reaction(bot.valorantEmoji)
-
-	# await subjectRolesMessage.add_reaction("\U0001f9e0")
-	# await subjectRolesMessage.add_reaction("\U0001f514")
-	# await subjectRolesMessage.add_reaction("\U00000031\U0000fe0f\U000020e3")
-	# await subjectRolesMessage.add_reaction("\U00000032\U0000fe0f\U000020e3")
-	# await subjectRolesMessage.add_reaction("\U00000033\U0000fe0f\U000020e3")
-	# await subjectRolesMessage.add_reaction("\U00000034\U0000fe0f\U000020e3")
-	# await subjectRolesMessage.add_reaction("\U00000035\U0000fe0f\U000020e3")
-	# await subjectRolesMessage.add_reaction("\U00000036\U0000fe0f\U000020e3")
-	# await subjectRolesMessage.add_reaction("\U00000037\U0000fe0f\U000020e3")
-	# await subjectRolesMessage.add_reaction("\U00000038\U0000fe0f\U000020e3")
-	# await subjectRolesMessage.add_reaction("\U00000039\U0000fe0f\U000020e3")
-	# await subjectRolesMessage.add_reaction("\U0001f51f")
-
+	print(f"discord.py version: {discord.__version__}")
+	tprint(bot.user.name)
 	for i in muteDatabase:
 		ids = i["id"].split(" ")
 		server = bot.get_guild(int(ids[1]))
 		member = bot.server.get_member(int(ids[0]))
-
 		if bot.mutedRole in member.roles:
 			await member.remove_roles(bot.mutedRole)
 			await member.add_roles(bot.memberRole)
-
 		muteDatabase.remove(query.id == (str(member.id) + " " + str(server.id)))
-
 		generalChannel = bot.get_channel(variables.generalChannelID)
 		embed = discord.Embed(title = ":loud_sound: Unmuted", description = f"{member.mention} was unmuted on bot startup", color = 0x00FF00, timestamp = datetime.utcnow())
-		embed.set_footer(text = f"Unmuted by {bot.user}", icon_url = bot.user.avatar_url)
+		embed.set_footer(text = f"Unmuted  by {bot.user}", icon_url = bot.user.avatar_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await generalChannel.send(embed = embed)
-
 		print(f"{bot.eventLabel} Unmuted (Automatic)")
 
 # @bot.command()
+# @commands.check(botOwner)
 # @commands.cooldown(1, 5, BucketType.user) 
 # async def eval(ctx, code):
-# 	if ctx.author.id == 410590963379994639:
-# 		def evaluate(code):
-# 			return exec(code)
-# 		await ctx.send(evaluate())
-		
+# 	def evaluate(code):
+# 		return exec(code)
+# 	await ctx.send(evaluate())
 
-# 	else:
-# 		await ctx.send(f"{bot.errorEmoji} You do not have access to this command")
+@bot.command()
+@commands.cooldown(1, 15, BucketType.user)
+async def afk(ctx, *, message = None):
+	if ctx.author.display_name.startswith("[AFK] "):
+		return
+	else:
+		if not botOwner(ctx):
+			if len(ctx.author.display_name) <= 26:
+				await ctx.author.edit(nick = f"[AFK] {ctx.author.display_name}")
+			else:
+				await ctx.author.edit(nick = f"[AFK] {ctx.author.display_name[:-6]}")
+		with open("afks.json", "r") as file:
+			data = json.load(file)
+			data[str(ctx.author.id)] = message
+		with open("afks.json", "w") as file:
+			json.dump(data, file, indent = 2)
+		if not message:
+			await ctx.send(f"{bot.checkmarkEmoji} Set your AFK")
+		else:
+			await ctx.send(f"{bot.checkmarkEmoji} Set your AFK to `{message}`")
 
 @bot.command()
 @commands.cooldown(1, 15, BucketType.user) 
@@ -440,7 +338,6 @@ async def bellSchedule():
 			await bot.generalChannel.send(embed = embed)
 
 @bot.command(aliases = ["minsleft", "bruh"])
-@commands.check(botOwner)
 @commands.cooldown(1, 5, BucketType.user) 
 async def left(ctx):
 	# time.strftime("%I:%M %p")
@@ -540,14 +437,14 @@ async def on_member_join(member):
 async def on_member_remove(member):
 	if member.bot == False:
 		await updateStatus()
-		embed = discord.Embed(title = f":outbox_tray: Member Left", description = "Either kicked/banned/left", color = 0xFF0000, timestamp = datetime.utcnow())
+		embed = discord.Embed(title = ":outbox_tray: Member Left", description = "Either kicked/banned/left", color = 0xFF0000, timestamp = datetime.utcnow())
 		embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await bot.welcomeChannel.send(f"Goodbye, {member.mention}", embed = embed)
 		print(f"{bot.eventLabel} Member Left")
 
 	else:
-		embed = discord.Embed(title = f":outbox_tray: Bot Left", description = "Either kicked/banned/left", color = 0xFF0000, timestamp = datetime.utcnow())
+		embed = discord.Embed(title = ":outbox_tray: Bot Left", description = "Either kicked/banned/left", color = 0xFF0000, timestamp = datetime.utcnow())
 		embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 		embed.set_thumbnail(url = member.avatar_url)
 		await bot.welcomeChannel.send(f"Goodbye, {member.mention}", embed = embed)
@@ -555,7 +452,7 @@ async def on_member_remove(member):
 
 @bot.event
 async def on_message_delete(message):
-	if message.author.bot == False and bot.memberRole in message.author.roles and message.channel.id != 690647361139245136 and bot.allahRole not in message.author.roles:
+	if message.author.bot == False and bot.memberRole in message.author.roles and message.channel.id != 690647361139245136:
 		embed = discord.Embed(title = ":wastebasket: Message Deleted", color = 0xFFFFFE, timestamp = datetime.utcnow())
 		embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 		embed.set_thumbnail(url = message.author.avatar_url)
@@ -586,8 +483,35 @@ async def on_message_edit(before, after):
 # on message sent event
 @bot.event
 async def on_message(message):
-	# if bot.user.mentioned_in(message):
-	# 	await message.channel.send("https://tenor.com/view/hell-no-bollywood-indian-hell-no-gif-5616245")
+	# afk bs
+	def afkDump(data):
+		with open("afks.json", "w") as file:
+			json.dump(data, file, indent = 2)
+
+	with open("afks.json", "r") as file:
+		data = json.load(file)
+		# if afk user returns
+		if str(message.author.id) in data:
+			del data[str(message.author.id)]
+			afkDump(data)
+			if not botOwner(message):
+				await message.author.edit(nick = message.author.display_name[6:])
+			msg = await message.channel.send(f":wave: Welcome back {message.author.mention}, removed your AFK.")
+			await asyncio.sleep(3)
+			await msg.delete()
+
+		# if afk user mentioned
+	if message.mentions:
+		for i in message.mentions:
+			with open("afks.json", "r") as file:
+				data = json.load(file)
+				if str(i.id) in data:
+					if not data[str(i.id)]:
+						msg = await message.channel.send(f":zzz: **{i.name}** is AFK")
+					else:
+						msg = await message.channel.send(f":zzz: **{i.name}** is AFK: `{data[str(i.id)]}`")
+					await asyncio.sleep(3)
+					await msg.delete()
 
 	if message.guild is None and message.author.id == 410590963379994639:
 		await bot.generalChannel.send(message.content)
@@ -599,35 +523,35 @@ async def on_message(message):
 	
 	await bot.process_commands(message)
 
-@bot.event
-async def on_member_update(before, after):
-	if str(before.activity).lower() == "streaming":
-		await after.remove_roles(bot.liveOnTwitchRole)
-	if str(after.activity).lower() == "streaming":
-		await after.add_roles(bot.liveOnTwitchRole)
-
-@bot.event
-async def on_voice_state_update(member, before, after):
-	if after.self_stream:
-		await bot.logChannel.send(f":red_circle: `{member}` went live in `{after.channel.name}` VC")
+# @bot.event
+# async def on_member_update(before, after):
+# 	if str(before.activity).lower() == "streaming":
+# 		await after.remove_roles(bot.liveOnTwitchRole)
+# 	if str(after.activity).lower() == "streaming":
+# 		await after.add_roles(bot.liveOnTwitchRole)
 
 # @bot.event
-# async def on_command_error(ctx, error):
-# 	if isinstance(error, CheckFailure):
-# 		await ctx.trigger_typing()
-# 		await ctx.send(f"{bot.errorEmoji} Missing permissions")
-# 	elif not isinstance(error, CommandNotFound):
-# 		if isinstance(error, CommandOnCooldown):
-# 			await ctx.trigger_typing()
-# 			await ctx.send(f"{bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 1)}` seconds")
-# 		else:
-# 			await ctx.trigger_typing()
-# 			await ctx.send(f"```{error}```")
-# 			if ctx.command:
-# 				ctx.command.reset_cooldown(ctx)
-# 	else:
-# 		if not any(x in str(error) for x in ["\"ban\"", "\"kick\"", "\"levels\"", "\"rank\"", "\"slowmode\"", "\"warn\"", "\"unban\""]):
-# 			await ctx.send(f"```{error}```")
+# async def on_voice_state_update(member, before, after):
+# 	if after.self_stream:
+# 		await bot.logChannel.send(f":red_circle: `{member}` went live in `{after.channel.name}` VC")
+
+@bot.event
+async def on_command_error(ctx, error):
+	if isinstance(error, CheckFailure):
+		await ctx.trigger_typing()
+		await ctx.send(f"{bot.errorEmoji} Missing permissions")
+	elif not isinstance(error, CommandNotFound):
+		if isinstance(error, CommandOnCooldown):
+			await ctx.trigger_typing()
+			await ctx.send(f"{bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 1)}` seconds")
+		else:
+			await ctx.trigger_typing()
+			await ctx.send(f"```{error}```")
+			if ctx.command:
+				ctx.command.reset_cooldown(ctx)
+	else:
+		if not any(x in str(error) for x in ["\"ban\"", "\"kick\"", "\"levels\"", "\"rank\"", "\"slowmode\"", "\"warn\"", "\"unban\""]):
+			await ctx.send(f"```{error}```")
 
 # @bot.command()
 # @commands.cooldown(1, 5, BucketType.user) 
@@ -841,31 +765,31 @@ async def leaderboard(ctx):
 		data = dict(sorted(data.items(), key = lambda item: item[1]))
 		print
 		data = dict(reversed(list(data.items())))
-		outputArr = []
+		lb = []
 		for i in data:
 			noun = "points"
 			if data[i] == 1:
 				noun = "point"
 			if ctx.author.id == int(i):
-				outputArr.append(f"<@{i}> (`{data[i]}` {noun}) :arrow_left::arrow_left::arrow_left:")
+				lb.append(f"<@{i}> (`{data[i]}` {noun}) :arrow_left::arrow_left::arrow_left:")
 			else:
-				outputArr.append(f"<@{i}> (`{data[i]}` {noun})")
-		emoji = [":first_place:", ":second_place:", ":third_place:"]
+				lb.append(f"<@{i}> (`{data[i]}` {noun})")
+		emojis = [":first_place:", ":second_place:", ":third_place:"]
 		output = ""
-		if len(outputArr) <= 15:
-			for i in outputArr:
-				if outputArr.index(i) <= 2:
-					output += f"\n{emoji[outputArr.index(i)]}"
+		if len(lb) <= 15:
+			for i in lb:
+				if lb.index(i) <= 2:
+					output += f"\n{emojis[lb.index(i)]} "
 				else:
-					output += f"\n**{ordinal(outputArr.index(i) + 1)}**"
-				output += outputArr[outputArr.index(i)]
+					output += f"\n**{ordinal(lb.index(i) + 1)} **"
+				output += lb[lb.index(i)]
 		else:
 			for i in range(15):
-				if outputArr.index(i) <= 2:
-					output += f"\n{emoji[outputArr.index(i)]}"
+				if i <= 2:
+					output += f"\n{emojis[i]} "
 				else:
-					output += f"\n**{ordinal(i)}**"
-				output += outputArr[outputArr.index(i)]
+					output += f"\n**{ordinal(i + 1)}** "
+				output += lb[i]
 	
 	embed = discord.Embed(title = ":trophy: Leaderboard", description = f"Top 15 of the `!trivia` command users\n{output}", color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
@@ -1376,7 +1300,7 @@ async def profile(ctx, member: discord.Member = None):
 async def muted(ctx):
 	output = ""
 	if len(muteDatabase.all()) == 0:
-		output = "None"
+		output = None
 	else:
 		for mute in muteDatabase.all():
 			id = int(mute["id"].split()[0])
@@ -1661,7 +1585,7 @@ async def mod(ctx, member: discord.Member):
 			embed.set_footer(text = f"Demoted by {ctx.author}", icon_url = ctx.author.avatar_url)
 			embed.set_thumbnail(url = member.avatar_url)
 			await ctx.send(embed = embed)
-			await bot.staffOnlyChannel.send(f"<:upvote:732640878145044623> {member.mention} was demoted")
+			await bot.staffOnlyChannel.send(f"<:upvote:732640878145044623> {member.mention} was promoted")
 			print(f"{bot.commandLabel} Demote")
 		else:
 			await ctx.send(f"{bot.errorEmoji} They are already a moderator")
@@ -1766,3 +1690,100 @@ async def ping(ctx):
 # import token and run bot
 keepAlive()
 bot.run(os.environ.get("token"), bot = True, reconnect = True)
+
+# junk shit for on_ready
+# subjectRolesMessage = await bot.rolesChannel.fetch_message(759521601170833469)
+# embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xFFFFFE)
+# embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
+# embed.set_thumbnail(url = bot.server.icon_url)
+# await subjectRolesMessage.edit(embed = embed)
+
+# gameRolesMessage = await bot.rolesChannel.fetch_message(759534246607585300)
+# embed = discord.Embed(title = "Game Roles :video_game:", description = f"""Pick up some roles for any games you play! 
+
+# {bot.amongUsEmoji} {bot.amongUsRole.mention} 
+# {bot.chessEmoji} {bot.chessRole.mention} 
+# {bot.krunkerEmoji} {bot.krunkerRole.mention} 
+# {bot.minecraftEmoji} {bot.minecraftRole.mention} 
+# {bot.skribblEmoji} {bot.skribblRole.mention} 
+# {bot.valorantEmoji} {bot.valorantRole.mention}
+# {bot.vcEmoji} {bot.vcRole.mention}""", color = 0xFFFFFE)
+# embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
+# embed.set_thumbnail(url = bot.server.icon_url)
+# await gameRolesMessage.edit(embed = embed)
+
+# rulesMessage = await bot.rulesChannel.fetch_message(790036264648441897)
+# embed = discord.Embed(title = "Rules :scroll:", color = 0xFFFFFE)
+# embed.set_footer(text = "Server Rules", icon_url = bot.server.icon_url)
+# embed.set_thumbnail(url = bot.server.icon_url)
+# embed.add_field(name = "Common Sense", value = f"""
+# • no self promo
+# • follow [Discord TOS](https://discord.com/terms)
+# • do not diss <@533153734373539840>
+# • have some [common sense](https://youtu.be/YSDTPPM9qsc)
+# • avoid being blatantly offensive
+# • no annoying/unnecessary pinging
+# • respect da staff cuz they're kinda hot
+# • don't be an asshole/annoying person
+# • use the right channel for your topic of discussion
+# • no nsfw or crazy spamming (except in <#777040210005065739>)
+# • arguing is allowed, but if it gets too spicy, go to <#744374005280276522>""", inline = False)
+# embed.add_field(name = "More Info", value = f"""
+# • run `!help` to see server commands
+# • staff can mute you at their discretion
+# • ignorance of the rules above is not a valid excuse
+# • bans and kicks generally happen after discussion in {bot.generalChannel.mention}
+# • rules for the **minecraft servers** are pinned (<#659885014603005953> & <#693321555366903851>)""", inline = False)
+# await rulesMessage.edit(embed = embed)
+
+# channelsMessage1 = await bot.channelsChannel.fetch_message(790467696860594207)
+# embed = discord.Embed(title = "Channels :computer:", description = "ayo wtf are these channels for??", color = 0xFFFFFE)
+# embed.set_footer(text = "Server Channels", icon_url = bot.server.icon_url)
+# embed.set_thumbnail(url = bot.server.icon_url)
+# embed.add_field(name = "Text Channels", value = f"""
+# • {bot.welcomeChannel.mention} user welcome and adios messages
+# • {bot.rolesChannel.mention} reaction roles 
+# • {bot.rulesChannel.mention} the constitution
+# • {bot.channelsChannel.mention} info on all channels
+# • <#635302492132999168> announcements and updates
+# • <#732997653394227220> suggestions posted with `s!suggest <suggestion>`
+# • <#745337266943164446> messages with four or more :star: reactions
+# • {bot.generalChannel.mention} communicate with other idiots
+# • <#612384531999096832> play some bangers with <@630199558294470676>""", inline = False)
+# await channelsMessage1.edit(embed = embed)
+
+# channelsMessage2 = await bot.channelsChannel.fetch_message(790467697841274890)
+# embed = discord.Embed(title = "Channels :computer:", color = 0xFFFFFE)
+# embed.set_footer(text = "Server Channels", icon_url = bot.server.icon_url)
+# embed.set_thumbnail(url = bot.server.icon_url)
+# embed.add_field(name = "Text Channels Continued...", value = f"""
+# • <#744374005280276522> verbally duel with another person
+# • <#744374515328614421> weeb territory
+# • <#777040210005065739> in the name, just don't be mad weird when it comes to nsfw
+# • <#700074631935295532> academic related discussion
+# • <#690647361139245136> count till the end of time and space
+# • <#746951407546007643> auto-posted {bot.amongUsEmoji}, {bot.chessEmoji}, and {bot.krunkerEmoji} join codes/links
+# • <#636071901906731010> use all bots
+# • <#659885014603005953> minecraft creative world chat
+# • <#693321555366903851> minecraft survival world chat""", inline = False)
+# await channelsMessage2.edit(embed = embed)
+
+# # await gameRolesMessage.add_reaction(bot.amongUsEmoji)
+# # await gameRolesMessage.add_reaction(bot.chessEmoji)
+# # await gameRolesMessage.add_reaction(bot.krunkerEmoji)
+# # await gameRolesMessage.add_reaction(bot.minecraftEmoji)
+# # await gameRolesMessage.add_reaction(bot.skribblEmoji)
+# # await gameRolesMessage.add_reaction(bot.valorantEmoji)
+
+# # await subjectRolesMessage.add_reaction("\U0001f9e0")
+# # await subjectRolesMessage.add_reaction("\U0001f514")
+# # await subjectRolesMessage.add_reaction("\U00000031\U0000fe0f\U000020e3")
+# # await subjectRolesMessage.add_reaction("\U00000032\U0000fe0f\U000020e3")
+# # await subjectRolesMessage.add_reaction("\U00000033\U0000fe0f\U000020e3")
+# # await subjectRolesMessage.add_reaction("\U00000034\U0000fe0f\U000020e3")
+# # await subjectRolesMessage.add_reaction("\U00000035\U0000fe0f\U000020e3")
+# # await subjectRolesMessage.add_reaction("\U00000036\U0000fe0f\U000020e3")
+# # await subjectRolesMessage.add_reaction("\U00000037\U0000fe0f\U000020e3")
+# # await subjectRolesMessage.add_reaction("\U00000038\U0000fe0f\U000020e3")
+# # await subjectRolesMessage.add_reaction("\U00000039\U0000fe0f\U000020e3")
+# # await subjectRolesMessage.add_reaction("\U0001f51f")

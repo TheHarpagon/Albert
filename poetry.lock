@@ -19,6 +19,17 @@ speedups = ["aiodns", "brotlipy", "cchardet"]
 
 [[package]]
 category = "main"
+description = "ASCII Art Library For Python"
+name = "art"
+optional = false
+python-versions = ">=2.7"
+version = "5.1"
+
+[package.extras]
+dev = ["coverage (>=4.1)", "codecov (>=2.0.15)", "vulture (>=1.0)", "bandit (>=1.5.1)", "pydocstyle (>=3.0.0)"]
+
+[[package]]
+category = "main"
 description = "Timeout context manager for asyncio programs"
 name = "async-timeout"
 optional = false
@@ -476,7 +487,7 @@ idna = ">=2.0"
 multidict = ">=4.0"
 
 [metadata]
-content-hash = "811ebfb29fd34a0bfba2855cf3bdc487d9d6742fd96602ba7207257a357d128e"
+content-hash = "74ad7f2ff403573c62416769985954e377fea7e2dbc8b6343a533aa824f064f4"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -518,6 +529,10 @@ aiohttp = [
     {file = "aiohttp-3.7.3-cp39-cp39-win32.whl", hash = "sha256:3b0036c978cbcc4a4512278e98e3e6d9e6b834dc973206162eddf98b586ef1c6"},
     {file = "aiohttp-3.7.3-cp39-cp39-win_amd64.whl", hash = "sha256:e1b95972a0ae3f248a899cdbac92ba2e01d731225f566569311043ce2226f5e7"},
     {file = "aiohttp-3.7.3.tar.gz", hash = "sha256:9c1a81af067e72261c9cbe33ea792893e83bc6aa987bfbd6fdc1e5e7b22777c4"},
+]
+art = [
+    {file = "art-5.1-py2.py3-none-any.whl", hash = "sha256:94b2f457dd10c20efe426eb79f752d03845cee80f262e00cbb4fa77dff768385"},
+    {file = "art-5.1.tar.gz", hash = "sha256:380cb9a3bf97c6a3e6a90a7ab7d20b74aec0a1a4294f921ec3a8eb1057f37180"},
 ]
 async-timeout = [
     {file = "async-timeout-3.0.1.tar.gz", hash = "sha256:0c3c816a028d47f659d6ff5c745cb2acf1f966da1fe5c19c77a70282b25f4c5f"},

@@ -18,6 +18,7 @@ portolan = "^1.0.1"
 emoji = "^1.2.0"
 html2text = "^2020.1.16"
 discord = "^1.0.1"
+art = "^5.1"
 
 [tool.poetry.dev-dependencies]
 
