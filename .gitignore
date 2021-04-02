@@ -1,5 +1,6 @@
 .env
 afks.json
+mlinks.json
 muteDatabase.json
 points.json
 variables.py

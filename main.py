@@ -7,6 +7,7 @@ from discord.ext.commands import BucketType, CheckFailure, CommandOnCooldown, Co
 from discord.ext import tasks
 from discord import Webhook, RequestsWebhookAdapter
 import html2text
+import io
 import json
 from keepAlive import keepAlive
 from ordinal import ordinal
@@ -152,6 +153,8 @@ async def assignments():
 				data[str(member.id)] = None
 	with open("afks.json", "w") as file:
 		json.dump(data, file, indent = 2)
+	
+	bot.languages = {"Arabic": "ara", "Bulgarian": "bul", "Chinese (Simplified)": "chs", "Chinese (Traditional)": "cht", "Croation": "hrv", "Croation": "hrv", "Czech": "cze", "Danish": "dan", "Dutch": "dut", "English": "eng", "Finnish": "fin", "French": "fre", "German": "ger", "Greek": "gre", "Hungarian": "hun", "Korean": "kor", "Italian": "ita", "Japan": "jpn", "Polish": "pol", "Portugese": "por", "Russian": "rus", "Slovenian": "slv", "Spanish": "spa", "Swedish": "swe", "Turkish": "tur"}
 
 def botOwner(ctx):
 	return ctx.author.id == 410590963379994639
@@ -202,6 +205,26 @@ async def on_ready():
 		embed.set_thumbnail(url = member.avatar_url)
 		await generalChannel.send(embed = embed)
 		print(f"{bot.eventLabel} Unmuted (Automatic)")
+
+	# subjectRolesMessage = await bot.rolesChannel.fetch_message(759521601170833469)
+	# embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xFFFFFE)
+	# embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
+	# embed.set_thumbnail(url = bot.server.icon_url)
+	# await subjectRolesMessage.edit(embed = embed)
+
+	# gameRolesMessage = await bot.rolesChannel.fetch_message(759534246607585300)
+	# embed = discord.Embed(title = "Game Roles :video_game:", description = f"""Pick up some roles for any games you play! 
+
+	# {bot.amongUsEmoji} {bot.amongUsRole.mention} 
+	# {bot.chessEmoji} {bot.chessRole.mention} 
+	# {bot.krunkerEmoji} {bot.krunkerRole.mention} 
+	# {bot.minecraftEmoji} {bot.minecraftRole.mention} 
+	# {bot.skribblEmoji} {bot.skribblRole.mention} 
+	# {bot.valorantEmoji} {bot.valorantRole.mention}
+	# {bot.vcEmoji} {bot.vcRole.mention}""", color = 0xFFFFFE)
+	# embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
+	# embed.set_thumbnail(url = bot.server.icon_url)
+	# await gameRolesMessage.edit(embed = embed)
 
 # @bot.command()
 # @commands.check(botOwner)
@@ -314,7 +337,7 @@ async def bellSchedule():
 	time = datetime.now(timezone)
 	stringTime = time.strftime("%I:%M %p")
 	# adjust day if schedule is off
-	day = time.isoweekday()
+	day = time.isoweekday() + 1
 	if day in bot.daySchedule:
 		if stringTime in bot.daySchedule[day]:
 			output = ""
@@ -345,10 +368,12 @@ async def left(ctx):
 	current = datetime.now(timezone)
 	currentMinutes = (int(current.strftime("%H")) * 60) + (int(current.strftime("%M")))
 	# adjust day if schedule is off
-	day = current.isoweekday()
+	day = current.isoweekday() + 1
 	inSession = False
-	minutesLeft = 0
+	emoji = ""
 	currentPeriod = ""
+	minutesLeft = 0
+	output = ""
 	if day in bot.daySchedule:
 		if day == 1 and 495 <= currentMinutes <= 765:
 			inSession = True
@@ -364,8 +389,13 @@ async def left(ctx):
 					minutesLeft = i - currentMinutes
 					currentPeriod = list(bot.dayScheduleMinutes[day].values())[list(bot.dayScheduleMinutes[day].keys()).index(i) - 1]
 					break
+		else:
+			if currentMinutes <= 495:
+				output = "School hasn't started yet"
+			else:
+				output = "School isn't in session"
+
 	if inSession:
-		emoji = ""
 		if "Passing" in currentPeriod:
 			emoji = ":dividers:"
 		elif "Lunch" in currentPeriod:
@@ -374,13 +404,36 @@ async def left(ctx):
 			emoji = ":jigsaw:"
 		else:
 			emoji = ":books: Period"
-		embed = discord.Embed(title = "<a:rotatingHourglass:817538734597341235> Time Left", description = f"{emoji} `{currentPeriod}` has `{minutesLeft}` minutes left!", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		output = f"{emoji} `{currentPeriod}` has `{minutesLeft}` minutes left!"
+		embed = discord.Embed(title = "<a:rotatingHourglass:817538734597341235> Time Left", description = output, color = 0xFFFFFE, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
 		await ctx.send(embed = embed)
 	else:
-		await ctx.send(f"{bot.errorEmoji} School is currently not in session")
+		await ctx.send(f"{bot.errorEmoji} {output}")
 		print(f"{bot.commandLabel} MLeft")
+
+@bot.command()
+@commands.check(botOwner)
+@commands.cooldown(1, 5, BucketType.user) 
+async def mlink(ctx):
+	arr = ["A", "1", "2", "3", "4", "5", "6"]
+
+	embed = discord.Embed(title = "Link Meetings", description = "What is your schedule?\nex: 1-6", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+	embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
+	await ctx.send(embed = embed)
+	def check(message):
+		response = message.content.replace(" ", "").upper()
+		return len(response) == 3 and response[1] == "-" and all(item in arr for item in [response.replace("-", "")[0], response.replace("-", "")[1]]) and arr.index(response[0]) < arr.index(response[2])
+	try:
+		message = await bot.wait_for("message", timeout = 15, check = check)
+	except asyncio.TimeoutError:
+		await ctx.send(content = f"{bot.errorEmoji} Event has expired", embed = None)
+	else:
+		await message.add_reaction(bot.checkmarkEmoji)
+		await ctx.send(f"Passed") 
+
 
 # reaction roles (add)
 @bot.event
@@ -513,8 +566,8 @@ async def on_message(message):
 					await asyncio.sleep(3)
 					await msg.delete()
 
-	if message.guild is None and message.author.id == 410590963379994639:
-		await bot.generalChannel.send(message.content)
+	# if message.guild is None and message.author.id == 410590963379994639:
+	# 	await bot.generalChannel.send(message.content)
 	
 	if message.author.id == 320369001005842435:
 		if message.channel.id == 700074631935295532:
@@ -702,6 +755,52 @@ async def color(ctx, hexCode: discord.Color):
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_image(url = f"https://www.colorhexa.com/{str(hexCode).lower()[1:]}.png")
 	await ctx.send(embed = embed)
+
+@bot.command()
+@commands.cooldown(1, 30, BucketType.user)
+async def ocr(ctx, engine = 2):
+	message = await ctx.send(f"{bot.loadingEmoji} Loading... (this will take a bit)")
+	if ctx.message.attachments:
+		filetypes = [".gif", ".jpg", ".pdf", ".png", ".webp"]
+		for i in ctx.message.attachments:
+			if list(filter(i.filename.lower().endswith, filetypes)) != []:
+				if i.size / 1000 <= 1024:
+					def process(url, apiKey, engine, link):
+						payload = {"url": url, "apikey": apiKey, "isCreateSearchablePdf": link, "OCREngine": engine}
+						r = requests.post("https://api.ocr.space/parse/image", data = payload)
+						return r.json()
+					results = process(i.url, "35c2b7ce5288957", engine, False)
+					if results["IsErroredOnProcessing"]:
+						await message.edit(content = f"{bot.errorEmoji} An error occured\n```yaml\n{results['ErrorMessage'][0]}```")
+						return
+					if not results["ParsedResults"][0]["ParsedText"]:
+						await message.edit(content = f"{bot.errorEmoji} No text was found")
+						return
+					print(len(results["ParsedResults"][0]["ParsedText"]))
+					if len(results["ParsedResults"][0]["ParsedText"]) > 1898:
+						print("passed")
+						embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms", color = 0xFFFFFE, timestamp = datetime.utcnow())
+						embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+						file = open("response.txt", "w")
+						file.write(results["ParsedResults"][0]["ParsedText"])
+						file.close()
+						file = open("response.txt", "r")
+						await message.delete()
+						await ctx.send(embed = embed, file = discord.File(file))
+						file.close()
+						os.remove("response.txt")
+						return
+					embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms\n\nDetected Text:\n```yaml\n{results['ParsedResults'][0]['ParsedText']}```", color = 0xFFFFFE, timestamp = datetime.utcnow())
+					embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+					await message.edit(content = None, embed = embed)
+				else:
+					await message.edit(content = f"{bot.errorEmoji} Your file exceeds the `1024` kb limit")
+					return
+			else:
+				await message.edit(content = f"{bot.errorEmoji} Inavlid file type a `.gif`, `.jpg`, `.pdf`, `.png`, `.webp`")
+				return
+	else:
+		await message.edit(content = f"{bot.errorEmoji} Try attachinging something")
 
 @bot.command(aliases = ["roast", "insultme", "insult"])
 @commands.cooldown(1, 10, BucketType.user)
@@ -915,24 +1014,24 @@ async def trivia(ctx, difficulty: str = None):
 		print(f"{bot.commandLabel} Trivia")
 
 
-@bot.command()
-@commands.cooldown(1, 5, BucketType.user) 
-async def test(ctx, username, password):
-	if ctx.author.id == 410590963379994639:
-		url = f"https://dvhs.schoolloop.com/mapi/login?version=3&devToken={uuid4()}&devOS=iPhone9,4&year={datetime.now().year}"
-		result = requests.get(url, auth = HTTPBasicAuth(username, password))
-		if result.status_code != 200:
-			await ctx.send(result.text)
-			return
-		studentID = result.json().get("userID")
-		url = f"https://dvhs.schoolloop.com/mapi/report_card?studentID={studentID}"
-		result = requests.get(url, auth = HTTPBasicAuth(username, password))
-		if result.status_code != 200:
-			await ctx.send(result.text)
-			return
-		print(f"```json\n{result.json()}```")
-	else:
-		await ctx.send("no")
+# @bot.command()
+# @commands.cooldown(1, 5, BucketType.user) 
+# async def test(ctx, username, password):
+# 	if ctx.author.id == 410590963379994639:
+# 		url = f"https://dvhs.schoolloop.com/mapi/login?version=3&devToken={uuid4()}&devOS=iPhone9,4&year={datetime.now().year}"
+# 		result = requests.get(url, auth = HTTPBasicAuth(username, password))
+# 		if result.status_code != 200:
+# 			await ctx.send(result.text)
+# 			return
+# 		studentID = result.json().get("userID")
+# 		url = f"https://dvhs.schoolloop.com/mapi/report_card?studentID={studentID}"
+# 		result = requests.get(url, auth = HTTPBasicAuth(username, password))
+# 		if result.status_code != 200:
+# 			await ctx.send(result.text)
+# 			return
+# 		print(f"```json\n{result.json()}```")
+# 	else:
+# 		await ctx.send("no")
 
 @bot.command(aliases = ["k"])
 @commands.cooldown(1, 5, BucketType.user) 
@@ -1357,7 +1456,7 @@ async def mute(ctx, user: str, mtime = None):
 	if float(mtime) > 0:
 		mtime = float(mtime)
 
-	if (bot.adminRole in ctx.message.author.roles) or (bot.moderatorRole in ctx.message.author.roles):
+	if ((bot.adminRole in ctx.message.author.roles) or (bot.moderatorRole in ctx.message.author.roles)) and (bot.memberRole not in ctx.message.author.roles):
 		if muteDatabase.search(query.id == (str(member.id) + " " + str(member.guild.id))) == [] and (not ((bot.adminRole in member.roles) or (bot.moderatorRole in member.roles) or (bot.botRole in member.roles) or (bot.devBotRole in member.roles))):
 				if mtime > 0:
 					if mtime < 1:
@@ -1379,7 +1478,7 @@ async def mute(ctx, user: str, mtime = None):
 						hunit = "hours"
 
 						if htime == 1:
-								hunit = "hour"
+							hunit = "hour"
 						
 						embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{htime}` {hunit}", color = 0x00FF00, timestamp = datetime.utcnow())
 						embed.set_author(name = bot.user.name, url = bot.statusPageURL, icon_url = bot.user.avatar_url)
@@ -1393,7 +1492,7 @@ async def mute(ctx, user: str, mtime = None):
 						munit = "minutes"
 						
 						if mtime == 1:
-								munit = "minute"
+							munit = "minute"
 						
 						embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{mtime}` {munit}", color = 0x00FF00, timestamp = datetime.utcnow())
 						embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
