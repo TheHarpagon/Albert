@@ -1,3 +1,4 @@
+import aiohttp
 from art import *
 import asyncio
 from datetime import datetime, timedelta
@@ -6,7 +7,9 @@ from discord.ext import commands
 from discord.ext.commands import BucketType, CheckFailure, CommandOnCooldown, CommandNotFound
 from discord.ext import tasks
 from discord import Webhook, RequestsWebhookAdapter
+import emoji
 import html2text
+import humanize
 import io
 import json
 from keepAlive import keepAlive
@@ -18,6 +21,7 @@ import pytz
 import random
 import requests
 from requests.auth import HTTPBasicAuth
+import tempfile
 import tinydb
 import variables
 from uuid import uuid4
@@ -247,13 +251,14 @@ async def afk(ctx, *, message = None):
 				await ctx.author.edit(nick = f"[AFK] {ctx.author.display_name[:-6]}")
 		with open("afks.json", "r") as file:
 			data = json.load(file)
-			data[str(ctx.author.id)] = message
+			data[str(ctx.author.id)] = [str(ctx.message.created_at), message]
 		with open("afks.json", "w") as file:
 			json.dump(data, file, indent = 2)
 		if not message:
 			await ctx.send(f"{bot.checkmarkEmoji} Set your AFK")
 		else:
 			await ctx.send(f"{bot.checkmarkEmoji} Set your AFK to `{message}`")
+		print(f"{bot.commandLabel} AFK")
 
 @bot.command()
 @commands.cooldown(1, 15, BucketType.user) 
@@ -559,12 +564,12 @@ async def on_message(message):
 			with open("afks.json", "r") as file:
 				data = json.load(file)
 				if str(i.id) in data:
-					if not data[str(i.id)]:
-						msg = await message.channel.send(f":zzz: **{i.name}** is AFK")
+					if not data[str(i.id)][1]:
+						# pytz.timezone('America/Los_Angeles')
+						msg = await message.channel.send(f":zzz: **{i.name}** is AFK ({humanize.naturaltime(datetime.now() - datetime.strptime(data[str(i.id)][0], '%Y-%m-%d %H:%M:%S.%f'))})")
 					else:
-						msg = await message.channel.send(f":zzz: **{i.name}** is AFK: `{data[str(i.id)]}`")
-					await asyncio.sleep(3)
-					await msg.delete()
+						# pytz.timezone('America/Los_Angeles')
+						msg = await message.channel.send(f":zzz: **{i.name}** is AFK: `{data[str(i.id)][1]}` ({humanize.naturaltime(datetime.now() - datetime.strptime(data[str(i.id)][0], '%Y-%m-%d %H:%M:%S.%f'))})")
 
 	# if message.guild is None and message.author.id == 410590963379994639:
 	# 	await bot.generalChannel.send(message.content)
@@ -617,13 +622,17 @@ async def on_command_error(ctx, error):
 # 		embed.add_field(name = f"{i+1}) {data[0][i]}", value = f"Level {data[1][i]}", inline = False)
 # 	await ctx.send(embed = embed)
 
-# @bot.command()
-# @commands.cooldown(1, 5, BucketType.user)
-# async def react(ctx, character):
-# 	for message in ctx.channel.history(limit = 2):
-# 		if message != ctx.message:
-# 			await ctx.channel.last_message.add_reaction(character)
-# 			return
+@bot.command()
+@commands.check(botOwner)
+@commands.cooldown(1, 5, BucketType.user)
+async def react(ctx, messageID, text):
+	message = await ctx.channel.fetch_message(messageID)
+	print(message)
+	print(text)
+	for character in text:
+		if character in emoji.UNICODE_EMOJI:
+			await message.add_reaction(character)
+	
 
 @bot.command(aliases = ["f", "race", "r"])
 @commands.cooldown(1, 10, BucketType.user)
@@ -756,51 +765,62 @@ async def color(ctx, hexCode: discord.Color):
 	embed.set_image(url = f"https://www.colorhexa.com/{str(hexCode).lower()[1:]}.png")
 	await ctx.send(embed = embed)
 
-@bot.command()
+@bot.command(aliases = ["read"])
 @commands.cooldown(1, 30, BucketType.user)
-async def ocr(ctx, engine = 2):
+async def ocr(ctx, engine = 1):
 	message = await ctx.send(f"{bot.loadingEmoji} Loading... (this will take a bit)")
 	if ctx.message.attachments:
+		if engine not in [1, 2]:
+			await message.edit(content = f"{bot.errorEmoji} Invalid engine, choose `1` or `2` (more info at https://ocr.space/ocrapi#ocrengine)")
+			print(f"{bot.commandLabel} OCR")
+			return
 		filetypes = [".gif", ".jpg", ".pdf", ".png", ".webp"]
 		for i in ctx.message.attachments:
 			if list(filter(i.filename.lower().endswith, filetypes)) != []:
 				if i.size / 1000 <= 1024:
-					def process(url, apiKey, engine, link):
+					async def process(url, apiKey, engine, link):
 						payload = {"url": url, "apikey": apiKey, "isCreateSearchablePdf": link, "OCREngine": engine}
-						r = requests.post("https://api.ocr.space/parse/image", data = payload)
-						return r.json()
-					results = process(i.url, "35c2b7ce5288957", engine, False)
+						async with aiohttp.ClientSession() as session:
+							async with session.post("https://api.ocr.space/parse/image", data = payload) as reply:
+								return await reply.json()
+					results = await process(i.url, "35c2b7ce5288957", 2, False)
 					if results["IsErroredOnProcessing"]:
 						await message.edit(content = f"{bot.errorEmoji} An error occured\n```yaml\n{results['ErrorMessage'][0]}```")
+						print(f"{bot.commandLabel} OCR")
 						return
 					if not results["ParsedResults"][0]["ParsedText"]:
 						await message.edit(content = f"{bot.errorEmoji} No text was found")
+						print(f"{bot.commandLabel} OCR")
 						return
 					print(len(results["ParsedResults"][0]["ParsedText"]))
 					if len(results["ParsedResults"][0]["ParsedText"]) > 1898:
-						print("passed")
 						embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms", color = 0xFFFFFE, timestamp = datetime.utcnow())
 						embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-						file = open("response.txt", "w")
-						file.write(results["ParsedResults"][0]["ParsedText"])
-						file.close()
-						file = open("response.txt", "r")
-						await message.delete()
-						await ctx.send(embed = embed, file = discord.File(file))
-						file.close()
-						os.remove("response.txt")
-						return
+						with tempfile.TemporaryFile(mode = "w+") as file:
+							file.write(results["ParsedResults"][0]["ParsedText"])
+							file.seek(0)
+							await message.delete()
+							embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms", color = 0xFFFFFE, timestamp = datetime.utcnow())
+							embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+							await ctx.send(embed = embed)
+							await ctx.send(file = discord.File(file, filename = "response.txt"))
+							print(f"{bot.commandLabel} OCR")
+							return
 					embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms\n\nDetected Text:\n```yaml\n{results['ParsedResults'][0]['ParsedText']}```", color = 0xFFFFFE, timestamp = datetime.utcnow())
 					embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 					await message.edit(content = None, embed = embed)
+					print(f"{bot.commandLabel} OCR")
 				else:
 					await message.edit(content = f"{bot.errorEmoji} Your file exceeds the `1024` kb limit")
+					print(f"{bot.commandLabel} OCR")
 					return
 			else:
 				await message.edit(content = f"{bot.errorEmoji} Inavlid file type a `.gif`, `.jpg`, `.pdf`, `.png`, `.webp`")
+				print(f"{bot.commandLabel} OCR")
 				return
 	else:
-		await message.edit(content = f"{bot.errorEmoji} Try attachinging something")
+		await message.edit(content = f"{bot.errorEmoji} Try attaching something")
+		print(f"{bot.commandLabel} OCR")
 
 @bot.command(aliases = ["roast", "insultme", "insult"])
 @commands.cooldown(1, 10, BucketType.user)
@@ -813,6 +833,7 @@ async def roastme(ctx):
 	embed = discord.Embed(title = ":pensive: An insult", description = roastDatabase["insult"], color = 0xFFFFFE, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await message.edit(content = None, embed = embed)
+	print(f"{bot.commandLabel} Roast")
 
 @bot.command(aliases = ["p"])
 @commands.check(botOwner)
@@ -847,6 +868,7 @@ async def points(ctx, action, member: discord.Member, amount):
 			await ctx.send(f"{bot.errorEmoji} Enter an amount greater than `0`")
 	else:
 		await ctx.send(f"{bot.errorEmoji} Invalid argument")
+	print(f"{bot.commandLabel} Points A/R")
 
 
 @bot.command(aliases = [])
