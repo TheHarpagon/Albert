@@ -190,7 +190,7 @@ async def updateStatus():
 @bot.event
 async def on_ready():
 	await assignments()
-	bellSchedule.start()
+	# bellSchedule.start()
 	bot.startTime = datetime.now()
 	await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{userCount(1)} Members • !help"))
 	print(f"discord.py version: {discord.__version__}")
@@ -211,7 +211,7 @@ async def on_ready():
 		print(f"{bot.eventLabel} Unmuted (Automatic)")
 
 	# subjectRolesMessage = await bot.rolesChannel.fetch_message(759521601170833469)
-	# embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xFFFFFE)
+	# embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xffd54f)
 	# embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
 	# embed.set_thumbnail(url = bot.server.icon_url)
 	# await subjectRolesMessage.edit(embed = embed)
@@ -225,7 +225,7 @@ async def on_ready():
 	# {bot.minecraftEmoji} {bot.minecraftRole.mention} 
 	# {bot.skribblEmoji} {bot.skribblRole.mention} 
 	# {bot.valorantEmoji} {bot.valorantRole.mention}
-	# {bot.vcEmoji} {bot.vcRole.mention}""", color = 0xFFFFFE)
+	# {bot.vcEmoji} {bot.vcRole.mention}""", color = 0xffd54f)
 	# embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
 	# embed.set_thumbnail(url = bot.server.icon_url)
 	# await gameRolesMessage.edit(embed = embed)
@@ -276,7 +276,7 @@ async def weather(ctx, *, city = None):
 	else:
 		sunrise = datetime.fromtimestamp(int(weatherDatabase["sys"]["sunrise"])) - timedelta(hours = 8)
 		sunset = datetime.fromtimestamp(int(weatherDatabase["sys"]["sunset"])) - timedelta(hours = 8)
-		embed = discord.Embed(title = ":partly_sunny: Weather", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		embed = discord.Embed(title = ":partly_sunny: Weather", color = 0xffd54f, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = f"https://openweathermap.org/img/wn/{weatherDatabase['weather'][0]['icon']}@4x.png")
 		embed.add_field(name = "City", value = f"`{weatherDatabase['name']}`, `{weatherDatabase['sys']['country']}`", inline = True)
@@ -298,10 +298,10 @@ async def joke(ctx):
 	apiURL = "https://official-joke-api.appspot.com/jokes/random"
 	reply = requests.get(apiURL)
 	jokeDatabase = reply.json()
-	embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDatabase['setup']}**", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDatabase['setup']}**", color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await message.edit(content = None, embed = embed)
-	embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDatabase['setup']}**\n{jokeDatabase['punchline']}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDatabase['setup']}**\n{jokeDatabase['punchline']}", color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await asyncio.sleep(2)
 	await message.edit(content = None, embed = embed)
@@ -315,7 +315,7 @@ async def fact(ctx):
 	apiURL = "https://uselessfacts.jsph.pl/random.json?language=en"
 	reply = requests.get(apiURL)
 	factDatabase = reply.json()
-	embed = discord.Embed(title = ":book: A useless fact", description = f"{factDatabase['text']}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":book: A useless fact", description = f"{factDatabase['text']}", color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await message.edit(content = None, embed = embed)
 	print(f"{bot.commandLabel} Fact")
@@ -331,7 +331,7 @@ async def fact(ctx):
 # 	URLs = [URL]
 # 	shortenedURL = shortener.shorten_urls(URLs)
 # 	print(shortenedURL)
-# 	embed = discord.Embed(title = ":link: Shortened Link", description = shortenedURL[0], color = 0xFFFFFE, timestamp = datetime.utcnow())
+# 	embed = discord.Embed(title = ":link: Shortened Link", description = shortenedURL[0], color = 0xffd54f, timestamp = datetime.utcnow())
 # 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = bot.user.avatar_url)
 # 	embed.set_thumbnail(url = "https://i.imgur.com/YmjXC7s.png")
 # 	await message.edit(content = None, embed = embed)
@@ -357,7 +357,7 @@ async def bellSchedule():
 			else:
 				output = "Period "
 				ping = True
-			embed = discord.Embed(title = "<a:rotatingHourglass:817538734597341235> Reminder", description = output + f"`{bot.daySchedule[day][stringTime]}` starts in 5 minutes!", color = 0xFFFFFE, timestamp = datetime.utcnow())
+			embed = discord.Embed(title = "<a:rotatingHourglass:817538734597341235> Reminder", description = output + f"`{bot.daySchedule[day][stringTime]}` starts in 5 minutes!", color = 0xffd54f, timestamp = datetime.utcnow())
 			embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 			embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
 			if ping:
@@ -410,7 +410,7 @@ async def left(ctx):
 		else:
 			emoji = ":books: Period"
 		output = f"{emoji} `{currentPeriod}` has `{minutesLeft}` minutes left!"
-		embed = discord.Embed(title = "<a:rotatingHourglass:817538734597341235> Time Left", description = output, color = 0xFFFFFE, timestamp = datetime.utcnow())
+		embed = discord.Embed(title = "<a:rotatingHourglass:817538734597341235> Time Left", description = output, color = 0xffd54f, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
 		await ctx.send(embed = embed)
@@ -424,7 +424,7 @@ async def left(ctx):
 async def mlink(ctx):
 	arr = ["A", "1", "2", "3", "4", "5", "6"]
 
-	embed = discord.Embed(title = "Link Meetings", description = "What is your schedule?\nex: 1-6", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = "Link Meetings", description = "What is your schedule?\nex: 1-6", color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
 	await ctx.send(embed = embed)
@@ -511,7 +511,7 @@ async def on_member_remove(member):
 @bot.event
 async def on_message_delete(message):
 	if message.author.bot == False and bot.memberRole in message.author.roles and message.channel.id != 690647361139245136:
-		embed = discord.Embed(title = ":wastebasket: Message Deleted", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		embed = discord.Embed(title = ":wastebasket: Message Deleted", color = 0xffd54f, timestamp = datetime.utcnow())
 		embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 		embed.set_thumbnail(url = message.author.avatar_url)
 		embed.add_field(name = "Author", value = message.author.mention, inline = True)
@@ -525,7 +525,7 @@ async def on_message_delete(message):
 @bot.event
 async def on_message_edit(before, after):
 	if before.author.bot == False and before.content != after.content and bot.memberRole in before.author.roles and before.channel.id != 690647361139245136:
-		embed = discord.Embed(title = ":pencil: Message Edited", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		embed = discord.Embed(title = ":pencil: Message Edited", color = 0xffd54f, timestamp = datetime.utcnow())
 		embed.set_footer(text = bot.server.name, icon_url = bot.server.icon_url)
 		embed.set_thumbnail(url = before.author.avatar_url)
 		embed.add_field(name = "Author", value = before.author.mention, inline = True)
@@ -546,6 +546,7 @@ async def on_message(message):
 		with open("afks.json", "w") as file:
 			json.dump(data, file, indent = 2)
 
+	# afk user returns
 	with open("afks.json", "r") as file:
 		data = json.load(file)
 		# if afk user returns
@@ -558,18 +559,22 @@ async def on_message(message):
 			await asyncio.sleep(3)
 			await msg.delete()
 
-		# if afk user mentioned
+	# afk user mentioned
 	if message.mentions:
 		for i in message.mentions:
 			with open("afks.json", "r") as file:
 				data = json.load(file)
 				if str(i.id) in data:
+					time = datetime.now() - datetime.strptime(data[str(i.id)][0], '%Y-%m-%d %H:%M:%S.%f')
+					nickname = i.display_name[5:]
+					if i.id == 410590963379994639:
+						nickname = i.display_name
+					# w/o message
 					if not data[str(i.id)][1]:
-						# pytz.timezone('America/Los_Angeles')
-						msg = await message.channel.send(f":zzz: **{i.name}** is AFK ({humanize.naturaltime(datetime.now() - datetime.strptime(data[str(i.id)][0], '%Y-%m-%d %H:%M:%S.%f'))})")
+						await message.channel.send(f":zzz: **{nickname}** is AFK ({humanize.naturaltime(time)})", delete_after = 3)
+					# with message
 					else:
-						# pytz.timezone('America/Los_Angeles')
-						msg = await message.channel.send(f":zzz: **{i.name}** is AFK: `{data[str(i.id)][1]}` ({humanize.naturaltime(datetime.now() - datetime.strptime(data[str(i.id)][0], '%Y-%m-%d %H:%M:%S.%f'))})")
+						await message.channel.send(f":zzz: **{nickname}** is AFK: `{data[str(i.id)][1]}` ({humanize.naturaltime(time)})", delete_after = 3)
 
 	# if message.guild is None and message.author.id == 410590963379994639:
 	# 	await bot.generalChannel.send(message.content)
@@ -601,7 +606,7 @@ async def on_command_error(ctx, error):
 	elif not isinstance(error, CommandNotFound):
 		if isinstance(error, CommandOnCooldown):
 			await ctx.trigger_typing()
-			await ctx.send(f"{bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 1)}` seconds")
+			await ctx.send(f"{bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 2)}` seconds")
 		else:
 			await ctx.trigger_typing()
 			await ctx.send(f"```{error}```")
@@ -616,7 +621,7 @@ async def on_command_error(ctx, error):
 # async def top(ctx):
 # 	await ctx.trigger_typing()
 # 	data = leaderboardTask()
-# 	embed = discord.Embed(title = "Leaderboard", color = 0xFFFFFE, timestamp = datetime.utcnow())
+# 	embed = discord.Embed(title = "Leaderboard", color = 0xffd54f, timestamp = datetime.utcnow())
 # 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 # 	for i in range(0, 10):
 # 		embed.add_field(name = f"{i+1}) {data[0][i]}", value = f"Level {data[1][i]}", inline = False)
@@ -663,7 +668,7 @@ async def fast(ctx):
 				numbers[0], numbers[1] = numbers[1], numbers[0]
 			answer = numbers[0] - numbers[1]
 		
-		embed = discord.Embed(title = ":zap: Math Showdown", description = f"First to solve the following wins!\n```py\n{numbers[0]} {operation} {numbers[1]}```", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		embed = discord.Embed(title = ":zap: Math Showdown", description = f"First to solve the following wins!\n```py\n{numbers[0]} {operation} {numbers[1]}```", color = 0xffd54f, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		await original.edit(content = None, embed = embed)
 		
@@ -682,7 +687,7 @@ async def fast(ctx):
 		apiURL = "https://random-word-api.herokuapp.com/word?number=1"
 		reply = requests.get(apiURL)
 		wordDB = reply.json()
-		embed = discord.Embed(title = ":zap: Word Showdown", description = f"First to type the following backwards wins!\n```yaml\n{wordDB[0]}```", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		embed = discord.Embed(title = ":zap: Word Showdown", description = f"First to type the following backwards wins!\n```yaml\n{wordDB[0]}```", color = 0xffd54f, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		await original.edit(content = None, embed = embed)
 		def check(message):
@@ -709,7 +714,7 @@ async def fast(ctx):
 				printedTable += f"||{table[i][j]}|| "
 			printedTable += "\n"
 		answer = (rowPH[row] + str(column + 1)).lower()
-		embed = discord.Embed(title = ":zap: Bubble Wrap", description = f"First to type the location to {right} wins!\n(ex: `B2` or `2B`)\n\n{printedTable}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+		embed = discord.Embed(title = ":zap: Bubble Wrap", description = f"First to type the location to {right} wins!\n(ex: `B2` or `2B`)\n\n{printedTable}", color = 0xffd54f, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		await original.edit(content = None, embed = embed)
 		def check(message):
@@ -730,7 +735,7 @@ async def fast(ctx):
 # 	for i in range (0, 24):
 # 		output += f"`{bot.categoryDB['trivia_categories'][i]['id'] - 8}` {bot.categoryDB['trivia_categories'][i]['name']}\n"
 # 	thinkList = ["<:thinkVivan:801531613082025995>", ":thinking:", "<:swaggerThink:809281292557746176>", "<:redThink:700463049013723136>", "<:breadThink:700463049852715048>"]
-# 	embed = discord.Embed(title = f"{random.choice(thinkList)} Trivia Categories", description = f"These are all the category codes\nAn empty argument will generate a random category/difficulty\n`!trivia [category] [difficulty]`\n\n{output}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+# 	embed = discord.Embed(title = f"{random.choice(thinkList)} Trivia Categories", description = f"These are all the category codes\nAn empty argument will generate a random category/difficulty\n`!trivia [category] [difficulty]`\n\n{output}", color = 0xffd54f, timestamp = datetime.utcnow())
 # 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 # 	await ctx.author.send(embed = embed)
 # 	await ctx.send(f"{bot.checkmarkEmoji} Sent in direct messages")
@@ -794,19 +799,19 @@ async def ocr(ctx, engine = 1):
 						return
 					print(len(results["ParsedResults"][0]["ParsedText"]))
 					if len(results["ParsedResults"][0]["ParsedText"]) > 1898:
-						embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms", color = 0xFFFFFE, timestamp = datetime.utcnow())
+						embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms", color = 0xffd54f, timestamp = datetime.utcnow())
 						embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 						with tempfile.TemporaryFile(mode = "w+") as file:
 							file.write(results["ParsedResults"][0]["ParsedText"])
 							file.seek(0)
 							await message.delete()
-							embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms", color = 0xFFFFFE, timestamp = datetime.utcnow())
+							embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms", color = 0xffd54f, timestamp = datetime.utcnow())
 							embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 							await ctx.send(embed = embed)
 							await ctx.send(file = discord.File(file, filename = "response.txt"))
 							print(f"{bot.commandLabel} OCR")
 							return
-					embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms\n\nDetected Text:\n```yaml\n{results['ParsedResults'][0]['ParsedText']}```", color = 0xFFFFFE, timestamp = datetime.utcnow())
+					embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms\n\nDetected Text:\n```yaml\n{results['ParsedResults'][0]['ParsedText']}```", color = 0xffd54f, timestamp = datetime.utcnow())
 					embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 					await message.edit(content = None, embed = embed)
 					print(f"{bot.commandLabel} OCR")
@@ -830,7 +835,7 @@ async def roastme(ctx):
 	apiURL = "https://evilinsult.com/generate_insult.php?lang=en&type=json"
 	reply = requests.get(apiURL)
 	roastDatabase = reply.json()
-	embed = discord.Embed(title = ":pensive: An insult", description = roastDatabase["insult"], color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":pensive: An insult", description = roastDatabase["insult"], color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await message.edit(content = None, embed = embed)
 	print(f"{bot.commandLabel} Roast")
@@ -912,7 +917,7 @@ async def leaderboard(ctx):
 					output += f"\n**{ordinal(i + 1)}** "
 				output += lb[i]
 	
-	embed = discord.Embed(title = ":trophy: Leaderboard", description = f"Top 15 of the `!trivia` command users\n{output}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":trophy: Leaderboard", description = f"Top 15 of the `!trivia` command users\n{output}", color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await ctx.send(embed = embed)
 
@@ -921,8 +926,8 @@ async def leaderboard(ctx):
 @commands.cooldown(1, 20, BucketType.user)
 async def trivia(ctx, difficulty: str = None):
 	await ctx.trigger_typing()
-	if ctx.channel.id != 636071901906731010:
-		await ctx.send(f"{bot.errorEmoji} Man go to <#636071901906731010>")
+	if ctx.channel.id == 612059384721440791:
+		await ctx.send(f"{bot.errorEmoji} Any channel but here lmao")
 		trivia.reset_cooldown(ctx)
 		return
 
@@ -955,7 +960,7 @@ async def trivia(ctx, difficulty: str = None):
 	correctIndex = choices.index(html2text.html2text(triviaDatabase["results"][0]["correct_answer"]).replace("\n", ""))
 	reactionsList = ["🇦", "🇧", "🇨", "🇩"]
 
-	embed = discord.Embed(title = "<a:lightbulb:819465502320623657> Trivia", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nreact with your answer within `10` seconds", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = "<a:lightbulb:819465502320623657> Trivia", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nreact with your answer within `10` seconds", color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await message.edit(content = None, embed = embed)
 	
@@ -972,19 +977,19 @@ async def trivia(ctx, difficulty: str = None):
 	except asyncio.TimeoutError:
 		await message.clear_reactions()
 		# points system
-		diffPoints = {"easy": 1, "medium": 2, "hard": 3}
-		with open("points.json", "r") as file:
-			data = json.load(file)
-			if str(ctx.author.id) in data:
-				if data[str(ctx.author.id)] > diffPoints[difficulty]:
-					data[str(ctx.author.id)] -= 1
-				else:
-					data[str(ctx.author.id)] = 0
-		with open("points.json", "w") as file:
-			json.dump(data, file, indent = 2)
+		# diffPoints = {"easy": 1, "medium": 2, "hard": 3}
+		# with open("points.json", "r") as file:
+		# 	data = json.load(file)
+		# 	if str(ctx.author.id) in data:
+		# 		if data[str(ctx.author.id)] > diffPoints[difficulty]:
+		# 			data[str(ctx.author.id)] -= 1
+		# 		else:
+		# 			data[str(ctx.author.id)] = 0
+		# with open("points.json", "w") as file:
+		# 	json.dump(data, file, indent = 2)
 		
 		reactionsList[correctIndex] = bot.checkmarkEmoji
-		embed = discord.Embed(title = f":alarm_clock: Expired! (-{diffPoints[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview leaderboard with `!top`", color = 0xFF383E, timestamp = datetime.utcnow())
+		embed = discord.Embed(title = f":alarm_clock: Expired!", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview leaderboard with `!top`", color = 0xFF383E, timestamp = datetime.utcnow())
 		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 		await message.edit(content = None, embed = embed)
 	
@@ -1012,25 +1017,25 @@ async def trivia(ctx, difficulty: str = None):
 		# wrong answer
 		else:
 			# points system
-			diffPoints = {"easy": 1, "medium": 2, "hard": 3}
-			with open("points.json", "r") as file:
-				data = json.load(file)
-				if str(ctx.author.id) in data:
-					if data[str(ctx.author.id)] > 0:
-						data[str(ctx.author.id)] -= 1
-					else:
-						data[str(ctx.author.id)] = 0
-					# if data[str(ctx.author.id)] > diffPoints[difficulty]:
-					# 	data[str(ctx.author.id)] -= diffPoints[difficulty]
-					# else:
-					# 	data[str(ctx.author.id)] = 0
-			with open("points.json", "w") as file:
-				json.dump(data, file, indent = 2)
+			# diffPoints = {"easy": 1, "medium": 2, "hard": 3}
+			# with open("points.json", "r") as file:
+			# 	data = json.load(file)
+			# 	if str(ctx.author.id) in data:
+			# 		if data[str(ctx.author.id)] > 0:
+			# 			data[str(ctx.author.id)] -= 1
+			# 		else:
+			# 			data[str(ctx.author.id)] = 0
+			# 		# if data[str(ctx.author.id)] > diffPoints[difficulty]:
+			# 		# 	data[str(ctx.author.id)] -= diffPoints[difficulty]
+			# 		# else:
+			# 		# 	data[str(ctx.author.id)] = 0
+			# with open("points.json", "w") as file:
+			# 	json.dump(data, file, indent = 2)
 			
 			# embed
 			reactionsList[reactionsList.index(str(reaction.emoji))] = bot.errorEmoji
 			reactionsList[correctIndex] = bot.checkmarkEmoji
-			embed = discord.Embed(title = f"{bot.errorEmoji} Incorrect! (-1 point)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview leaderboard with `!top`", color = 0xFF383E, timestamp = datetime.utcnow())
+			embed = discord.Embed(title = f"{bot.errorEmoji} Incorrect!", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview leaderboard with `!top`", color = 0xFF383E, timestamp = datetime.utcnow())
 			embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 			await message.edit(content = None, embed = embed)
 		print(f"{bot.commandLabel} Trivia")
@@ -1109,7 +1114,7 @@ async def chess(ctx, link):
 async def pfp(ctx, member: discord.Member = None):
 	await ctx.trigger_typing()
 	member = ctx.author if not member else member
-	embed = discord.Embed(title = ":frame_photo: Profile Picture", description = member.mention, color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":frame_photo: Profile Picture", description = member.mention, color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_image(url = member.avatar_url)
 	await ctx.send(embed = embed)
@@ -1122,14 +1127,14 @@ async def emojis(ctx):
 	firstHalf = ""
 	for output in bot.server.emojis[:num]:
 		firstHalf += str(output)
-	embed = discord.Embed(title = ":small_red_triangle: Emojis (Page 1/2)", description = firstHalf, color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":small_red_triangle: Emojis (Page 1/2)", description = firstHalf, color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await ctx.send(embed = embed)
 	await ctx.trigger_typing()
 	secondHalf = ""
 	for output in bot.server.emojis[num:]:
 		firstHalf += str(output)
-	embed = discord.Embed(title = ":small_red_triangle: Emojis (Page 2/2)", description = secondHalf, color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":small_red_triangle: Emojis (Page 2/2)", description = secondHalf, color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await ctx.send(embed = embed)
 
@@ -1137,7 +1142,7 @@ async def emojis(ctx):
 @commands.cooldown(1, 5, BucketType.user) 
 async def schedule(ctx):
 	await ctx.trigger_typing()
-	embed = discord.Embed(title = ":bell: DVHS Bell Schedule", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":bell: DVHS Bell Schedule", color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_image(url = "https://i.imgur.com/ES49tLo.jpg")
 	await ctx.send(embed = embed)
@@ -1251,7 +1256,7 @@ async def dm(ctx, member: discord.Member, *, message):
 @bot.command(aliases = ["servericon"])
 @commands.cooldown(1, 5, BucketType.user) 
 async def icon(ctx):
-	embed = discord.Embed(title = ":frame_photo: Server Icon", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":frame_photo: Server Icon", color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_image(url = bot.server.icon_url)
 	await ctx.send(embed = embed)
@@ -1312,7 +1317,7 @@ async def allahs(ctx):
 		output += f"\n{member.mention}"
 		if member.id == 320369001005842435:
 			output += " :crown:"
-	embed = discord.Embed(title = ":pray: Allahs", description = output, color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":pray: Allahs", description = output, color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await ctx.send(embed = embed)
 		
@@ -1427,7 +1432,7 @@ async def muted(ctx):
 			id = int(mute["id"].split()[0])
 			output += bot.get_user(id).mention + "\n"
 	
-	embed = discord.Embed(title = ":mute: Muted", description = f"{output}", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":mute: Muted", description = f"{output}", color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	await ctx.send(embed = embed)
 	print(f"{bot.commandLabel} Muted")
@@ -1441,7 +1446,7 @@ async def predict(ctx, *, question: str):
 	apiURL = "https://8ball.delegator.com/magic/JSON/" + question
 	reply = requests.get(apiURL)
 	rpDatabase = reply.json()
-	embed = discord.Embed(title = ":8ball: The Mighty 8Ball", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":8ball: The Mighty 8Ball", color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.add_field(name = "Question", value = question, inline = False)
 	embed.add_field(name = "Response", value = rpDatabase["magic"]["answer"], inline = False)
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
@@ -1458,7 +1463,7 @@ async def flip(ctx):
 	await ctx.trigger_typing()
 	responses = {"Heads": "https://i.imgur.com/92xg7uR.png", "Tails": "https://i.imgur.com/TjqDdBI.png"}
 	choice = random.choice(["Heads", "Tails"])
-	embed = discord.Embed(title = "<:discord_coin:728695789316210860> Flip a Coin", description = f"It's `{choice}`", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = "<:discord_coin:728695789316210860> Flip a Coin", description = f"It's `{choice}`", color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_thumbnail(url = responses[choice])
 	await ctx.send(embed = embed)
@@ -1659,7 +1664,7 @@ async def pp(ctx):
 	elif length <= 40:
 		rating = "BBC"
 
-	embed = discord.Embed(title = ":eggplant: PP Rater", description = f"8{output}D \n**Length:** `{round(length, 2)}` inches \n**Rating:** `{rating}`", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = ":eggplant: PP Rater", description = f"8{output}D \n**Length:** `{round(length, 2)}` inches \n**Rating:** `{rating}`", color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	embed.set_thumbnail(url = ctx.author.avatar_url)
 	await ctx.send(embed = embed)
@@ -1671,7 +1676,7 @@ async def pp(ctx):
 @commands.cooldown(1, 5, BucketType.user) 
 async def ip(ctx):
 	await ctx.trigger_typing()
-	embed = discord.Embed(title = f"{bot.minecraftEmoji} Minecraft Server IPs", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	embed = discord.Embed(title = f"{bot.minecraftEmoji} Minecraft Server IPs", color = 0xffd54f, timestamp = datetime.utcnow())
 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 
 	a = "<a:dndGIF:791185650996346891>"
@@ -1702,7 +1707,7 @@ async def mod(ctx, member: discord.Member):
 		if bot.memberRole in member.roles:
 			await member.remove_roles(bot.memberRole)
 			await member.add_roles(bot.moderatorRole)
-			embed = discord.Embed(title = "<:upvote:732640878145044623> Demoted", description = f"{member.mention} is now a {bot.moderatorRole.mention}", color = 0xFFFFFE, timestamp = datetime.utcnow())			 
+			embed = discord.Embed(title = "<:upvote:732640878145044623> Demoted", description = f"{member.mention} is now a {bot.moderatorRole.mention}", color = 0xffd54f, timestamp = datetime.utcnow())			 
 			embed.set_footer(text = f"Demoted by {ctx.author}", icon_url = ctx.author.avatar_url)
 			embed.set_thumbnail(url = member.avatar_url)
 			await ctx.send(embed = embed)
@@ -1723,7 +1728,7 @@ async def unmod(ctx, member: discord.Member):
 		if bot.moderatorRole in member.roles:
 			await member.remove_roles(bot.moderatorRole)
 			await member.add_roles(bot.memberRole)
-			embed = discord.Embed(title = "<:downvote:732640878249902161> Demoted", description = f"{member.mention} is now a {bot.memberRole.mention}", color = 0xFFFFFE, timestamp = datetime.utcnow())			 
+			embed = discord.Embed(title = "<:downvote:732640878249902161> Demoted", description = f"{member.mention} is now a {bot.memberRole.mention}", color = 0xffd54f, timestamp = datetime.utcnow())			 
 			embed.set_footer(text = f"Demoted by {ctx.author}", icon_url = ctx.author.avatar_url)
 			embed.set_thumbnail(url = member.avatar_url)
 			await ctx.send(embed = embed)
@@ -1740,7 +1745,7 @@ async def unmod(ctx, member: discord.Member):
 async def invite(ctx):
 	await ctx.trigger_typing()
 	await ctx.send("discord.gg/fG8vTrj")
-	# embed = discord.Embed(title = ":inbox_tray: Server Invite Link", description = bot.serverInviteURL, color = 0xFFFFFE, timestamp = datetime.utcnow())
+	# embed = discord.Embed(title = ":inbox_tray: Server Invite Link", description = bot.serverInviteURL, color = 0xffd54f, timestamp = datetime.utcnow())
 	# embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	# embed.set_thumbnail(url = bot.server.icon_url)
 	# await ctx.send(embed = embed)
@@ -1773,7 +1778,7 @@ async def ping(ctx):
 	if seconds > 1 or seconds == 0:
 		sunit += "s"
 
-	e = discord.Embed(title = "🏓 Pong!", color = 0xFFFFFE, timestamp = datetime.utcnow())
+	e = discord.Embed(title = "🏓 Pong!", color = 0xffd54f, timestamp = datetime.utcnow())
 	e.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 	e.add_field(name = ":signal_strength: Latency", value = f"`{round(bot.latency * 1000)}`ms", inline = True)
 	e.add_field(name = ":robot: Hardware", value = f"`{psutil.cpu_count()}` Cores \n`{round(psutil.cpu_percent())}`% CPU Usage \n`{round(psutil.virtual_memory().percent)}`% RAM Usage", inline = True)
@@ -1786,7 +1791,7 @@ async def ping(ctx):
 # @commands.cooldown(1, 5, BucketType.user) 
 # async def help(ctx):
 # 	await ctx.trigger_typing()
-# 	embed = discord.Embed(title = "Help Section", color = 0xFFFFFE, timestamp = datetime.utcnow())
+# 	embed = discord.Embed(title = "Help Section", color = 0xffd54f, timestamp = datetime.utcnow())
 # 	embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
 # 	embed.set_thumbnail(url = bot.server.icon_url)
 # 	embed.add_field(name = ":bust_in_silhouette: User Profile", value = "`!profile` \n`!profile @user`", inline = True)
@@ -1814,7 +1819,7 @@ bot.run(os.environ.get("token"), bot = True, reconnect = True)
 
 # junk shit for on_ready
 # subjectRolesMessage = await bot.rolesChannel.fetch_message(759521601170833469)
-# embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xFFFFFE)
+# embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xffd54f)
 # embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
 # embed.set_thumbnail(url = bot.server.icon_url)
 # await subjectRolesMessage.edit(embed = embed)
@@ -1828,13 +1833,13 @@ bot.run(os.environ.get("token"), bot = True, reconnect = True)
 # {bot.minecraftEmoji} {bot.minecraftRole.mention} 
 # {bot.skribblEmoji} {bot.skribblRole.mention} 
 # {bot.valorantEmoji} {bot.valorantRole.mention}
-# {bot.vcEmoji} {bot.vcRole.mention}""", color = 0xFFFFFE)
+# {bot.vcEmoji} {bot.vcRole.mention}""", color = 0xffd54f)
 # embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
 # embed.set_thumbnail(url = bot.server.icon_url)
 # await gameRolesMessage.edit(embed = embed)
 
 # rulesMessage = await bot.rulesChannel.fetch_message(790036264648441897)
-# embed = discord.Embed(title = "Rules :scroll:", color = 0xFFFFFE)
+# embed = discord.Embed(title = "Rules :scroll:", color = 0xffd54f)
 # embed.set_footer(text = "Server Rules", icon_url = bot.server.icon_url)
 # embed.set_thumbnail(url = bot.server.icon_url)
 # embed.add_field(name = "Common Sense", value = f"""
@@ -1858,7 +1863,7 @@ bot.run(os.environ.get("token"), bot = True, reconnect = True)
 # await rulesMessage.edit(embed = embed)
 
 # channelsMessage1 = await bot.channelsChannel.fetch_message(790467696860594207)
-# embed = discord.Embed(title = "Channels :computer:", description = "ayo wtf are these channels for??", color = 0xFFFFFE)
+# embed = discord.Embed(title = "Channels :computer:", description = "ayo wtf are these channels for??", color = 0xffd54f)
 # embed.set_footer(text = "Server Channels", icon_url = bot.server.icon_url)
 # embed.set_thumbnail(url = bot.server.icon_url)
 # embed.add_field(name = "Text Channels", value = f"""
@@ -1874,7 +1879,7 @@ bot.run(os.environ.get("token"), bot = True, reconnect = True)
 # await channelsMessage1.edit(embed = embed)
 
 # channelsMessage2 = await bot.channelsChannel.fetch_message(790467697841274890)
-# embed = discord.Embed(title = "Channels :computer:", color = 0xFFFFFE)
+# embed = discord.Embed(title = "Channels :computer:", color = 0xffd54f)
 # embed.set_footer(text = "Server Channels", icon_url = bot.server.icon_url)
 # embed.set_thumbnail(url = bot.server.icon_url)
 # embed.add_field(name = "Text Channels Continued...", value = f"""

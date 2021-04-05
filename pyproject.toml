@@ -20,6 +20,7 @@ html2text = "^2020.1.16"
 discord = "^1.0.1"
 art = "^5.1"
 humanize = "^3.3.0"
+"discord.py" = "^1.7.0"
 
 [tool.poetry.dev-dependencies]
 
