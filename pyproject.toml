@@ -21,6 +21,8 @@ discord = "^1.0.1"
 art = "^5.1"
 humanize = "^3.3.0"
 "discord.py" = "^1.7.0"
+luxand = "^0.7"
+clarifai-grpc = "^7.3.0"
 
 [tool.poetry.dev-dependencies]
 
