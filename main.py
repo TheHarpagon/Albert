@@ -198,7 +198,7 @@ async def on_ready():
   #   print(f"{bot.eventLabel} Unmuted (Automatic)")
   
   rulesMessage = await bot.rulesChannel.fetch_message(790036264648441897)
-  embed = discord.Embed(title = "Rules :scroll:", color = 0xffd54f)
+  embed = discord.Embed(title = "Rules :scroll:", color = 0xe67e22)
   embed.set_footer(text = "Server Rules", icon_url = bot.server.icon_url)
   embed.set_thumbnail(url = bot.server.icon_url)
   embed.add_field(name = "Common Sense", value = f"""
@@ -222,7 +222,7 @@ async def on_ready():
   await rulesMessage.edit(embed = embed)
 
   subjectRolesMessage = await bot.rolesChannel.fetch_message(759521601170833469)
-  embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xffd54f)
+  embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xe67e22)
   embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
   embed.set_thumbnail(url = bot.server.icon_url)
   await subjectRolesMessage.edit(embed = embed)
@@ -236,7 +236,7 @@ async def on_ready():
   {bot.minecraftEmoji} {bot.minecraftRole.mention} 
   {bot.skribblEmoji} {bot.skribblRole.mention} 
   {bot.valorantEmoji} {bot.valorantRole.mention}
-  {bot.vcEmoji} {bot.vcRole.mention}""", color = 0xffd54f)
+  {bot.vcEmoji} {bot.vcRole.mention}""", color = 0xe67e22)
   embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
   embed.set_thumbnail(url = bot.server.icon_url)
   await gameRolesMessage.edit(embed = embed)
@@ -246,7 +246,7 @@ bot.run(os.environ.get("token"), bot = True, reconnect = True)
 
 # junk shit for on_ready
 # subjectRolesMessage = await bot.rolesChannel.fetch_message(759521601170833469)
-# embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xffd54f)
+# embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xe67e22)
 # embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
 # embed.set_thumbnail(url = bot.server.icon_url)
 # await subjectRolesMessage.edit(embed = embed)
@@ -260,13 +260,13 @@ bot.run(os.environ.get("token"), bot = True, reconnect = True)
 # {bot.minecraftEmoji} {bot.minecraftRole.mention} 
 # {bot.skribblEmoji} {bot.skribblRole.mention} 
 # {bot.valorantEmoji} {bot.valorantRole.mention}
-# {bot.vcEmoji} {bot.vcRole.mention}""", color = 0xffd54f)
+# {bot.vcEmoji} {bot.vcRole.mention}""", color = 0xe67e22)
 # embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
 # embed.set_thumbnail(url = bot.server.icon_url)
 # await gameRolesMessage.edit(embed = embed)
 
 # rulesMessage = await bot.rulesChannel.fetch_message(790036264648441897)
-# embed = discord.Embed(title = "Rules :scroll:", color = 0xffd54f)
+# embed = discord.Embed(title = "Rules :scroll:", color = 0xe67e22)
 # embed.set_footer(text = "Server Rules", icon_url = bot.server.icon_url)
 # embed.set_thumbnail(url = bot.server.icon_url)
 # embed.add_field(name = "Common Sense", value = f"""
@@ -290,7 +290,7 @@ bot.run(os.environ.get("token"), bot = True, reconnect = True)
 # await rulesMessage.edit(embed = embed)
 
 # channelsMessage1 = await bot.channelsChannel.fetch_message(790467696860594207)
-# embed = discord.Embed(title = "Channels :computer:", description = "ayo wtf are these channels for??", color = 0xffd54f)
+# embed = discord.Embed(title = "Channels :computer:", description = "ayo wtf are these channels for??", color = 0xe67e22)
 # embed.set_footer(text = "Server Channels", icon_url = bot.server.icon_url)
 # embed.set_thumbnail(url = bot.server.icon_url)
 # embed.add_field(name = "Text Channels", value = f"""
@@ -306,7 +306,7 @@ bot.run(os.environ.get("token"), bot = True, reconnect = True)
 # await channelsMessage1.edit(embed = embed)
 
 # channelsMessage2 = await bot.channelsChannel.fetch_message(790467697841274890)
-# embed = discord.Embed(title = "Channels :computer:", color = 0xffd54f)
+# embed = discord.Embed(title = "Channels :computer:", color = 0xe67e22)
 # embed.set_footer(text = "Server Channels", icon_url = bot.server.icon_url)
 # embed.set_thumbnail(url = bot.server.icon_url)
 # embed.add_field(name = "Text Channels Continued...", value = f"""

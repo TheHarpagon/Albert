@@ -77,7 +77,7 @@ class Events(commands.Cog):
   @commands.Cog.listener()
   async def on_message_delete(self, message):
     if message.author.bot == False and self.bot.memberRole in message.author.roles and message.channel.id != 690647361139245136:
-      embed = discord.Embed(title = ":wastebasket: Message Deleted", color = 0xffd54f, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":wastebasket: Message Deleted", color = 0xe67e22, timestamp = datetime.utcnow())
       embed.set_footer(text = self.bot.server.name, icon_url = self.bot.server.icon_url)
       embed.set_thumbnail(url = message.author.avatar_url)
       embed.add_field(name = "Author", value = message.author.mention, inline = True)
@@ -91,7 +91,7 @@ class Events(commands.Cog):
   @commands.Cog.listener()
   async def on_message_edit(self, before, after):
     if before.author.bot == False and before.content != after.content and self.bot.memberRole in before.author.roles and before.channel.id != 690647361139245136:
-      embed = discord.Embed(title = ":pencil: Message Edited", color = 0xffd54f, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":pencil: Message Edited", color = 0xe67e22, timestamp = datetime.utcnow())
       embed.set_footer(text = self.bot.server.name, icon_url = self.bot.server.icon_url)
       embed.set_thumbnail(url = before.author.avatar_url)
       embed.add_field(name = "Author", value = before.author.mention, inline = True)

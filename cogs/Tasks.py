@@ -29,7 +29,7 @@ class Tasks(commands.Cog):
         else:
           output = "Period "
           ping = True
-        embed = discord.Embed(title = "<a:rotatingHourglass:817538734597341235> Reminder", description = output + f"`{self.bot.daySchedule[day][stringTime]}` starts in 5 minutes!", color = 0xffd54f, timestamp = datetime.utcnow())
+        embed = discord.Embed(title = "<a:rotatingHourglass:817538734597341235> Reminder", description = output + f"`{self.bot.daySchedule[day][stringTime]}` starts in 5 minutes!", color = 0xe67e22, timestamp = datetime.utcnow())
         embed.set_footer(text = self.bot.server.name, icon_url = self.bot.server.icon_url)
         embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
         if ping:

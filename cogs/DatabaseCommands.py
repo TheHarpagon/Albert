@@ -49,7 +49,7 @@ class DatabaseCommands(commands.Cog):
     async with aiohttp.ClientSession() as session:
       async with session.get("https://uselessfacts.jsph.pl/random.json?language=en") as reply:
         factDB = await reply.json()
-    embed = discord.Embed(title = ":book: A useless fact", description = f"{factDB['text']}", color = 0xffd54f, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":book: A useless fact", description = f"{factDB['text']}", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await message.edit(content = None, embed = embed)
   
@@ -82,7 +82,7 @@ class DatabaseCommands(commands.Cog):
           numbers[0], numbers[1] = numbers[1], numbers[0]
         answer = numbers[0] - numbers[1]
       
-      embed = discord.Embed(title = ":zap: Math Showdown", description = f"First to solve the following wins!\n```py\n{numbers[0]} {operation} {numbers[1]}```", color = 0xffd54f, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":zap: Math Showdown", description = f"First to solve the following wins!\n```py\n{numbers[0]} {operation} {numbers[1]}```", color = 0xe67e22, timestamp = datetime.utcnow())
       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
       await original.edit(content = None, embed = embed)
       
@@ -100,7 +100,7 @@ class DatabaseCommands(commands.Cog):
       async with aiohttp.ClientSession() as session:
         async with session.get("https://random-word-api.herokuapp.com/word?number=1") as reply:
           wordDB = await reply.json()
-      embed = discord.Embed(title = ":zap: Word Showdown", description = f"First to type the following backwards wins!\n```yaml\n{wordDB[0]}```", color = 0xffd54f, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":zap: Word Showdown", description = f"First to type the following backwards wins!\n```yaml\n{wordDB[0]}```", color = 0xe67e22, timestamp = datetime.utcnow())
       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
       await original.edit(content = None, embed = embed)
       def check(message):
@@ -127,7 +127,7 @@ class DatabaseCommands(commands.Cog):
           printedTable += f"||{table[i][j]}|| "
         printedTable += "\n"
       answer = (rowPH[row] + str(column + 1)).lower()
-      embed = discord.Embed(title = ":zap: Bubble Wrap", description = f"First to type the location to {right} wins!\n(ex: `B2` or `2B`)\n\n{printedTable}", color = 0xffd54f, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":zap: Bubble Wrap", description = f"First to type the location to {right} wins!\n(ex: `B2` or `2B`)\n\n{printedTable}", color = 0xe67e22, timestamp = datetime.utcnow())
       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
       await original.edit(content = None, embed = embed)
       def check(message):
@@ -148,10 +148,10 @@ class DatabaseCommands(commands.Cog):
     async with aiohttp.ClientSession() as session:
         async with session.get("https://official-joke-api.appspot.com/jokes/random") as reply:
           jokeDB = await reply.json()
-    embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDB['setup']}**", color = 0xffd54f, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDB['setup']}**", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await message.edit(content = None, embed = embed)
-    embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDB['setup']}**\n{jokeDB['punchline']}", color = 0xffd54f, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDB['setup']}**\n{jokeDB['punchline']}", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await asyncio.sleep(2)
     await message.edit(content = None, embed = embed)
@@ -189,7 +189,7 @@ class DatabaseCommands(commands.Cog):
             output += f"\n**{ordinal(i + 1)}** "
           output += lb[i]
     
-    embed = discord.Embed(title = ":trophy: Leaderboard", description = f"Top 15 of the `!trivia` command users\n{output}", color = 0xffd54f, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":trophy: Leaderboard", description = f"Top 15 of the `!trivia` command users\n{output}", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
 
@@ -198,7 +198,7 @@ class DatabaseCommands(commands.Cog):
   async def mlink(self, ctx):
     arr = ["A", "1", "2", "3", "4", "5", "6"]
 
-    embed = discord.Embed(title = "Link Meetings", description = "What is your schedule?\nex: 1-6", color = 0xffd54f, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = "Link Meetings", description = "What is your schedule?\nex: 1-6", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
     await ctx.send(embed = embed)
@@ -333,18 +333,18 @@ class DatabaseCommands(commands.Cog):
               return
             print(len(results["ParsedResults"][0]["ParsedText"]))
             if len(results["ParsedResults"][0]["ParsedText"]) > 1898:
-              embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms", color = 0xffd54f, timestamp = datetime.utcnow())
+              embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms", color = 0xe67e22, timestamp = datetime.utcnow())
               embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
               with tempfile.TemporaryFile(mode = "w+") as file:
                 file.write(results["ParsedResults"][0]["ParsedText"])
                 file.seek(0)
                 await message.delete()
-                embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms", color = 0xffd54f, timestamp = datetime.utcnow())
+                embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms", color = 0xe67e22, timestamp = datetime.utcnow())
                 embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
                 await ctx.send(embed = embed)
                 await ctx.send(file = discord.File(file, filename = "response.txt"))
                 return
-            embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms\n\nDetected Text:\n```yaml\n{results['ParsedResults'][0]['ParsedText']}```", color = 0xffd54f, timestamp = datetime.utcnow())
+            embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms\n\nDetected Text:\n```yaml\n{results['ParsedResults'][0]['ParsedText']}```", color = 0xe67e22, timestamp = datetime.utcnow())
             embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
             await message.edit(content = None, embed = embed)
           else:
@@ -398,7 +398,7 @@ class DatabaseCommands(commands.Cog):
     async with aiohttp.ClientSession() as session:
         async with session.get("https://evilinsult.com/generate_insult.php?lang=en&type=json") as reply:
           roastDB = await reply.json()
-    embed = discord.Embed(title = ":pensive: An insult", description = roastDB["insult"], color = 0xffd54f, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":pensive: An insult", description = roastDB["insult"], color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await message.edit(content = None, embed = embed)
   
@@ -412,7 +412,7 @@ class DatabaseCommands(commands.Cog):
   #   URLs = [URL]
   #   shortenedURL = shortener.shorten_urls(URLs)
   #   print(shortenedURL)
-  #   embed = discord.Embed(title = ":link: Shortened Link", description = shortenedURL[0], color = 0xffd54f, timestamp = datetime.utcnow())
+  #   embed = discord.Embed(title = ":link: Shortened Link", description = shortenedURL[0], color = 0xe67e22, timestamp = datetime.utcnow())
   #   embed.set_footer(text = f"Requested by {ctx.author}", icon_url = self.bot.user.avatar_url)
   #   embed.set_thumbnail(url = "https://i.imgur.com/YmjXC7s.png")
   #   await message.edit(content = None, embed = embed)
@@ -476,7 +476,7 @@ class DatabaseCommands(commands.Cog):
     correctIndex = choices.index(html2text.html2text(triviaDB["results"][0]["correct_answer"]).replace("\n", ""))
     reactionsList = ["🇦", "🇧", "🇨", "🇩"]
 
-    embed = discord.Embed(title = "<a:lightbulb:819465502320623657> Trivia", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nreact with your answer within `10` seconds", color = 0xffd54f, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = "<a:lightbulb:819465502320623657> Trivia", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nreact with your answer within `10` seconds", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await message.edit(content = None, embed = embed)
     
@@ -607,7 +607,7 @@ class DatabaseCommands(commands.Cog):
     
     sunrise = datetime.fromtimestamp(int(weatherDB["sys"]["sunrise"])) - timedelta(hours = 8)
     sunset = datetime.fromtimestamp(int(weatherDB["sys"]["sunset"])) - timedelta(hours = 8)
-    embed = discord.Embed(title = ":partly_sunny: Weather", color = 0xffd54f, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":partly_sunny: Weather", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_thumbnail(url = f"https://openweathermap.org/img/wn/{weatherDB['weather'][0]['icon']}@4x.png")
     embed.add_field(name = "City", value = f"`{weatherDB['name']}`, `{weatherDB['sys']['country']}`", inline = True)
@@ -629,7 +629,7 @@ class DatabaseCommands(commands.Cog):
     async with aiohttp.ClientSession() as session:
         async with session.get(f"https://8ball.delegator.com/magic/JSON/{question}") as reply:
           predictDB = await reply.json()
-    embed = discord.Embed(title = ":8ball: The Mighty 8Ball", color = 0xffd54f, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":8ball: The Mighty 8Ball", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.add_field(name = "Question", value = question, inline = False)
     embed.add_field(name = "Response", value = predictDB["magic"]["answer"], inline = False)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
