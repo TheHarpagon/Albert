@@ -25,7 +25,7 @@ class Tasks(commands.Cog):
           output = ":dividers: "
         elif "Student Support" in self.bot.daySchedule[day][stringTime]:
           output = ":jigsaw: "
-          ping  = True
+          ping = True
         else:
           output = "Period "
           ping = True
