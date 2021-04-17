@@ -215,7 +215,6 @@ class DatabaseCommands(commands.Cog):
   
   # mute command
   @commands.command(aliases = ["stfu"])
-  @commands.cooldown(1, 10, BucketType.user) 
   async def mute(self, ctx, user: str, mtime = None):
     mutes = {}
     muteDatabase = tinydb.TinyDB("cogs/muteDatabase.json")
@@ -555,7 +554,6 @@ class DatabaseCommands(commands.Cog):
   
   # unmute command
   @commands.command(aliases = ["unstfu"])
-  @commands.cooldown(1, 5, BucketType.user) 
   async def unmute(self, ctx, user: str):
     mutes = {}
     muteDatabase = tinydb.TinyDB("cogs/muteDatabase.json")
