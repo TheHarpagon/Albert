@@ -1,4 +1,4 @@
-from art import *
+import art
 from datetime import datetime
 import discord
 from discord.ext import commands
@@ -181,7 +181,7 @@ async def on_ready():
   bot.startTime = datetime.now()
   await bot.updateStatus()
   print(f"discord.py version: {discord.__version__}")
-  tprint(bot.user.name)
+  art.tprint(bot.user.name)
   # for i in muteDatabase:
   #   ids = i["id"].split(" ")
   #   server = bot.get_guild(int(ids[1]))

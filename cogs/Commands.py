@@ -108,6 +108,11 @@ class Commands(commands.Cog):
     embed.set_thumbnail(url = responses[choice])
     await ctx.send(embed = embed)
   
+  # @commands.command()
+  # async def help(self, ctx):
+  #   await ctx.trigger_typing()
+
+  
   @commands.command(aliases = ["servericon"])
   @commands.cooldown(1, 5, BucketType.user) 
   async def icon(self, ctx):

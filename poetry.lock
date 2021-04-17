@@ -171,7 +171,7 @@ description = "A Python wrapper for the Discord API"
 name = "discord.py"
 optional = false
 python-versions = ">=3.5.3"
-version = "1.7.0"
+version = "1.7.1"
 
 [package.dependencies]
 aiohttp = ">=3.6.0,<3.8.0"
@@ -562,7 +562,7 @@ idna = ">=2.0"
 multidict = ">=4.0"
 
 [metadata]
-content-hash = "f4a042dd95e22914ef63dc243528304664a74d3795a5b8568e0601c7e80ce65c"
+content-hash = "b6c241956eebdfeb15b5ac95463db63b8130f605464a12d47b5adf2ea343f25c"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -662,8 +662,8 @@ discord = [
     {file = "discord-1.0.1.tar.gz", hash = "sha256:ff6653655e342e7721dfb3f10421345fd852c2a33f2cca912b1c39b3778a9429"},
 ]
 "discord.py" = [
-    {file = "discord.py-1.7.0-py3-none-any.whl", hash = "sha256:330edfa11e59c1d1eae31e68f02f8cfcea2702813439dfe58dd587018979e1c9"},
-    {file = "discord.py-1.7.0.tar.gz", hash = "sha256:1b05150e767c4a18941d863d819844ecef8395b0ca3784055d78770b8fa70b68"},
+    {file = "discord.py-1.7.1-py3-none-any.whl", hash = "sha256:399b80d576a63fa901300e80080568e1d9cd9c21260ca622fd7145c0009278fa"},
+    {file = "discord.py-1.7.1.tar.gz", hash = "sha256:82bc5e6325ab7557db9c466f638c98e18be03c330f56ad9bf4c18bdcf19faf55"},
 ]
 emoji = [
     {file = "emoji-1.2.0-py3-none-any.whl", hash = "sha256:6b19b65da8d6f30551eead1705539cc0eadcd9e33a6ecbc421a29b87f96287eb"},
