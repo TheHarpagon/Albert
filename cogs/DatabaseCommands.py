@@ -8,6 +8,7 @@ from discord.ext.commands import BucketType
 import html2text
 import json
 from ordinal import ordinal
+import pastebin
 import portolan
 import random
 import requests
@@ -635,6 +636,21 @@ class DatabaseCommands(commands.Cog):
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_thumbnail(url = "https://i.imgur.com/LkSBSuR.gif")
     await message.edit(content = None, embed = embed)
+  
+  # # upload commands
+  # @commands.command()
+  # @commands.cooldown(1, 15, BucketType.user) 
+  # async def upload(self, ctx):
+  #   message = await ctx.send(f"{self.bot.loadingEmoji} Loading... (this will take a bit)")
+  #   if ctx.message.attachments:
+  #     for i in ctx.message.attachments:
+  #       # 71cc188d6f0ff7d6ba026bccb2a9b585
+
+  #       embed = discord.Embed(title = ":desktop: Uploaded File", description = "", color = 0xe67e22, timestamp = datetime.utcnow())
+  #       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+  #       await message.edit(content = None, embed = embed)
+  #   else:
+  #     await message.edit(content = f"{self.bot.errorEmoji} Try attaching something")
 
 def setup(bot):
   bot.add_cog(DatabaseCommands(bot))

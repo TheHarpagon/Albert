@@ -23,6 +23,8 @@ humanize = "^3.3.0"
 luxand = "^0.7"
 clarifai-grpc = "^7.3.0"
 "discord.py" = "^1.7.1"
+filestack-python = "^3.3.0"
+pastebin = "^1.1.2"
 
 [tool.poetry.dev-dependencies]
 

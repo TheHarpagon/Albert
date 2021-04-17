@@ -193,6 +193,18 @@ dev = ["pytest", "coverage", "coveralls"]
 
 [[package]]
 category = "main"
+description = "Filestack Python SDK"
+name = "filestack-python"
+optional = false
+python-versions = "*"
+version = "3.3.0"
+
+[package.dependencies]
+requests = "2.25.1"
+trafaret = "2.0.2"
+
+[[package]]
+category = "main"
 description = "A simple framework for building complex web applications."
 name = "flask"
 optional = false
@@ -370,6 +382,17 @@ test = ["pytest (>=5.0.1)", "pytest-xdist", "hypothesis (>=3.58)"]
 
 [[package]]
 category = "main"
+description = "Python Pastebin API interaction object."
+name = "pastebin"
+optional = false
+python-versions = "*"
+version = "1.1.2"
+
+[package.dependencies]
+setuptools = "*"
+
+[[package]]
+category = "main"
 description = "plugin and hook calling mechanisms for python"
 name = "pluggy"
 optional = false
@@ -518,6 +541,18 @@ version = "0.10.2"
 
 [[package]]
 category = "main"
+description = "Validation and parsing library"
+name = "trafaret"
+optional = false
+python-versions = "*"
+version = "2.0.2"
+
+[package.extras]
+objectid = ["pymongo (>=2.4.1)"]
+rfc3339 = ["python-dateutil (>=1.5)"]
+
+[[package]]
+category = "main"
 description = "Backported and Experimental Type Hints for Python 3.5+"
 name = "typing-extensions"
 optional = false
@@ -562,7 +597,7 @@ idna = ">=2.0"
 multidict = ">=4.0"
 
 [metadata]
-content-hash = "b6c241956eebdfeb15b5ac95463db63b8130f605464a12d47b5adf2ea343f25c"
+content-hash = "e86ad4ee638640885b69df6bcb5ee39b013498fec57326eef8d0100e5c13acaf"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -668,6 +703,10 @@ discord = [
 emoji = [
     {file = "emoji-1.2.0-py3-none-any.whl", hash = "sha256:6b19b65da8d6f30551eead1705539cc0eadcd9e33a6ecbc421a29b87f96287eb"},
     {file = "emoji-1.2.0.tar.gz", hash = "sha256:496f432058567985838c13d67dde84ca081614a8286c0b9cdc7d63dfa89d51a3"},
+]
+filestack-python = [
+    {file = "filestack-python-3.3.0.tar.gz", hash = "sha256:d06a6c598355e097cf0b9f64af36538665cb1ab15bfed55529cdf1a7d59acec2"},
+    {file = "filestack_python-3.3.0-py3-none-any.whl", hash = "sha256:b99c857f8b089c460d0dbe7e1fb7e4405b192eb79ad85167444af82660698c82"},
 ]
 flask = [
     {file = "Flask-1.1.2-py2.py3-none-any.whl", hash = "sha256:8a4fdd8936eba2512e9c85df320a37e694c93945b33ef33c89946a340a238557"},
@@ -912,6 +951,9 @@ pandas = [
     {file = "pandas-1.2.0-cp39-cp39-win_amd64.whl", hash = "sha256:616478c1bd8fe1e600f521ae2da434e021c11e7a4e5da3451d02906143d3629a"},
     {file = "pandas-1.2.0.tar.gz", hash = "sha256:e03386615b970b8b41da6a68afe717626741bb2431cec993640685614c0680e4"},
 ]
+pastebin = [
+    {file = "Pastebin-1.1.2.tar.gz", hash = "sha256:ac7fb9cd9130a188cb1188186ab8f2607513f76ec599e78ed7c902ce816f116b"},
+]
 pluggy = [
     {file = "pluggy-0.13.1-py2.py3-none-any.whl", hash = "sha256:966c145cd83c96502c3c3868f50408687b38434af77734af1e9ca461a4081d2d"},
     {file = "pluggy-0.13.1.tar.gz", hash = "sha256:15b2acde666561e1298d71b523007ed7364de07029219b604cf808bfa1c765b0"},
@@ -1010,6 +1052,10 @@ tinydb = [
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
     {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
+]
+trafaret = [
+    {file = "trafaret-2.0.2-py3-none-any.whl", hash = "sha256:5d560577cb7f5ec015cdb9298e46ec07fd9e0224bc0aaecc7d0fa0e92ea251d9"},
+    {file = "trafaret-2.0.2.tar.gz", hash = "sha256:61dfc25b574f70bfdf7ee3a808ec423061811c13a10b8d3c9e11ab539b96ab65"},
 ]
 typing-extensions = [
     {file = "typing_extensions-3.7.4.3-py2-none-any.whl", hash = "sha256:dafc7639cde7f1b6e1acc0f457842a83e722ccca8eef5270af2d74792619a89f"},

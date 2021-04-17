@@ -14,7 +14,7 @@ class Tasks(commands.Cog):
     time = datetime.now(timezone)
     stringTime = time.strftime("%I:%M %p")
     # adjust day if schedule is off
-    day = time.isoweekday() + 1
+    day = time.isoweekday()
     if day in self.bot.daySchedule:
       if stringTime in self.bot.daySchedule[day]:
         output = ""
