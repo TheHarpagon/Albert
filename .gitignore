@@ -1,8 +1,15 @@
+# bot token
 .env
-afks.json
-mlinks.json
-muteDatabase.json
-points.json
+
+# json databases
+cogs/afks.json
+cogs/mlinks.json
+cogs/muteDatabase.json
+cogs/points.json
+
+# object ID and other variable assignments
 variables.py
+
+# cache and extras
 __pycache__/
 *.py[cod]

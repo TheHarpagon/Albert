@@ -5,13 +5,13 @@ from discord.ext import commands
 import json
 from keepAlive import keepAlive
 import os
-import tinydb
+# import tinydb
 import variables
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix = "!", intents = intents, case_insensitive = True)
-mutes = {}
-muteDatabase = tinydb.TinyDB("muteDatabase.json")
-query = tinydb.Query()
+# mutes = {}
+# muteDatabase = tinydb.TinyDB("muteDatabase.json")
+# query = tinydb.Query()
 
 async def assignments():
   s = bot.get_guild(variables.serverID)
@@ -135,7 +135,7 @@ async def assignments():
     for member in s.members:
       if str(member.id) not in data and member.display_name.startswith("[AFK] "):
         data[str(member.id)] = [str(datetime.now()), None]
-  with open("afks.json", "w") as file:
+  with open("cogs/afks.json", "w") as file:
     json.dump(data, file, indent = 2)
 
   def botOwner(ctx):
@@ -242,7 +242,7 @@ async def on_ready():
   await gameRolesMessage.edit(embed = embed)
 
 keepAlive()
-bot.run(os.environ.get("token"), bot = True, reconnect = True)
+bot.run(os.environ["token"], bot = True, reconnect = True)
 
 # junk shit for on_ready
 # subjectRolesMessage = await bot.rolesChannel.fetch_message(759521601170833469)

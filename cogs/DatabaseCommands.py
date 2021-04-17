@@ -7,8 +7,7 @@ from discord.ext import commands
 from discord.ext.commands import BucketType
 import html2text
 import json
-from ordinal import ordinal
-import pastebin
+import ordinal
 import portolan
 import random
 import requests
