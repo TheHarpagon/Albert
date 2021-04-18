@@ -21,10 +21,11 @@ class DatabaseCommands(commands.Cog):
     self.bot = bot
   
   @commands.command()
-  @commands.cooldown(1, 10, BucketType.user)
   async def afk(self, ctx, *, message = None):
     if ctx.author.display_name.startswith("[AFK] "):
       return
+    if ctx.message.mentions:
+      await ctx.send(f"{self.bot.errorEmoji} You can't ping anything in your status")
     else:
       if not self.bot.botOwner(ctx):
         if len(ctx.author.display_name) <= 26:

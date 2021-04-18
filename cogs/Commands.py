@@ -15,16 +15,16 @@ class Commands(commands.Cog):
     await ctx.trigger_typing()
     allah = self.bot.server.get_role(736358205994696846)
     if (ctx.author.id == 320369001005842435 and allah in ctx.author.roles) or ctx.author.id == 410590963379994639:
-      if len(allah.members) < 10:
-        if allah not in member.roles:
+      if allah not in member.roles:
+        if len(allah.members) < 10:
           await member.add_roles(allah)
-          await ctx.send(f"{member.mention} is now allah :pray:")
+          await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is now allah :pray:")
         else:
-          await ctx.send("you retard they already allah :pray:")
+          await ctx.send(f"{self.bot.errorEmoji} There can only be 10 hijabs at once")
       else:
-        await ctx.send("there can only be 10 allahs at once :pray:")
+        await ctx.send(f"{self.bot.errorEmoji} They already allah :face_with_raised_eyebrow:")
     else:
-      await ctx.send("shut up retard this is only for virajallah :pray:")
+      await ctx.send(f"{self.bot.errorEmoji} Shut the fuck up haram ass, this is only for virajallah")
   
   @commands.command(aliases = ["hijabs"])
   async def allahs(self, ctx):
@@ -488,10 +488,13 @@ class Commands(commands.Cog):
     await ctx.trigger_typing()
     allah = self.bot.server.get_role(736358205994696846)
     if (ctx.author.id == 320369001005842435 and allah in ctx.author.roles) or ctx.author.id == 410590963379994639:
-      await member.remove_roles(allah)
-      await ctx.send(f"{member.mention} is not allah anymore :angry:")
+      if allah in member.roles:
+        await member.remove_roles(allah)
+        await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is not allah anymore :angry:")
+      else:
+        await ctx.send(f"{self.bot.errorEmoji} {member.mention} is not even allah you dumd :face_with_raised_eyebrow:")
     else:
-      await ctx.send("shut up retard this is only for virajallah :pray:")
+      await ctx.send(f"{self.bot.errorEmoji} Shut the fuck up haram ass, this is only for virajallah")
   
   @commands.command(aliases = ["demod", "demote"])
   async def unmod(self, ctx, member: discord.Member):

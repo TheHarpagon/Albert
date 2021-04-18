@@ -173,14 +173,15 @@ async def assignments():
 # bot startup event
 @bot.event
 async def on_ready():
+  print(f"Loading Cogs:")
   for filename in os.listdir("./cogs"):
     if filename.endswith(".py"):
       bot.load_extension(f"cogs.{filename[:-3]}")
-      print(f"Loaded {filename}!")
+      print(f"- {filename}")
   await assignments()
   bot.startTime = datetime.now()
   await bot.updateStatus()
-  print(f"discord.py version: {discord.__version__}")
+  print(f" DPY Version: {discord.__version__}")
   art.tprint(bot.user.name)
   # for i in muteDatabase:
   #   ids = i["id"].split(" ")

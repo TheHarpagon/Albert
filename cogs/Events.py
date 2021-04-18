@@ -48,7 +48,7 @@ class Events(commands.Cog):
             json.dump(data, file, indent = 2)
           if message.author.id != 410590963379994639:
             await message.author.edit(nick = message.author.display_name[6:])
-          await message.channel.send(f":wave: Welcome back {message.author.mention}, removed your AFK.", delete_after = 3)
+          await message.reply(f":wave: Welcome back, I removed your AFK", delete_after = 3)
           print("✅　AFK (RETURN) Event")
 
     # afk user mentioned
@@ -58,15 +58,15 @@ class Events(commands.Cog):
           data = json.load(file)
           if str(i.id) in data:
             time = datetime.now() - datetime.strptime(data[str(i.id)][0], '%Y-%m-%d %H:%M:%S.%f')
-            nickname = i.display_name[5:]
-            if self.bot.botOwner(message):
+            nickname = i.display_name[6:]
+            if i.id == 410590963379994639:
               nickname = i.display_name
             # w/o message
             if not data[str(i.id)][1]:
-              await message.channel.send(f":zzz: **{nickname}** is AFK ({humanize.naturaltime(time)})", delete_after = 3)
+              await message.channel.send(f":spy: **{nickname}** is AFK ({humanize.naturaltime(time)})")
             # with message
             else:
-              await message.channel.send(f":zzz: **{nickname}** is AFK: `{data[str(i.id)][1]}` ({humanize.naturaltime(time)})", delete_after = 3)
+              await message.channel.send(f":spy: **{nickname}** is AFK: {data[str(i.id)][1]} ({humanize.naturaltime(time)})")
             print("✅　AFK (MENTION) Event")
     
     # viraj moment
@@ -74,6 +74,9 @@ class Events(commands.Cog):
       if message.channel.id == 700074631935295532:
         if "ask" in message.content.lower() or "punz" in message.content.lower():
           await message.delete()
+    
+    # breaks the bot
+    # await self.bot.process_commands(message)
   
   @commands.Cog.listener()
   async def on_message_delete(self, message):
@@ -111,7 +114,7 @@ class Events(commands.Cog):
     if not member.bot:
       await member.add_roles(self.bot.memberRole)
       await self.bot.updateStatus()
-      embed = discord.Embed(title = ":inbox_tray: Member Joined", description = f"You are the `{ordinal(self.bot.userCount(1))}` member!", color = 0x00FF00, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":inbox_tray: Member Joined", description = f"You are the `{ordinal.ordinal(self.bot.userCount(1))}` member!", color = 0x00FF00, timestamp = datetime.utcnow())
       embed.set_footer(text = self.bot.server.name, icon_url = self.bot.server.icon_url)
       embed.set_thumbnail(url = member.avatar_url)
       embed.add_field(name = "Get Roles", value = f"Go to {self.bot.rolesChannel.mention}", inline = False)
@@ -121,7 +124,7 @@ class Events(commands.Cog):
 
     else:
       await member.add_roles(self.bot.botRole)
-      embed = discord.Embed(title = ":inbox_tray: Bot Joined", description = f"You are the `{ordinal(self.bot.userCount(2))}` member!\n{self.bot.botRole.mention} role added", color = 0x00FF00, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":inbox_tray: Bot Joined", description = f"You are the `{ordinal.ordinal(self.bot.userCount(2))}` member!\n{self.bot.botRole.mention} role added", color = 0x00FF00, timestamp = datetime.utcnow())
       embed.set_footer(text = self.bot.server.name, icon_url = self.bot.server.icon_url)
       embed.set_thumbnail(url = member.avatar_url)
       await self.bot.welcomeChannel.send(f"Welcome, {member.mention}", embed = embed)
