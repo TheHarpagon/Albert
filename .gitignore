@@ -1,6 +1,3 @@
-# bot token
-.env
-
 # json databases
 cogs/afks.json
 cogs/mlinks.json
