@@ -5,169 +5,123 @@ from discord.ext import commands
 import json
 from keepAlive import keepAlive
 import os
-# import tinydb
-import variables
-intents = discord.Intents.all()
-bot = commands.Bot(command_prefix = "!", intents = intents, case_insensitive = True)
-# mutes = {}
-# muteDatabase = tinydb.TinyDB("muteDatabase.json")
-# query = tinydb.Query()
+import references
+
+bot = commands.Bot(command_prefix = "!", intents = discord.Intents.all(), case_insensitive = True)
 
 async def assignments():
-  s = bot.get_guild(variables.serverID)
-  bot.server = bot.get_guild(variables.serverID)
-  bot.welcomeChannel = bot.get_channel(variables.welcomeChannelID)
-  bot.rolesChannel = bot.get_channel(variables.rolesChannelID)
-  bot.rulesChannel = bot.get_channel(variables.rulesChannelID)
-  bot.channelsChannel = bot.get_channel(variables.channelsChannelID)
-  bot.logChannel = bot.get_channel(variables.logChannelID)
-  bot.generalChannel = bot.get_channel(variables.generalChannelID)
-  bot.staffOnlyChannel = bot.get_channel(variables.staffOnlyChannelID)
-  bot.joinGameChannel = bot.get_channel(variables.joinGameChannelID)
-  bot.botProfile = s.get_member(variables.rolesChannelID)
-  bot.survivalServerBot = s.get_member(variables.survivalServerBotID)
-  bot.creativeServerBot = s.get_member(variables.creativeServerBotID)
-  bot.eventLabel = variables.eventLabel
-  bot.commandLabel = variables.commandLabel
-  bot.serverInviteURL = variables.serverInviteURL
-  bot.statusPageURL = variables.statusPageURL
+  s = bot.get_guild(references.serverID)
+  bot.server = bot.get_guild(references.serverID)
+  bot.welcomeChannel = bot.get_channel(references.welcomeChannelID)
+  bot.rolesChannel = bot.get_channel(references.rolesChannelID)
+  bot.rulesChannel = bot.get_channel(references.rulesChannelID)
+  bot.logChannel = bot.get_channel(references.logChannelID)
+  bot.generalChannel = bot.get_channel(references.generalChannelID)
+  bot.staffOnlyChannel = bot.get_channel(references.staffOnlyChannelID)
+  bot.joinGameChannel = bot.get_channel(references.joinGameChannelID)
+  bot.botProfile = s.get_member(references.rolesChannelID)
+  bot.survivalServerBot = s.get_member(references.survivalServerBotID)
+  bot.creativeServerBot = s.get_member(references.creativeServerBotID)
 
-  bot.birthdayRole = s.get_role(variables.birthdayRoleID)
-  bot.liveOnTwitchRole = s.get_role(variables.liveOnTwitchRoleID)
-  bot.adminRole = s.get_role(variables.adminRoleID)
-  bot.moderatorRole = s.get_role(variables.moderatorRoleID)
-  bot.mutedRole = s.get_role(variables.mutedRoleID)
-  bot.vipRole = s.get_role(variables.vipRoleID)
-  bot.allahRole = s.get_role(variables.allahRoleID)
-  bot.memberRole = s.get_role(variables.memberRoleID)
-  bot.botRole = s.get_role(variables.botRoleID)
-  bot.devBotRole = s.get_role(variables.devBotRoleID)
+  bot.birthdayRole = s.get_role(references.birthdayRoleID)
+  bot.adminRole = s.get_role(references.adminRoleID)
+  bot.moderatorRole = s.get_role(references.moderatorRoleID)
+  bot.mutedRole = s.get_role(references.mutedRoleID)
+  bot.vipRole = s.get_role(references.vipRoleID)
+  bot.allahRole = s.get_role(references.allahRoleID)
+  bot.memberRole = s.get_role(references.memberRoleID)
+  bot.botRole = s.get_role(references.botRoleID)
   
-  bot.dividerOneRole = s.get_role(variables.dividerOneRoleID)
-  bot.bellScheduleRole = s.get_role(variables.bellScheduleRoleID)
-  bot.helpRole = s.get_role(variables.helpRoleID)
-  bot.precalculusRole = s.get_role(variables.precalculusRoleID)
-  bot.apCalcABRole = s.get_role(variables.apCalcABRoleID)
-  bot.apCalcBCRole = s.get_role(variables.apCalcBCRoleID)
-  bot.hPhysicsRole = s.get_role(variables.hPhysicsRoleID)
-  bot.apPhysicsRole = s.get_role(variables.apPhysicsRoleID)
-  bot.apBiologyRole = s.get_role(variables.apBiologyRoleID)
-  bot.rushRole = s.get_role(variables.rushRoleID)
-  bot.apushRole = s.get_role(variables.apushRoleID)
-  bot.vsNetRole = s.get_role(variables.vsNetRoleID)
-  bot.apcsRole = s.get_role(variables.apcsRoleID)
+  bot.dividerOneRole = s.get_role(references.dividerOneRoleID)
+  bot.bellScheduleRole = s.get_role(references.bellScheduleRoleID)
+  bot.helperRole = s.get_role(references.helperRoleID)
+  bot.precalculusRole = s.get_role(references.precalculusRoleID)
+  bot.apCalcABRole = s.get_role(references.apCalcABRoleID)
+  bot.apCalcBCRole = s.get_role(references.apCalcBCRoleID)
+  bot.hPhysicsRole = s.get_role(references.hPhysicsRoleID)
+  bot.apPhysicsRole = s.get_role(references.apPhysicsRoleID)
+  bot.apBiologyRole = s.get_role(references.apBiologyRoleID)
+  bot.rushRole = s.get_role(references.rushRoleID)
+  bot.apushRole = s.get_role(references.apushRoleID)
+  bot.vsNetRole = s.get_role(references.vsNetRoleID)
+  bot.apcsRole = s.get_role(references.apcsRoleID)
   
-  bot.dividerTwoRole = s.get_role(variables.dividerTwoRoleID)
-  bot.amongUsRole = s.get_role(variables.amongUsRoleID)
-  bot.chessRole = s.get_role(variables.chessRoleID)
-  bot.krunkerRole = s.get_role(variables.krunkerRoleID)
-  bot.minecraftRole = s.get_role(variables.minecraftRoleID)
-  bot.skribblRole = s.get_role(variables.skribblRoleID)
-  bot.valorantRole = s.get_role(variables.valorantRoleID)
-  bot.vcRole = s.get_role(variables.vcRoleID)
+  bot.dividerTwoRole = s.get_role(references.dividerTwoRoleID)
+  bot.amongUsRole = s.get_role(references.amongUsRoleID)
+  bot.chessRole = s.get_role(references.chessRoleID)
+  bot.krunkerRole = s.get_role(references.krunkerRoleID)
+  bot.minecraftRole = s.get_role(references.minecraftRoleID)
+  bot.skribblRole = s.get_role(references.skribblRoleID)
+  bot.valorantRole = s.get_role(references.valorantRoleID)
+  bot.vcRole = s.get_role(references.vcRoleID)
 
-  bot.dividerThreeRole = s.get_role(variables.dividerThreeRoleID)
-  bot.counterRookieRole = s.get_role(variables.counterRookieRoleID)
-  bot.counterBronzeRole = s.get_role(variables.counterBronzeRoleID)
-  bot.counterSilverRole = s.get_role(variables.counterSilverRoleID)
-  bot.counterGoldRole = s.get_role(variables.counterGoldRoleID)
-  bot.counterPlatinumRole = s.get_role(variables.counterPlatinumRoleID)
-  bot.counterDiamondRole = s.get_role(variables.counterDiamondRoleID)
-  bot.counterEmeraldRole = s.get_role(variables.counterEmeraldRoleID)
+  bot.dividerThreeRole = s.get_role(references.dividerThreeRoleID)
+  bot.counterBronzeRole = s.get_role(references.counterBronzeRoleID)
+  bot.counterSilverRole = s.get_role(references.counterSilverRoleID)
+  bot.counterGoldRole = s.get_role(references.counterGoldRoleID)
+  bot.counterDiamondRole = s.get_role(references.counterDiamondRoleID)
+  bot.counterPlatinumRole = s.get_role(references.counterPlatinumRoleID)
+  bot.counterBossRole = s.get_role(references.counterBossRoleID)
 
-  bot.amongUsEmoji = bot.get_emoji(variables.amongUsEmojiID)
-  bot.chessEmoji = bot.get_emoji(variables.chessEmojiID)
-  bot.krunkerEmoji = bot.get_emoji(variables.krunkerEmojiID)
-  bot.minecraftEmoji = bot.get_emoji(variables.minecraftEmojiID)
-  bot.skribblEmoji = bot.get_emoji(variables.skribblEmojiID)
-  bot.valorantEmoji = bot.get_emoji(variables.valorantEmojiID)
-  bot.vcEmoji = bot.get_emoji(variables.vcEmojiID)
-  bot.loadingEmoji = bot.get_emoji(variables.loadingEmojiID)
-  bot.errorEmoji = bot.get_emoji(variables.errorEmojiID)
-  bot.checkmarkEmoji = bot.get_emoji(variables.checkmarkEmojiID)
-  bot.plusEmoji = bot.get_emoji(variables.plusEmojiID)
-  bot.minusEmoji = bot.get_emoji(variables.minusEmojiID)
+  bot.amongUsEmoji = bot.get_emoji(references.amongUsEmojiID)
+  bot.chessEmoji = bot.get_emoji(references.chessEmojiID)
+  bot.krunkerEmoji = bot.get_emoji(references.krunkerEmojiID)
+  bot.minecraftEmoji = bot.get_emoji(references.minecraftEmojiID)
+  bot.skribblEmoji = bot.get_emoji(references.skribblEmojiID)
+  bot.valorantEmoji = bot.get_emoji(references.valorantEmojiID)
+  bot.vcEmoji = bot.get_emoji(references.vcEmojiID)
+  bot.loadingEmoji = bot.get_emoji(references.loadingEmojiID)
+  bot.errorEmoji = bot.get_emoji(references.errorEmojiID)
+  bot.checkmarkEmoji = bot.get_emoji(references.checkmarkEmojiID)
+  bot.plusEmoji = bot.get_emoji(references.plusEmojiID)
+  bot.minusEmoji = bot.get_emoji(references.minusEmojiID)
 
-  bot.brainEmoji = bot.get_emoji(variables.brainEmojiID)
-  bot.bellEmoji = bot.get_emoji(variables.bellEmojiID)
-  bot.oneEmoji = bot.get_emoji(variables.oneEmojiID)
-  bot.twoEmoji = bot.get_emoji(variables.twoEmojiID)
-  bot.threeEmoji = bot.get_emoji(variables.threeEmojiID)
-  bot.fourEmoji = bot.get_emoji(variables.fourEmojiID)
-  bot.fiveEmoji = bot.get_emoji(variables.fiveEmojiID)
-  bot.sixEmoji = bot.get_emoji(variables.sixEmojiID)
-  bot.sevenEmoji = bot.get_emoji(variables.sevenEmojiID)
-  bot.eightEmoji = bot.get_emoji(variables.eightEmojiID)
-  bot.nineEmoji = bot.get_emoji(variables.nineEmojiID)
-  bot.tenEmoji = bot.get_emoji(variables.tenEmojiID)
+  bot.brainEmoji = bot.get_emoji(references.brainEmojiID)
+  bot.bellEmoji = bot.get_emoji(references.bellEmojiID)
+  bot.oneEmoji = bot.get_emoji(references.oneEmojiID)
+  bot.twoEmoji = bot.get_emoji(references.twoEmojiID)
+  bot.threeEmoji = bot.get_emoji(references.threeEmojiID)
+  bot.fourEmoji = bot.get_emoji(references.fourEmojiID)
+  bot.fiveEmoji = bot.get_emoji(references.fiveEmojiID)
+  bot.sixEmoji = bot.get_emoji(references.sixEmojiID)
+  bot.sevenEmoji = bot.get_emoji(references.sevenEmojiID)
+  bot.eightEmoji = bot.get_emoji(references.eightEmojiID)
+  bot.nineEmoji = bot.get_emoji(references.nineEmojiID)
+  bot.tenEmoji = bot.get_emoji(references.tenEmojiID)
 
-  bot.schoolRRDict = {variables.brainEmojiID: bot.helpRole, variables.bellEmojiID: bot.bellScheduleRole, variables.oneEmojiID: bot.precalculusRole, variables.twoEmojiID: bot.apCalcABRole, variables.threeEmojiID: bot.apCalcBCRole, variables.fourEmojiID: bot.hPhysicsRole, variables.fiveEmojiID: bot.apPhysicsRole, variables.sixEmojiID: bot.apBiologyRole, variables.sevenEmojiID: bot.rushRole, variables.eightEmojiID: bot.apushRole, variables.nineEmojiID: bot.vsNetRole, variables.tenEmojiID: bot.apcsRole}
+  bot.schoolRRDict = {references.brainEmojiID: bot.helperRole, references.bellEmojiID: bot.bellScheduleRole, references.oneEmojiID: bot.precalculusRole, references.twoEmojiID: bot.apCalcABRole, references.threeEmojiID: bot.apCalcBCRole, references.fourEmojiID: bot.hPhysicsRole, references.fiveEmojiID: bot.apPhysicsRole, references.sixEmojiID: bot.apBiologyRole, references.sevenEmojiID: bot.rushRole, references.eightEmojiID: bot.apushRole, references.nineEmojiID: bot.vsNetRole, references.tenEmojiID: bot.apcsRole}
 
-  bot.gameRRDict = {variables.amongUsEmojiID: bot.amongUsRole, variables.chessEmojiID: bot.chessRole, variables.krunkerEmojiID: bot.krunkerRole, variables.minecraftEmojiID: bot.minecraftRole, variables.skribblEmojiID: bot.skribblRole, variables.valorantEmojiID: bot.valorantRole, variables.vcEmojiID: bot.vcRole}
-  # bot.categoryDB = requests.get("https://opentdb.com/api_category.php").json()
+  bot.gameRRDict = {references.amongUsEmojiID: bot.amongUsRole, references.chessEmojiID: bot.chessRole, references.krunkerEmojiID: bot.krunkerRole, references.minecraftEmojiID: bot.minecraftRole, references.skribblEmojiID: bot.skribblRole, references.valorantEmojiID: bot.valorantRole, references.vcEmojiID: bot.vcRole}
 
   bot.monTimes = {"08:10 AM": "A", "08:40 AM": "Passing", "08:45 AM": "1", "09:15 AM": "Passing","09:20 AM": "2", "09:50 AM": "Passing", "09:55 AM": "3", "10:25 AM": "Passing", "10:30 AM": "4", "11:00 AM": "Lunch", "11:30 AM": "Passing", "11:35 AM": "5", "12:05 PM": "Passing", "12:10 PM": "6"}
-  bot.tuesThursTimes = {"08:10 AM": "A", "09:25 AM": "Passing", "09:35 AM": "1", "10:50 AM": "Passing", "11:05 AM": "3", "12:20 PM": "Lunch", "12:55 PM": "Passing", "01:05 PM": "5", "02:20 PM": "Passing", "02:30 PM": "Student Support"}
+  bot.tuesThursTimes = {"09:35 AM": "1", "10:50 AM": "Passing", "11:05 AM": "3", "12:20 PM": "Lunch", "12:55 PM": "Passing", "01:05 PM": "5", "02:20 PM": "Passing", "02:30 PM": "Student Support"}
   bot.wedFriTimes = {"08:10 AM": "A", "09:25 AM": "Passing", "09:35 AM": "2", "10:50 AM": "Passing", "11:05 AM": "4", "12:20 PM": "Lunch", "12:55 PM": "Passing", "01:05 PM": "6", "02:20 PM": "Passing", "02:30 PM": "Student Support"}
   bot.daySchedule = {1: bot.monTimes, 2: bot.tuesThursTimes, 3: bot.wedFriTimes, 4: bot.tuesThursTimes, 5: bot.wedFriTimes}
 
-  bot.monTimesMinutes = {}
-  bot.tuesThursTimesMinutes = {}
-  bot.wedFriTimesMinutes = {}
-
-  def timeInMinutes(datetimeObject):
-    return (int(datetimeObject.strftime("%H")) * 60) + (int(datetimeObject.strftime("%M"))) + 5
-
-  # stringTime = time.strftime("%I:%M %p")
-  for i in bot.monTimes:
-    bot.monTimesMinutes[timeInMinutes(datetime.strptime(i, "%I:%M %p"))] = bot.monTimes[i]
-  for i in bot.tuesThursTimes:
-    bot.tuesThursTimesMinutes[timeInMinutes(datetime.strptime(i, "%I:%M %p"))] = bot.tuesThursTimes[i]
-  for i in bot.wedFriTimes:
-    bot.wedFriTimesMinutes[timeInMinutes(datetime.strptime(i, "%I:%M %p"))] = bot.wedFriTimes[i]
+  bot.monTimesMinutes = {495: 'A', 525: 'Passing', 530: '1', 560: 'Passing', 565: '2', 595: 'Passing', 600: '3', 630: 'Passing', 635: '4', 665: 'Lunch', 695: 'Passing', 700: '5', 730: 'Passing', 735: '6'}
+  bot.tuesThursTimesMinutes = {580: '1', 655: 'Passing', 670: '3', 745: 'Lunch', 780: 'Passing', 790: '5', 865: 'Passing', 875: 'Student Support'}
+  bot.wedFriTimesMinutes = {495: 'A', 570: 'Passing', 580: '2', 655: 'Passing', 670: '4', 745: 'Lunch', 780: 'Passing', 790: '6', 865: 'Passing', 875: 'Student Support'}
   bot.dayScheduleMinutes = {1: bot.monTimesMinutes, 2: bot.tuesThursTimesMinutes, 3: bot.wedFriTimesMinutes, 4: bot.tuesThursTimesMinutes, 5: bot.wedFriTimesMinutes}
-
-  with open("cogs/afks.json", "r") as file:
-    data = json.load(file)
-    for id in list(data):
-      if not bot.server.get_member(int(id)).display_name.startswith("[AFK] "):
-        del data[str(id)]
-    for member in s.members:
-      if str(member.id) not in data and member.display_name.startswith("[AFK] "):
-        data[str(member.id)] = [str(datetime.now()), None]
-  with open("cogs/afks.json", "w") as file:
-    json.dump(data, file, indent = 2)
-
-  def botOwner(ctx):
-    return ctx.author.id == 410590963379994639
-  bot.botOwner = botOwner
   
   def altCheck(ctx):
     return ctx.author.id == 582313253208850433
   bot.altCheck = altCheck
 
-  def staffCheck(ctx):
+  def staff(ctx):
     staff = [bot.adminRole, bot.moderatorRole]
     return any(role in ctx.author.roles for role in staff)
-  bot.staffCheck = staffCheck
+  bot.staff = staff
 
-  def userCount(userType: int):
-    if userType == 1:
-      humanCount = 0
-      for member in bot.server.members:
-        if not member.bot:
-          humanCount += 1
-      return humanCount
-    else:
-      botCount = 0
-      for member in bot.server.members:
-        if member.bot:
-          botCount += 1
-      return botCount
-  bot.userCount = userCount
+  def memberCount():
+    return len([member for member in bot.get_all_members() if not member.bot])
+  bot.memberCount = memberCount
+
+  def botCount():
+    return len([member for member in bot.get_all_members() if member.bot])
+  bot.botCount = botCount
 
   async def updateStatus():
-    await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{userCount(1)} Members • !help"))
+    await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{bot.memberCount()} Members • !help"))
   bot.updateStatus = updateStatus
 
 # bot startup event
@@ -183,6 +137,16 @@ async def on_ready():
   await bot.updateStatus()
   print(f" DPY Version: {discord.__version__}")
   art.tprint(bot.user.name)
+  with open("cogs/afks.json", "r") as file:
+    data = json.load(file)
+    for id in list(data):
+      if not bot.server.get_member(int(id)).display_name.startswith("[AFK] "):
+        del data[str(id)]
+    for member in bot.server.members:
+      if str(member.id) not in data and member.display_name.startswith("[AFK] "):
+        data[str(member.id)] = [str(datetime.now()), None]
+  with open("cogs/afks.json", "w") as file:
+    json.dump(data, file, indent = 2)
   # for i in muteDatabase:
   #   ids = i["id"].split(" ")
   #   server = bot.get_guild(int(ids[1]))
@@ -191,7 +155,7 @@ async def on_ready():
   #     await member.remove_roles(bot.mutedRole)
   #     await member.add_roles(bot.memberRole)
   #   muteDatabase.remove(query.id == (str(member.id) + " " + str(server.id)))
-  #   generalChannel = bot.get_channel(variables.generalChannelID)
+  #   generalChannel = bot.get_channel(references.generalChannelID)
   #   embed = discord.Embed(title = ":loud_sound: Unmuted", description = f"{member.mention} was unmuted on bot startup", color = 0x00FF00, timestamp = datetime.utcnow())
   #   embed.set_footer(text = f"Unmuted  by {bot.user}", icon_url = bot.user.avatar_url)
   #   embed.set_thumbnail(url = member.avatar_url)
@@ -223,7 +187,7 @@ async def on_ready():
   await rulesMessage.edit(embed = embed)
 
   subjectRolesMessage = await bot.rolesChannel.fetch_message(759521601170833469)
-  embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xe67e22)
+  embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helperRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xe67e22)
   embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
   embed.set_thumbnail(url = bot.server.icon_url)
   await subjectRolesMessage.edit(embed = embed)
@@ -247,7 +211,7 @@ bot.run(os.environ["token"], bot = True, reconnect = True)
 
 # junk shit for on_ready
 # subjectRolesMessage = await bot.rolesChannel.fetch_message(759521601170833469)
-# embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helpRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xe67e22)
+# embed = discord.Embed(title = "School Roles :books:", description = f"Pick up some roles for any subjects you take! \n\n:brain: {bot.helperRole.mention} \nto help anyone in immediate need \n:bell: {bot.bellScheduleRole.mention} \nto receive bell schedule pings \n\n:one: {bot.precalculusRole.mention} \n:two: {bot.apCalcABRole.mention} \n:three: {bot.apCalcBCRole.mention} \n:four: {bot.hPhysicsRole.mention} \n:five: {bot.apPhysicsRole.mention} \n:six: {bot.apBiologyRole.mention} \n:seven: {bot.rushRole.mention} \n:eight: {bot.apushRole.mention} \n:nine: {bot.vsNetRole.mention} \n:keycap_ten: {bot.apcsRole.mention}", color = 0xe67e22)
 # embed.set_footer(text = "Server Reaction Roles", icon_url = bot.server.icon_url)
 # embed.set_thumbnail(url = bot.server.icon_url)
 # await subjectRolesMessage.edit(embed = embed)

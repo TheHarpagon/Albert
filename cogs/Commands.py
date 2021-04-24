@@ -176,6 +176,7 @@ class Commands(commands.Cog):
     timezone = pytz.timezone("America/Los_Angeles")
     current = datetime.now(timezone)
     currentMinutes = (int(current.strftime("%H")) * 60) + (int(current.strftime("%M")))
+    print(currentMinutes)
     # adjust day if schedule is off
     day = current.isoweekday()
     inSession = False
@@ -191,7 +192,14 @@ class Commands(commands.Cog):
             minutesLeft = i - currentMinutes
             currentPeriod = list(self.bot.monTimesMinutes.values())[list(self.bot.monTimesMinutes.keys()).index(i) - 1]
             break
-      elif day != 1 and 495 <= currentMinutes <= 915:
+      elif day in [2, 4] and 580 <= currentMinutes <= 915:
+        inSession = True
+        for i in self.bot.dayScheduleMinutes[day]:
+          if i > currentMinutes:
+            minutesLeft = i - currentMinutes
+            currentPeriod = list(self.bot.dayScheduleMinutes[day].values())[list(self.bot.dayScheduleMinutes[day].keys()).index(i) - 1]
+            break
+      elif day in [3, 5] and 495 <= currentMinutes <= 915:
         inSession = True
         for i in self.bot.dayScheduleMinutes[day]:
           if i > currentMinutes:
@@ -199,6 +207,7 @@ class Commands(commands.Cog):
             currentPeriod = list(self.bot.dayScheduleMinutes[day].values())[list(self.bot.dayScheduleMinutes[day].keys()).index(i) - 1]
             break
       else:
+        # change this
         if currentMinutes <= 495:
           output = "School hasn't started yet"
         else:
@@ -332,88 +341,88 @@ class Commands(commands.Cog):
     embed.set_thumbnail(url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
-  @commands.command()
-  @commands.cooldown(1, 5, BucketType.user) 
-  async def profile(self, ctx, member: discord.Member = None):
-    await ctx.trigger_typing()
-    member = ctx.author if not member else member
-    roleCount = len([role for role in member.roles]) - 1
-    # roleCount = len(roleCount) - 1
-    joinPosition = sum(m.joined_at < member.joined_at for m in ctx.guild.members if m.joined_at is not None)
+  # @commands.command()
+  # @commands.cooldown(1, 5, BucketType.user) 
+  # async def profile(self, ctx, member: discord.Member = None):
+  #   await ctx.trigger_typing()
+  #   member = ctx.author if not member else member
+  #   roleCount = len([role for role in member.roles]) - 1
+  #   # roleCount = len(roleCount) - 1
+  #   joinPosition = sum(m.joined_at < member.joined_at for m in ctx.guild.members if m.joined_at is not None)
 
-    if member.bot == False:
-      # main role
-      if self.bot.adminRole in member.roles:
-        topRole = self.bot.adminRole.mention
-        topColor = self.bot.adminRole.color
-      elif self.bot.moderatorRole in member.roles:
-        topRole = self.bot.moderatorRole.mention
-        topColor = self.bot.moderatorRole.color
-      elif self.bot.memberRole or self.bot.mutedRole in member.roles:
-        topRole = self.bot.memberRole.mention
-        topColor = self.bot.memberRole.color
+  #   if member.bot == False:
+  #     # main role
+  #     if self.bot.adminRole in member.roles:
+  #       topRole = self.bot.adminRole.mention
+  #       topColor = self.bot.adminRole.color
+  #     elif self.bot.moderatorRole in member.roles:
+  #       topRole = self.bot.moderatorRole.mention
+  #       topColor = self.bot.moderatorRole.color
+  #     elif self.bot.memberRole or self.bot.mutedRole in member.roles:
+  #       topRole = self.bot.memberRole.mention
+  #       topColor = self.bot.memberRole.color
       
-      # divider roles
-      if self.bot.dividerOneRole in member.roles:
-        roleCount = roleCount - 1
-      if self.bot.dividerTwoRole in member.roles:
-        roleCount = roleCount - 1
-      if self.bot.dividerThreeRole in member.roles:
-        roleCount = roleCount - 1
+  #     # divider roles
+  #     if self.bot.dividerOneRole in member.roles:
+  #       roleCount = roleCount - 1
+  #     if self.bot.dividerTwoRole in member.roles:
+  #       roleCount = roleCount - 1
+  #     if self.bot.dividerThreeRole in member.roles:
+  #       roleCount = roleCount - 1
 
-      # counter roles
-      if self.bot.counterRookieRole in member.roles:
-        topCounterRole = self.bot.counterRookieRole.mention
-      elif self.bot.counterBronzeRole in member.roles:
-        topCounterRole = self.bot.counterBronzeRole.mention
-      elif self.bot.counterSilverRole in member.roles:
-        topCounterRole = self.bot.counterSilverRole.mention
-      elif self.bot.counterGoldRole in member.roles:
-        topCounterRole = self.bot.counterGoldRole.mention
-      elif self.bot.counterPlatinumRole in member.roles:
-        topCounterRole = self.bot.counterPlatinumRole.mention
-      elif self.bot.counterDiamondRole in member.roles:
-        topCounterRole = self.bot.counterDiamondRole.mention
-      elif self.bot.counterEmeraldRole in member.roles:
-        topCounterRole = self.bot.counterEmeraldRole.mention
-      else:
-        topCounterRole = "`None`"
+  #     # counter roles
+  #     if self.bot.counterRookieRole in member.roles:
+  #       topCounterRole = self.bot.counterRookieRole.mention
+  #     elif self.bot.counterBronzeRole in member.roles:
+  #       topCounterRole = self.bot.counterBronzeRole.mention
+  #     elif self.bot.counterSilverRole in member.roles:
+  #       topCounterRole = self.bot.counterSilverRole.mention
+  #     elif self.bot.counterGoldRole in member.roles:
+  #       topCounterRole = self.bot.counterGoldRole.mention
+  #     elif self.bot.counterPlatinumRole in member.roles:
+  #       topCounterRole = self.bot.counterPlatinumRole.mention
+  #     elif self.bot.counterDiamondRole in member.roles:
+  #       topCounterRole = self.bot.counterDiamondRole.mention
+  #     elif self.bot.counterEmeraldRole in member.roles:
+  #       topCounterRole = self.bot.counterEmeraldRole.mention
+  #     else:
+  #       topCounterRole = "`None`"
 
-      # gameRoles = [bot.krunkerRole, bot.minecraftRole, bot.valorantRole, bot.amongUsRole]
+  #     # gameRoles = [bot.krunkerRole, bot.minecraftRole, bot.valorantRole, bot.amongUsRole]
       
-      # output = ""
-      # for i in gameRoles:
-      #     if i in member.roles:
-      #         output += gameRoles[i].mention
-      # gameRoles = ""
+  #     # output = ""
+  #     # for i in gameRoles:
+  #     #     if i in member.roles:
+  #     #         output += gameRoles[i].mention
+  #     # gameRoles = ""
       
-      # if bot.krunkerRole in member.roles:
-      #     gameRoles += f"\n{bot.krunkerRole.mention}"
+  #     # if bot.krunkerRole in member.roles:
+  #     #     gameRoles += f"\n{bot.krunkerRole.mention}"
       
-      # if bot.minecraftRole in member.roles:
-      #     gameRoles += f"\n{bot.minecraftRole.mention}"
+  #     # if bot.minecraftRole in member.roles:
+  #     #     gameRoles += f"\n{bot.minecraftRole.mention}"
 
-      # if bot.valorantRole in member.roles:
-      #     gameRoles += f"\n{bot.valorantRole.mention}"
+  #     # if bot.valorantRole in member.roles:
+  #     #     gameRoles += f"\n{bot.valorantRole.mention}"
       
-      # if bot.amongUsRole in member.roles:
-      #     gameRoles += f"\n{bot.amongUsRole.mention}"
+  #     # if bot.amongUsRole in member.roles:
+  #     #     gameRoles += f"\n{bot.amongUsRole.mention}"
 
-      # else:
-      #     gameRoles = "`None`"
+  #     # else:
+  #     #     gameRoles = "`None`"
 
-      embed = discord.Embed(title=f":bust_in_silhouette: User Profile", description = f"`{member}`", color = topColor, timestamp = datetime.utcnow())
-      embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-      embed.set_thumbnail(url = member.avatar_url)
-      embed.add_field(name = "Main Role", value = topRole, inline = True)
-      embed.add_field(name = "Nickname", value = member.mention, inline = True)
-      embed.add_field(name = "Role Count", value = f"`{roleCount}`", inline = True)
-      embed.add_field(name = "Join Position", value = f"#`{joinPosition}`/`{len(self.bot.users)}`", inline = True)
-      embed.add_field(name = "Top Countr Role", value = topCounterRole, inline = True)
-      embed.add_field(name = "Game Roles", value = "Under Dev", inline = True)
-      embed.add_field(name = "Account Creation", value = f"{member.created_at.strftime('`%a`, `%B` `%#d`, `%Y`')}", inline = True)
-      embed.add_field(name = "Server Joined", value = f"{member.joined_at.strftime('`%a`, `%B` `%#d`, `%Y`')}", inline = True)
-      await ctx.send(embed = embed)
+  #     embed = discord.Embed(title=f":bust_in_silhouette: User Profile", description = f"`{member}`", color = topColor, timestamp = datetime.utcnow())
+  #     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+  #     embed.set_thumbnail(url = member.avatar_url)
+  #     embed.add_field(name = "Main Role", value = topRole, inline = True)
+  #     embed.add_field(name = "Nickname", value = member.mention, inline = True)
+  #     embed.add_field(name = "Role Count", value = f"`{roleCount}`", inline = True)
+  #     embed.add_field(name = "Join Position", value = f"#`{joinPosition}`/`{len(self.bot.users)}`", inline = True)
+  #     embed.add_field(name = "Top Countr Role", value = topCounterRole, inline = True)
+  #     embed.add_field(name = "Game Roles", value = "Under Dev", inline = True)
+  #     embed.add_field(name = "Account Creation", value = f"{member.created_at.strftime('`%a`, `%B` `%#d`, `%Y`')}", inline = True)
+  #     embed.add_field(name = "Server Joined", value = f"{member.joined_at.strftime('`%a`, `%B` `%#d`, `%Y`')}", inline = True)
+  #     await ctx.send(embed = embed)
   
   @commands.command()
   @commands.is_owner()
@@ -458,7 +467,7 @@ class Commands(commands.Cog):
   async def setstatus(self, ctx, *, argument):
     await ctx.trigger_typing()
     if argument.lower() == "normal":
-      await self.bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{self.bot.userCount(1)} Members • !help"))
+      await self.bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{self.bot.memberCount()} Members • !help"))
       await ctx.send(f"{self.bot.checkmarkEmoji} Set!")
     else:
       await self.bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = argument))

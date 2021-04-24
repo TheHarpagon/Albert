@@ -1,17 +1,21 @@
 import aiohttp
 import asyncio
 # import bitlyshortener
+import cv2
 from datetime import datetime, timedelta
 import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType
 import html2text
+import imutils
 import json
+import numpy
 import ordinal
 import portolan
 import random
 import requests
 from requests.auth import HTTPBasicAuth
+from skimage.filters import threshold_local
 import tempfile
 import tinydb
 from uuid import uuid4
@@ -27,7 +31,7 @@ class DatabaseCommands(commands.Cog):
     if ctx.message.mentions:
       await ctx.send(f"{self.bot.errorEmoji} You can't ping anything in your status")
     else:
-      if not self.bot.botOwner(ctx):
+      if not ctx.author.id == 410590963379994639:
         if len(ctx.author.display_name) <= 26:
           await ctx.author.edit(nick = f"[AFK] {ctx.author.display_name}")
         else:
@@ -41,6 +45,79 @@ class DatabaseCommands(commands.Cog):
         await ctx.send(f"{self.bot.checkmarkEmoji} Set your AFK")
       else:
         await ctx.send(f"{self.bot.checkmarkEmoji} Set your AFK to `{message}`")
+  
+  @commands.command(aliases = ["camscan"])
+  @commands.cooldown(1, 30, BucketType.user) 
+  async def scan(self, ctx):
+    def order_points(pts):
+      rect = numpy.zeros((4, 2), dtype="float32")
+      s = pts.sum(axis=1)
+      rect[0] = pts[numpy.argmin(s)]
+      rect[2] = pts[numpy.argmax(s)]
+      diff = numpy.diff(pts, axis=1)
+      rect[1] = pts[numpy.argmin(diff)]
+      rect[3] = pts[numpy.argmax(diff)]
+      return rect
+
+    def four_point_transform(image, pts):
+      rect = order_points(pts)
+      (tl, tr, br, bl) = rect
+      widthA = numpy.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
+      widthB = numpy.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
+      maxWidth = max(int(widthA), int(widthB))
+      heightA = numpy.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2))
+      heightB = numpy.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2))
+      maxHeight = max(int(heightA), int(heightB))
+      dst = numpy.array([
+          [0, 0],
+          [maxWidth - 1, 0],
+          [maxWidth - 1, maxHeight - 1],
+          [0, maxHeight - 1]], dtype="float32")
+      M = cv2.getPerspectiveTransform(rect, dst)
+      warped = cv2.warpPerspective(image, M, (maxWidth, maxHeight))
+      return warped
+
+    message = await ctx.send(f"{self.bot.loadingEmoji} Processing...")
+    if not ctx.message.attachments:
+      await message.edit(content = f"{self.bot.errorEmoji} Try attaching an image")
+      return
+    response = requests.get(ctx.message.attachments[0].url)
+    file = open("image.png", "wb")
+    file.write(response.content)
+    file.close()
+    try:
+      image = cv2.imread("image.png")
+    except:
+      await message.edit(content = f"{self.bot.errorEmoji} Unable to read your attachment, make sure it's an image")
+      return
+    ratio = image.shape[0] / 500.0
+    orig = image.copy()
+    image = imutils.resize(image, height = 500)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = cv2.GaussianBlur(gray, (5, 5), 0)
+    edged = cv2.Canny(gray, 75, 200)
+    cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = imutils.grab_contours(cnts)
+    cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:5]
+    for c in cnts:
+      peri = cv2.arcLength(c, True)
+      approx = cv2.approxPolyDP(c, 0.02 * peri, True)
+      if len(approx) == 4:
+        screenCnt = approx
+        break
+    try:
+      cv2.drawContours(image, screenCnt, -1, (0, 255, 0), 2)
+    except:
+      await message.edit(content = f"{self.bot.errorEmoji} Could not detect four corners")
+      return
+    warped = four_point_transform(orig, screenCnt.reshape(4, 2) * ratio)
+    warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
+    T = threshold_local(warped, 11, offset = 10, method = "gaussian")
+    warped = (warped > T).astype("uint8") * 255
+    cv2.imwrite(f"scanned.png", warped)
+    await message.delete()
+    await ctx.send(content = f"{self.bot.checkmarkEmoji} Scanned", file = discord.File(f"scanned.png"))
+    
   
   @commands.command()
   @commands.cooldown(1, 10, BucketType.user) 
@@ -194,26 +271,73 @@ class DatabaseCommands(commands.Cog):
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
 
-  @commands.command()
-  @commands.cooldown(1, 10, BucketType.user) 
-  async def mlink(self, ctx):
-    arr = ["A", "1", "2", "3", "4", "5", "6"]
+  # @commands.command()
+  # @commands.cooldown(1, 10, BucketType.user) 
+  # async def mlink(self, ctx):
+  #   arr = ["A", "1", "2", "3", "4", "5", "6"]
 
-    embed = discord.Embed(title = "Link Meetings", description = "What is your schedule?\nex: 1-6", color = 0xe67e22, timestamp = datetime.utcnow())
-    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-    embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
-    await ctx.send(embed = embed)
-    def check(message):
-      response = message.content.replace(" ", "").upper()
-      return len(response) == 3 and response[1] == "-" and all(item in arr for item in [response.replace("-", "")[0], response.replace("-", "")[1]]) and arr.index(response[0]) < arr.index(response[2])
-    try:
-      message = await self.bot.wait_for("message", timeout = 15, check = check)
-    except asyncio.TimeoutError:
-      await ctx.send(content = f"{self.bot.errorEmoji} Event has expired", embed = None)
-    else:
-      await message.add_reaction(self.bot.checkmarkEmoji)
-      await ctx.send("Passed")
+  #   embed = discord.Embed(title = "Link Meetings", description = "What is your schedule?\nex: 1-6", color = 0xe67e22, timestamp = datetime.utcnow())
+  #   embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+  #   embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
+  #   await ctx.send(embed = embed)
+  #   def check(message):
+  #     response = message.content.replace(" ", "").upper()
+  #     return len(response) == 3 and response[1] == "-" and all(item in arr for item in [response.replace("-", "")[0], response.replace("-", "")[1]]) and arr.index(response[0]) < arr.index(response[2])
+  #   try:
+  #     message = await self.bot.wait_for("message", timeout = 15, check = check)
+  #   except asyncio.TimeoutError:
+  #     await ctx.send(content = f"{self.bot.errorEmoji} Event has expired", embed = None)
+  #   else:
+  #     await message.add_reaction(self.bot.checkmarkEmoji)
+  #     await ctx.send("Passed")
   
+  @commands.command(aliases = ["testmute"])
+  @commands.is_owner()
+  async def tmute(self, ctx, member: discord.Member, duration = None):
+    if self.bot.adminRole in ctx.author.roles or self.bot.moderatorRole in ctx.author.roles:
+      if self.bot.adminRole not in member.roles or self.bot.moderatorRole not in member.roles:
+        if self.bot.mutedRole in member.roles:
+          await ctx.send(f"{self.bot.errorEmoji} They are already muted")
+          return
+        with open("cogs/mutes.json", "r") as file:
+          data = json.load(file)
+        if str(member.id) in data:
+          await ctx.send(f"{self.bot.errorEmoji} They are already muted")
+        else:
+          if duration:
+            if duration[-1] in ["m", "h"]:
+              seconds = 0
+              if duration[-1] == "m":
+                seconds = int(duration[:-1]) * 60
+              elif duration[-1] == "h":
+                seconds = int(duration[:-1]) * 3600
+              await member.remove_roles(self.bot.vipRole, self.bot.memberRole)
+              await member.add_roles(self.bot.mutedRole)
+              await ctx.send(f"{self.bot.checkmarkEmoji} Muted for `{duration}`")
+              data[str(ctx.author.id)] = seconds
+              with open("cogs/mutes.json", "w") as file:
+                json.dump(data, file, indent = 2)
+              await asyncio.sleep(seconds)
+              with open("cogs/mutes.json", "r") as file:
+                data = json.load(file)
+              del data[str(ctx.author.id)]
+              with open("cogs/mutes.json", "w") as file:
+                json.dump(data, file, indent = 2)
+            else:
+              await ctx.send(f"{self.bot.errorEmoji} Invalid duration, use it as such\nex: `13m` or `0.75h`")
+              return
+          else:
+            await member.remove_roles(self.bot.vipRole, self.bot.memberRole)
+            await member.add_roles(self.bot.mutedRole)
+            data[str(member.id)] = "infiniy"
+            with open("cogs/mutes.json", "w") as file:
+              json.dump(data, file, indent = 2)
+            await ctx.send(f"{self.bot.checkmarkEmoji} Muted")
+      else:
+        await ctx.send(f"{self.bot.errorEmoji} That person can't be muted")
+    else:
+      await ctx.send(f"{self.bot.errorEmoji} Missing permissions")
+
   # mute command
   @commands.command(aliases = ["stfu"])
   async def mute(self, ctx, user: str, mtime = None):
@@ -231,7 +355,7 @@ class DatabaseCommands(commands.Cog):
       mtime = float(mtime)
 
     if ((self.bot.adminRole in ctx.message.author.roles) or (self.bot.moderatorRole in ctx.message.author.roles)) and (self.bot.memberRole not in ctx.message.author.roles):
-      if muteDatabase.search(query.id == (str(member.id) + " " + str(member.guild.id))) == [] and (not ((self.bot.adminRole in member.roles) or (self.bot.moderatorRole in member.roles) or (self.bot.botRole in member.roles) or (self.bot.devBotRole in member.roles))):
+      if muteDatabase.search(query.id == (str(member.id) + " " + str(member.guild.id))) == [] and (not ((self.bot.adminRole in member.roles) or (self.bot.moderatorRole in member.roles) or (self.bot.botRole in member.roles))):
           if mtime > 0:
             if mtime < 1:
               stime = round(mtime * 60)
@@ -253,7 +377,7 @@ class DatabaseCommands(commands.Cog):
                 hunit = "hour"
               
               embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{htime}` {hunit}", color = 0x00FF00, timestamp = datetime.utcnow())
-              embed.set_author(name = self.bot.user.name, url = self.bot.statusPageURL, icon_url = self.bot.user.avatar_url)
+              embed.set_author(name = self.bot.user.name, icon_url = self.bot.user.avatar_url)
               embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
               embed.set_thumbnail(url = member.avatar_url)
               await ctx.send(embed = embed)
@@ -288,8 +412,6 @@ class DatabaseCommands(commands.Cog):
             await member.add_roles(self.bot.memberRole)
             if vipStat:
               await member.add_roles(self.bot.vipRole)
-            
-            print(f"{self.bot.eventLabel} Unmute")
               
             if muteDatabase.search(query.id == (str(member.id) + " " + str(member.guild.id))) != []:
               embed = discord.Embed(title = ":loud_sound: Unmuted", description = f"{member.mention}'s mute expired", color = 0x00FF00, timestamp = datetime.utcnow())
@@ -299,7 +421,7 @@ class DatabaseCommands(commands.Cog):
               muteDatabase.remove(query.id == (str(member.id) + " " + str(member.guild.id)))
       
       else:
-        if (self.bot.adminRole in member.roles) or (self.bot.moderatorRole in member.roles) or (self.bot.botRole in member.roles) or (self.bot.devBotRole in member.roles):
+        if (self.bot.adminRole in member.roles) or (self.bot.moderatorRole in member.roles) or (self.bot.botRole in member.roles):
           await ctx.send(f"{self.bot.errorEmoji} This user cannot be muted")
       
         else:

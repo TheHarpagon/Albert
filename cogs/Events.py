@@ -80,7 +80,7 @@ class Events(commands.Cog):
   
   @commands.Cog.listener()
   async def on_message_delete(self, message):
-    if message.author.bot == False and self.bot.memberRole in message.author.roles and message.channel.id != 690647361139245136 and not message.content.startswith(":") and not message.content.endswith(":"):
+    if message.author.bot == False and self.bot.memberRole in message.author.roles and message.channel.id not in [690647361139245136, 816540206572109824] and not message.content.startswith(":") and not message.content.endswith(":"):
       embed = discord.Embed(title = ":wastebasket: Message Deleted", color = 0xe67e22, timestamp = datetime.utcnow())
       embed.set_footer(text = self.bot.server.name, icon_url = self.bot.server.icon_url)
       embed.set_thumbnail(url = message.author.avatar_url)
@@ -94,7 +94,7 @@ class Events(commands.Cog):
   
   @commands.Cog.listener()
   async def on_message_edit(self, before, after):
-    if before.author.bot == False and before.content != after.content and self.bot.memberRole in before.author.roles and before.channel.id != 690647361139245136:
+    if before.author.bot == False and before.content != after.content and self.bot.memberRole in before.author.roles and before.channel.id not in [690647361139245136, 816540206572109824]:
       embed = discord.Embed(title = ":pencil: Message Edited", color = 0xe67e22, timestamp = datetime.utcnow())
       embed.set_footer(text = self.bot.server.name, icon_url = self.bot.server.icon_url)
       embed.set_thumbnail(url = before.author.avatar_url)
@@ -114,17 +114,17 @@ class Events(commands.Cog):
     if not member.bot:
       await member.add_roles(self.bot.memberRole)
       await self.bot.updateStatus()
-      embed = discord.Embed(title = ":inbox_tray: Member Joined", description = f"You are the `{ordinal.ordinal(self.bot.userCount(1))}` member!", color = 0x00FF00, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":inbox_tray: Member Joined", description = f"You are the `{ordinal.ordinal(self.bot.memberCount())}` member!", color = 0x00FF00, timestamp = datetime.utcnow())
       embed.set_footer(text = self.bot.server.name, icon_url = self.bot.server.icon_url)
       embed.set_thumbnail(url = member.avatar_url)
       embed.add_field(name = "Get Roles", value = f"Go to {self.bot.rolesChannel.mention}", inline = False)
-      embed.add_field(name = "Main Info :loudspeaker:", value = f"Read the {self.bot.rulesChannel.mention}\nRead the {self.bot.channelsChannel.mention} info\nJoin the talk in {self.bot.generalChannel.mention}", inline = False)
+      embed.add_field(name = "Main Info :loudspeaker:", value = f"Read the {self.bot.rulesChannel.mention}\nJoin the talk in {self.bot.generalChannel.mention}", inline = False)
       await self.bot.welcomeChannel.send(f"Welcome, {member.mention}", embed = embed)
       await member.remove_roles(self.bot.mutedRole)
 
     else:
       await member.add_roles(self.bot.botRole)
-      embed = discord.Embed(title = ":inbox_tray: Bot Joined", description = f"You are the `{ordinal.ordinal(self.bot.userCount(2))}` member!\n{self.bot.botRole.mention} role added", color = 0x00FF00, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":inbox_tray: Bot Joined", description = f"You are the `{ordinal.ordinal(self.bot.memberCount())}` member!\n{self.bot.botRole.mention} role added", color = 0x00FF00, timestamp = datetime.utcnow())
       embed.set_footer(text = self.bot.server.name, icon_url = self.bot.server.icon_url)
       embed.set_thumbnail(url = member.avatar_url)
       await self.bot.welcomeChannel.send(f"Welcome, {member.mention}", embed = embed)
