@@ -117,7 +117,6 @@ class DatabaseCommands(commands.Cog):
     cv2.imwrite(f"scanned.png", warped)
     await message.delete()
     await ctx.send(content = f"{self.bot.checkmarkEmoji} Scanned", file = discord.File(f"scanned.png"))
-    
   
   @commands.command()
   @commands.cooldown(1, 10, BucketType.user) 
