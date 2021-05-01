@@ -562,8 +562,6 @@ class DatabaseCommands(commands.Cog):
       async with session.get(f"https://dvhs.schoolloop.com/mapi/report_card?studentID={studentDB['userID']}") as reply:
         resultDB = await reply.json(content_type = None)
     
-    period = ""
-    lastUpdated = ""
     embed = discord.Embed(title = ":scroll: Grades", description = "Your grades/credentials are never saved", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     for i in resultDB:
