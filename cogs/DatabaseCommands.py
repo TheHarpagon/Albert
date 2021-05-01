@@ -559,9 +559,14 @@ class DatabaseCommands(commands.Cog):
       return
     resultDB = result.json()
     output = ""
+    period = ""
     for i in resultDB:
       if not i['period'] == "9":
-        output += f"{i['period']} :small_orange_diamond: {i['courseName']} :small_orange_diamond: **{i['grade']}** ({i['score']})\n"
+        if i['period'] == "0": 
+          period = "A" 
+        else: 
+          period = i['period']
+        output += f"{period} :small_orange_diamond: {i['courseName']} :small_orange_diamond: **{i['grade']}** ({i['score']})\n"
     embed = discord.Embed(title = ":scroll: Grades", description = f"{output}\nYour grades/credentials are never saved", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await message.edit(content = None, embed = embed)
