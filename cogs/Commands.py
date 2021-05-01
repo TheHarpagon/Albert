@@ -147,6 +147,19 @@ class Commands(commands.Cog):
     await ctx.send(embed = embed)
   
   @commands.command()
+  async def juice(self, ctx, member: discord.Member):
+    await ctx.trigger_typing()
+    juicer = self.bot.server.get_role(835703896713330699)
+    if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209]:
+      if juicer not in member.roles:
+        await member.add_roles(juicer)
+        await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is now juicer :beverage_box:")
+      else:
+        await ctx.send(f"{self.bot.errorEmoji} They already juicer :face_with_raised_eyebrow:")
+    else:
+      await ctx.send(f"{self.bot.errorEmoji} Man only owner and akshay ani uncles can do this")
+  
+  @commands.command()
   @commands.cooldown(1, 5, BucketType.user) 
   async def kill(self, ctx):
     await ctx.trigger_typing()
@@ -504,6 +517,19 @@ class Commands(commands.Cog):
         await ctx.send(f"{self.bot.errorEmoji} {member.mention} is not even allah you dumd :face_with_raised_eyebrow:")
     else:
       await ctx.send(f"{self.bot.errorEmoji} Shut the fuck up haram ass, this is only for virajallah")
+  
+  @commands.command()
+  async def unjuice(self, ctx, member: discord.Member):
+    await ctx.trigger_typing()
+    juicer = self.bot.server.get_role(835703896713330699)
+    if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209]:
+      if juicer in member.roles:
+        await member.remove_roles(juicer)
+        await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is not juicer anymore :angry:")
+      else:
+        await ctx.send(f"{self.bot.errorEmoji} They ain't even juicer :face_with_raised_eyebrow:")
+    else:
+      await ctx.send(f"{self.bot.errorEmoji} Man only owner and akshay ani uncles can do this")
   
   @commands.command(aliases = ["demod", "demote"])
   async def unmod(self, ctx, member: discord.Member):

@@ -539,23 +539,33 @@ class DatabaseCommands(commands.Cog):
   #   await message.edit(content = None, embed = embed)
   
   @commands.command()
-  @commands.cooldown(1, 10, BucketType.user) 
-  async def test(self, ctx, username, password):
-    if ctx.author.id == 410590963379994639:
-      url = f"https://dvhs.schoolloop.com/mapi/login?version=3&devToken={uuid4()}&devOS=iPhone9,4&year={datetime.now().year}"
-      result = requests.get(url, auth = HTTPBasicAuth(username, password))
-      if result.status_code != 200:
-        await ctx.send(result.text)
-        return
-      studentID = result.json().get("userID")
-      url = f"https://dvhs.schoolloop.com/mapi/report_card?studentID={studentID}"
-      result = requests.get(url, auth = HTTPBasicAuth(username, password))
-      if result.status_code != 200:
-        await ctx.send(result.text)
-        return
-      print(f"```json\n{result.json()}```")
-    else:
-      await ctx.send("no")
+  @commands.cooldown(1, 20, BucketType.user) 
+  async def grades(self, ctx, username, password):
+    await ctx.trigger_typing()
+    if ctx.message.guild:
+      await ctx.send(f"{self.bot.errorEmoji} You cannot use this command in a server, go to your DMs")
+      return
+    message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
+    url = f"https://dvhs.schoolloop.com/mapi/login?version=3&devToken={uuid4()}&devOS=iPhone9,4&year={datetime.now().year}"
+    result = requests.get(url, auth = HTTPBasicAuth(username, password))
+    if result.status_code != 200:
+      await message.edit(content = f"```json\n{result.text}```")
+      return
+    studentID = result.json().get("userID")
+    url = f"https://dvhs.schoolloop.com/mapi/report_card?studentID={studentID}"
+    result = requests.get(url, auth = HTTPBasicAuth(username, password))
+    if result.status_code != 200:
+      await message.edit(content = f"```json\n{result.text}```")
+      return
+    resultDB = result.json()
+    output = ""
+    for i in resultDB:
+      if not i['period'] == "9":
+        output += f"{i['period']} :small_orange_diamond: {i['courseName']} :small_orange_diamond: **{i['grade']}** ({i['score']})\n"
+    embed = discord.Embed(title = ":scroll: Grades", description = f"{output}\nYour grades/credentials are never saved", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+    await message.edit(content = None, embed = embed)
+      
 
   @commands.command(aliases = ["q", "question", "quiz", "t"])
   @commands.cooldown(1, 20, BucketType.user)
