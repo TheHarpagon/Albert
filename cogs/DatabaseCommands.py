@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType
 import html2text
+import humanize
 import imutils
 import json
 import numpy
@@ -14,11 +15,10 @@ import ordinal
 import portolan
 import random
 import requests
-from requests.auth import HTTPBasicAuth
 from skimage.filters import threshold_local
 import tempfile
 import tinydb
-from uuid import uuid4
+import uuid
 
 class DatabaseCommands(commands.Cog):
   def __init__(self, bot):
@@ -542,33 +542,34 @@ class DatabaseCommands(commands.Cog):
   @commands.cooldown(1, 20, BucketType.user) 
   async def grades(self, ctx, username, password):
     await ctx.trigger_typing()
-    if ctx.message.guild:
-      await ctx.send(f"{self.bot.errorEmoji} You cannot use this command in a server, go to your DMs")
-      return
     message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
-    url = f"https://dvhs.schoolloop.com/mapi/login?version=3&devToken={uuid4()}&devOS=iPhone9,4&year={datetime.now().year}"
-    result = requests.get(url, auth = HTTPBasicAuth(username, password))
-    if result.status_code != 200:
-      await message.edit(content = f"```json\n{result.text}```")
+    if ctx.message.guild:
+      await ctx.message.delete()
+      embed = discord.Embed(title = ":scroll: Grades", description = f"You cannot use this command here, please go [here](https://discord.com/channels/@me/704582015667798146) and try again", color = 0xe67e22, timestamp = datetime.utcnow())
+      embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+      await message.edit(content = None, embed = embed)
+      ctx.command.reset_cooldown(ctx)
       return
-    studentID = result.json().get("userID")
-    url = f"https://dvhs.schoolloop.com/mapi/report_card?studentID={studentID}"
-    result = requests.get(url, auth = HTTPBasicAuth(username, password))
-    if result.status_code != 200:
-      await message.edit(content = f"```json\n{result.text}```")
-      return
-    resultDB = result.json()
-    output = ""
+    async with aiohttp.ClientSession(auth = aiohttp.BasicAuth(username, password)) as session:
+      async with session.get(f"https://dvhs.schoolloop.com/mapi/login?version=3&devToken={uuid.uuid4()}&devOS=iPhone9,4&year={datetime.now().year}") as reply:
+        if reply.status != 200:
+          if "user" in await reply.text():
+            await message.edit(content = f"{self.bot.errorEmoji} Username not found")
+          else:
+            await message.edit(content = f"{self.bot.errorEmoji} Incorrect password")
+          return
+        studentDB = await reply.json(content_type = None)
+      async with session.get(f"https://dvhs.schoolloop.com/mapi/report_card?studentID={studentDB['userID']}") as reply:
+        resultDB = await reply.json(content_type = None)
+    
     period = ""
-    for i in resultDB:
-      if not i['period'] == "9":
-        if i['period'] == "0": 
-          period = "A" 
-        else: 
-          period = i['period']
-        output += f"{period} :small_orange_diamond: {i['courseName']} :small_orange_diamond: **{i['grade']}** ({i['score']})\n"
-    embed = discord.Embed(title = ":scroll: Grades", description = f"{output}\nYour grades/credentials are never saved", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":scroll: Grades", description = "Your grades/credentials are never saved", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+    for i in resultDB:
+      if i["courseName"] != "Access":
+        period = "A" if i["period"] == "0" else i["period"]
+        lastUpdated = datetime.strptime(i["lastUpdated"], "%m/%d/%y %I:%M %p")
+        embed.add_field(name = f"{period} :small_orange_diamond: {i['courseName']}", value = f"Teacher: `{i['teacherName']}`\nGrade: `{i['grade']}` (`{i['score']}`)\nLast Updated: `{humanize.naturaltime(datetime.now() - lastUpdated)}`", inline = False)
     await message.edit(content = None, embed = embed)
       
 
