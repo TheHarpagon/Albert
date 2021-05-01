@@ -563,16 +563,16 @@ class DatabaseCommands(commands.Cog):
         resultDB = await reply.json(content_type = None)
     
     period = ""
+    lastUpdated = ""
     embed = discord.Embed(title = ":scroll: Grades", description = "Your grades/credentials are never saved", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     for i in resultDB:
       if i["courseName"] != "Access":
         period = "A" if i["period"] == "0" else i["period"]
-        lastUpdated = datetime.strptime(i["lastUpdated"], "%m/%d/%y %I:%M %p")
-        embed.add_field(name = f"{period} :small_orange_diamond: {i['courseName']}", value = f"Teacher: `{i['teacherName']}`\nGrade: `{i['grade']}` (`{i['score']}`)\nLast Updated: `{humanize.naturaltime(datetime.now() - lastUpdated)}`", inline = False)
+        lastUpdated = "null" if i["lastUpdated"] == "null" else humanize.naturaltime(datetime.now() - datetime.strptime(i["lastUpdated"], "%m/%d/%y %I:%M %p"))
+        embed.add_field(name = f"{period} :small_orange_diamond: {i['courseName']}", value = f"Teacher: `{i['teacherName']}`\nGrade: `{i['grade']}` (`{i['score']}`)\nLast Updated: `{lastUpdated}`", inline = False)
     await message.edit(content = None, embed = embed)
-      
-
+  
   @commands.command(aliases = ["q", "question", "quiz", "t"])
   @commands.cooldown(1, 20, BucketType.user)
   async def trivia(self, ctx, difficulty: str = None):

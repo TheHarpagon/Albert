@@ -146,7 +146,7 @@ class Commands(commands.Cog):
     embed.add_field(name = f"{self.bot.plusEmoji} How to Join", value = "• join the IP\n• DM the code you get to <@693313699779313734>\n• once you're in, do `/register <password>`", inline = False)
     await ctx.send(embed = embed)
   
-  @commands.command()
+  @commands.command(aliases = ["sauce"])
   async def juice(self, ctx, member: discord.Member):
     await ctx.trigger_typing()
     juicer = self.bot.server.get_role(835703896713330699)
@@ -518,7 +518,7 @@ class Commands(commands.Cog):
     else:
       await ctx.send(f"{self.bot.errorEmoji} Shut the fuck up haram ass, this is only for virajallah")
   
-  @commands.command()
+  @commands.command(aliases = ["unsauce"])
   async def unjuice(self, ctx, member: discord.Member):
     await ctx.trigger_typing()
     juicer = self.bot.server.get_role(835703896713330699)
