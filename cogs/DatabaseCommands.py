@@ -1,21 +1,20 @@
 import aiohttp
 import asyncio
-# import bitlyshortener
-import cv2
+# import cv2
 from datetime import datetime, timedelta
 import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType
 import html2text
 import humanize
-import imutils
+# import imutils
 import json
-import numpy
+# import numpy
 import ordinal
 import portolan
 import random
-import requests
-from skimage.filters import threshold_local
+# import requests
+# from skimage.filters import threshold_local
 import tempfile
 import tinydb
 import uuid
@@ -46,82 +45,82 @@ class DatabaseCommands(commands.Cog):
       else:
         await ctx.send(f"{self.bot.checkmarkEmoji} Set your AFK to `{message}`")
   
-  @commands.command(aliases = ["camscan"])
-  @commands.cooldown(1, 30, BucketType.user) 
-  async def scan(self, ctx):
-    def order_points(pts):
-      rect = numpy.zeros((4, 2), dtype="float32")
-      s = pts.sum(axis=1)
-      rect[0] = pts[numpy.argmin(s)]
-      rect[2] = pts[numpy.argmax(s)]
-      diff = numpy.diff(pts, axis=1)
-      rect[1] = pts[numpy.argmin(diff)]
-      rect[3] = pts[numpy.argmax(diff)]
-      return rect
+  # slowing down bot so commented
+  # @commands.command(aliases = ["camscan"])
+  # @commands.cooldown(1, 30, BucketType.user) 
+  # async def scan(self, ctx):
+  #   def order_points(pts):
+  #     rect = numpy.zeros((4, 2), dtype="float32")
+  #     s = pts.sum(axis=1)
+  #     rect[0] = pts[numpy.argmin(s)]
+  #     rect[2] = pts[numpy.argmax(s)]
+  #     diff = numpy.diff(pts, axis=1)
+  #     rect[1] = pts[numpy.argmin(diff)]
+  #     rect[3] = pts[numpy.argmax(diff)]
+  #     return rect
 
-    def four_point_transform(image, pts):
-      rect = order_points(pts)
-      (tl, tr, br, bl) = rect
-      widthA = numpy.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
-      widthB = numpy.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
-      maxWidth = max(int(widthA), int(widthB))
-      heightA = numpy.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2))
-      heightB = numpy.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2))
-      maxHeight = max(int(heightA), int(heightB))
-      dst = numpy.array([
-          [0, 0],
-          [maxWidth - 1, 0],
-          [maxWidth - 1, maxHeight - 1],
-          [0, maxHeight - 1]], dtype="float32")
-      M = cv2.getPerspectiveTransform(rect, dst)
-      warped = cv2.warpPerspective(image, M, (maxWidth, maxHeight))
-      return warped
+  #   def four_point_transform(image, pts):
+  #     rect = order_points(pts)
+  #     (tl, tr, br, bl) = rect
+  #     widthA = numpy.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
+  #     widthB = numpy.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
+  #     maxWidth = max(int(widthA), int(widthB))
+  #     heightA = numpy.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2))
+  #     heightB = numpy.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2))
+  #     maxHeight = max(int(heightA), int(heightB))
+  #     dst = numpy.array([
+  #         [0, 0],
+  #         [maxWidth - 1, 0],
+  #         [maxWidth - 1, maxHeight - 1],
+  #         [0, maxHeight - 1]], dtype="float32")
+  #     M = cv2.getPerspectiveTransform(rect, dst)
+  #     warped = cv2.warpPerspective(image, M, (maxWidth, maxHeight))
+  #     return warped
 
-    message = await ctx.send(f"{self.bot.loadingEmoji} Processing...")
-    if not ctx.message.attachments:
-      await message.edit(content = f"{self.bot.errorEmoji} Try attaching an image")
-      return
-    response = requests.get(ctx.message.attachments[0].url)
-    file = open("image.png", "wb")
-    file.write(response.content)
-    file.close()
-    try:
-      image = cv2.imread("image.png")
-    except:
-      await message.edit(content = f"{self.bot.errorEmoji} Unable to read your attachment, make sure it's an image")
-      return
-    ratio = image.shape[0] / 500.0
-    orig = image.copy()
-    image = imutils.resize(image, height = 500)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray, (5, 5), 0)
-    edged = cv2.Canny(gray, 75, 200)
-    cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = imutils.grab_contours(cnts)
-    cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:5]
-    for c in cnts:
-      peri = cv2.arcLength(c, True)
-      approx = cv2.approxPolyDP(c, 0.02 * peri, True)
-      if len(approx) == 4:
-        screenCnt = approx
-        break
-    try:
-      cv2.drawContours(image, screenCnt, -1, (0, 255, 0), 2)
-    except:
-      await message.edit(content = f"{self.bot.errorEmoji} Could not detect four corners")
-      return
-    warped = four_point_transform(orig, screenCnt.reshape(4, 2) * ratio)
-    warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
-    T = threshold_local(warped, 11, offset = 10, method = "gaussian")
-    warped = (warped > T).astype("uint8") * 255
-    cv2.imwrite(f"scanned.png", warped)
-    await message.delete()
-    await ctx.send(content = f"{self.bot.checkmarkEmoji} Scanned", file = discord.File(f"scanned.png"))
+  #   message = await ctx.send(f"{self.bot.loadingEmoji} Processing...")
+  #   if not ctx.message.attachments:
+  #     await message.edit(content = f"{self.bot.errorEmoji} Try attaching an image")
+  #     return
+  #   response = requests.get(ctx.message.attachments[0].url)
+  #   file = open("image.png", "wb")
+  #   file.write(response.content)
+  #   file.close()
+  #   try:
+  #     image = cv2.imread("image.png")
+  #   except:
+  #     await message.edit(content = f"{self.bot.errorEmoji} Unable to read your attachment, make sure it's an image")
+  #     return
+  #   ratio = image.shape[0] / 500.0
+  #   orig = image.copy()
+  #   image = imutils.resize(image, height = 500)
+  #   gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+  #   gray = cv2.GaussianBlur(gray, (5, 5), 0)
+  #   edged = cv2.Canny(gray, 75, 200)
+  #   cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+  #   cnts = imutils.grab_contours(cnts)
+  #   cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:5]
+  #   for c in cnts:
+  #     peri = cv2.arcLength(c, True)
+  #     approx = cv2.approxPolyDP(c, 0.02 * peri, True)
+  #     if len(approx) == 4:
+  #       screenCnt = approx
+  #       break
+  #   try:
+  #     cv2.drawContours(image, screenCnt, -1, (0, 255, 0), 2)
+  #   except:
+  #     await message.edit(content = f"{self.bot.errorEmoji} Could not detect four corners")
+  #     return
+  #   warped = four_point_transform(orig, screenCnt.reshape(4, 2) * ratio)
+  #   warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
+  #   T = threshold_local(warped, 11, offset = 10, method = "gaussian")
+  #   warped = (warped > T).astype("uint8") * 255
+  #   cv2.imwrite(f"scanned.png", warped)
+  #   await message.delete()
+  #   await ctx.send(content = f"{self.bot.checkmarkEmoji} Scanned", file = discord.File(f"scanned.png"))
   
   @commands.command()
   @commands.cooldown(1, 10, BucketType.user) 
   async def fact(self, ctx):
-    await ctx.trigger_typing()
     message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
     async with aiohttp.ClientSession() as session:
       async with session.get("https://uselessfacts.jsph.pl/random.json?language=en") as reply:
@@ -133,7 +132,6 @@ class DatabaseCommands(commands.Cog):
   @commands.command(aliases = ["f", "race", "r"])
   @commands.cooldown(1, 10, BucketType.user)
   async def fast(self, ctx):
-    await ctx.trigger_typing()
     original = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
     choice = random.choice(["math", "word", "find"])
 
@@ -220,7 +218,6 @@ class DatabaseCommands(commands.Cog):
   @commands.command()
   @commands.cooldown(1, 10, BucketType.user) 
   async def joke(self, ctx):
-    await ctx.trigger_typing()
     message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
     async with aiohttp.ClientSession() as session:
         async with session.get("https://official-joke-api.appspot.com/jokes/random") as reply:
@@ -343,7 +340,6 @@ class DatabaseCommands(commands.Cog):
     mutes = {}
     muteDatabase = tinydb.TinyDB("cogs/muteDatabase.json")
     query = tinydb.Query()
-    await ctx.trigger_typing()
     if mtime == None:
         mtime = -1
 
@@ -514,7 +510,6 @@ class DatabaseCommands(commands.Cog):
   @commands.command(aliases = ["roast", "insultme", "insult"])
   @commands.cooldown(1, 10, BucketType.user)
   async def roastme(self, ctx):
-    await ctx.trigger_typing()
     message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
     async with aiohttp.ClientSession() as session:
         async with session.get("https://evilinsult.com/generate_insult.php?lang=en&type=json") as reply:
@@ -526,7 +521,6 @@ class DatabaseCommands(commands.Cog):
   # @commands.command()
   # @commands.cooldown(1, 5, BucketType.user) 
   # async def shorten(self, ctx, *, URL: str):
-  #   await ctx.trigger_typing()
   #   message = await ctx.send(f"{self.bot.loadingEmoji} Shortening URL...")
   #   tokensPool = "a9c21c045c5d62380a54a7d3a22b06d8e6396c1c"
   #   shortener = bitlyshortener.Shortener(token = tokensPool, max_cache = 256)
@@ -541,7 +535,6 @@ class DatabaseCommands(commands.Cog):
   @commands.command()
   @commands.cooldown(1, 20, BucketType.user) 
   async def grades(self, ctx, username, password):
-    await ctx.trigger_typing()
     message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
     if ctx.message.guild:
       await ctx.message.delete()
@@ -574,7 +567,6 @@ class DatabaseCommands(commands.Cog):
   @commands.command(aliases = ["q", "question", "quiz", "t"])
   @commands.cooldown(1, 20, BucketType.user)
   async def trivia(self, ctx, difficulty: str = None):
-    await ctx.trigger_typing()
     if ctx.channel.id == 612059384721440791:
       await ctx.send(f"{self.bot.errorEmoji} Any channel but here lmao")
       # trivia.reset_cooldown(ctx)
@@ -694,7 +686,6 @@ class DatabaseCommands(commands.Cog):
     mutes = {}
     muteDatabase = tinydb.TinyDB("cogs/muteDatabase.json")
     query = tinydb.Query()
-    await ctx.trigger_typing()
     member = ctx.message.mentions[0]
     if (self.bot.adminRole in ctx.message.author.roles) or (self.bot.moderatorRole in ctx.message.author.roles):
       if self.bot.mutedRole in member.roles:
@@ -726,7 +717,6 @@ class DatabaseCommands(commands.Cog):
   @commands.command()
   @commands.cooldown(1, 15, BucketType.user) 
   async def weather(self, ctx, *, city = None):
-    await ctx.trigger_typing()
     message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
     
     if not city: city = "San Ramon"
@@ -758,7 +748,6 @@ class DatabaseCommands(commands.Cog):
   @commands.command(aliases = ["8ball"])
   @commands.cooldown(1, 15, BucketType.user) 
   async def predict(self, ctx, *, question: str):
-    await ctx.trigger_typing()
     message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
     async with aiohttp.ClientSession() as session:
         async with session.get(f"https://8ball.delegator.com/magic/JSON/{question}") as reply:

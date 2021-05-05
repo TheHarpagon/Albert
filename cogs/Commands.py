@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 import discord
 from discord.ext import commands
@@ -12,7 +13,6 @@ class Commands(commands.Cog):
   
   @commands.command(aliases = ["hijab"])
   async def allah(self, ctx, member: discord.Member):
-    await ctx.trigger_typing()
     allah = self.bot.server.get_role(736358205994696846)
     if (ctx.author.id == 320369001005842435 and allah in ctx.author.roles) or ctx.author.id == 410590963379994639:
       if allah not in member.roles:
@@ -28,7 +28,6 @@ class Commands(commands.Cog):
   
   @commands.command(aliases = ["hijabs"])
   async def allahs(self, ctx):
-    await ctx.trigger_typing()
     allah = self.bot.server.get_role(736358205994696846)
     output = ""
     for member in allah.members:
@@ -82,7 +81,6 @@ class Commands(commands.Cog):
   @commands.command()
   @commands.cooldown(1, 10, BucketType.user) 
   async def dm(self, ctx, member: discord.Member, *, message):
-    await ctx.trigger_typing()
     if self.bot.vipRole in ctx.author.roles:
       await member.send(message + f"\n- from {ctx.author.mention}")
       await ctx.send(f"{self.bot.checkmarkEmoji} Sent!")
@@ -100,7 +98,6 @@ class Commands(commands.Cog):
   
   @commands.command(aliases = ["coinflip"])
   async def flip(self, ctx):
-    await ctx.trigger_typing()
     responses = {"Heads": "https://i.imgur.com/92xg7uR.png", "Tails": "https://i.imgur.com/TjqDdBI.png"}
     choice = random.choice(["Heads", "Tails"])
     embed = discord.Embed(title = "<:discord_coin:728695789316210860> Flip a Coin", description = f"It's `{choice}`", color = 0xe67e22, timestamp = datetime.utcnow())
@@ -110,8 +107,6 @@ class Commands(commands.Cog):
   
   # @commands.command()
   # async def help(self, ctx):
-  #   await ctx.trigger_typing()
-
   
   @commands.command(aliases = ["servericon"])
   @commands.cooldown(1, 5, BucketType.user) 
@@ -125,13 +120,11 @@ class Commands(commands.Cog):
   @commands.command(aliases = ["inv"])
   @commands.cooldown(1, 5, BucketType.user) 
   async def invite(self, ctx):
-    await ctx.trigger_typing()
     await ctx.send("discord.gg/fG8vTrj")
   
   @commands.command(aliases = ["mcip"])
   @commands.cooldown(1, 5, BucketType.user) 
   async def ip(self, ctx):
-    await ctx.trigger_typing()
     embed = discord.Embed(title = f"{self.bot.minecraftEmoji} Minecraft Server IPs", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     a = "<a:dndGIF:791185650996346891>"
@@ -148,9 +141,11 @@ class Commands(commands.Cog):
   
   @commands.command(aliases = ["sauce"])
   async def juice(self, ctx, member: discord.Member):
-    await ctx.trigger_typing()
     juicer = self.bot.server.get_role(835703896713330699)
     if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209]:
+      if member.id in [639668920835375104]:
+        await ctx.send(f"{self.bot.errorEmoji} no")
+        return
       if juicer not in member.roles:
         await member.add_roles(juicer)
         await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is now juicer :beverage_box:")
@@ -162,7 +157,6 @@ class Commands(commands.Cog):
   @commands.command()
   @commands.cooldown(1, 5, BucketType.user) 
   async def kill(self, ctx):
-    await ctx.trigger_typing()
     if ctx.author.id == 410590963379994639:
       await ctx.send(f"{self.bot.checkmarkEmoji} Ending process! (start manually in repl)")
       await self.bot.close()
@@ -248,7 +242,6 @@ class Commands(commands.Cog):
   @commands.command(aliases = ["promote"])
   @commands.cooldown(1, 5, BucketType.user) 
   async def mod(self, ctx, member: discord.Member):
-    await ctx.trigger_typing()
     permitted = [410590963379994639, 533167218838470666]
     if ctx.author.id in permitted:
       if self.bot.memberRole in member.roles:
@@ -277,7 +270,6 @@ class Commands(commands.Cog):
   @commands.command(aliases = ["nickname"])
   @commands.cooldown(1, 5, BucketType.user) 
   async def nick(self, ctx, *, nickname):
-    await ctx.trigger_typing()
     if len(nickname) >= 1 and len(nickname) <= 32:
       await ctx.author.edit(nick = nickname)
       await ctx.send(f"{self.bot.checkmarkEmoji} Your nickname was set to `{nickname}`!")
@@ -287,7 +279,6 @@ class Commands(commands.Cog):
   @commands.command(aliases = ["avatar", "av"])
   @commands.cooldown(1, 5, BucketType.user) 
   async def pfp(self, ctx, member: discord.Member = None):
-    await ctx.trigger_typing()
     member = ctx.author if not member else member
     embed = discord.Embed(title = ":frame_photo: Profile Picture", description = member.mention, color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
@@ -297,7 +288,6 @@ class Commands(commands.Cog):
   @commands.command(aliases = ["latency"])
   @commands.cooldown(1, 5, BucketType.user) 
   async def ping(self, ctx):
-    await ctx.trigger_typing()
     time = datetime.now() - self.bot.startTime
     days = time.days
     hours, remainder = divmod(time.seconds, 3600)
@@ -330,7 +320,6 @@ class Commands(commands.Cog):
   @commands.command(aliases = ["dong"])
   @commands.cooldown(1, 5, BucketType.user) 
   async def pp(self, ctx):
-    await ctx.trigger_typing()
     length = float(random.randint(0, 400)) / 10
     output = ""
     i = 0
@@ -354,10 +343,24 @@ class Commands(commands.Cog):
     embed.set_thumbnail(url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
+  @commands.command(aliases = ["goatsacrifice"])
+  @commands.cooldown(1, 15, BucketType.guild) 
+  async def pray(self, ctx):
+    allah = self.bot.server.get_role(736358205994696846)
+    if allah in ctx.author.roles:
+      await ctx.send(":goat:")
+      await asyncio.sleep(1)
+      await ctx.send(":pray:")
+      await asyncio.sleep(1)
+      await ctx.send(":goat: :knife: :drop_of_blood:")
+      await asyncio.sleep(1)
+      await ctx.send(":weary: ALLAH THE ALMIGHTY")
+    else:
+      await ctx.send("haram ass you cant use this bs")
+  
   # @commands.command()
   # @commands.cooldown(1, 5, BucketType.user) 
   # async def profile(self, ctx, member: discord.Member = None):
-  #   await ctx.trigger_typing()
   #   member = ctx.author if not member else member
   #   roleCount = len([role for role in member.roles]) - 1
   #   # roleCount = len(roleCount) - 1
@@ -441,7 +444,6 @@ class Commands(commands.Cog):
   @commands.is_owner()
   @commands.cooldown(1, 5, BucketType.user) 
   async def randomperson(self, ctx):
-    await ctx.trigger_typing()
     await ctx.send(f"{random.choice(self.bot.sever.members).mention} is the random person!")
   
   # @commands.command()
@@ -469,7 +471,6 @@ class Commands(commands.Cog):
   @commands.command(aliases = ["s"])
   @commands.cooldown(1, 5, BucketType.user) 
   async def schedule(self, ctx):
-    await ctx.trigger_typing()
     embed = discord.Embed(title = ":bell: DVHS Bell Schedule", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_image(url = "https://i.imgur.com/ES49tLo.jpg")
@@ -478,7 +479,6 @@ class Commands(commands.Cog):
   @commands.command()
   @commands.is_owner()
   async def setstatus(self, ctx, *, argument):
-    await ctx.trigger_typing()
     if argument.lower() == "normal":
       await self.bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{self.bot.memberCount()} Members • !help"))
       await ctx.send(f"{self.bot.checkmarkEmoji} Set!")
@@ -507,7 +507,6 @@ class Commands(commands.Cog):
   
   @commands.command(aliases = ["unhijab"])
   async def unallah(self, ctx, member: discord.Member):
-    await ctx.trigger_typing()
     allah = self.bot.server.get_role(736358205994696846)
     if (ctx.author.id == 320369001005842435 and allah in ctx.author.roles) or ctx.author.id == 410590963379994639:
       if allah in member.roles:
@@ -520,7 +519,6 @@ class Commands(commands.Cog):
   
   @commands.command(aliases = ["unsauce"])
   async def unjuice(self, ctx, member: discord.Member):
-    await ctx.trigger_typing()
     juicer = self.bot.server.get_role(835703896713330699)
     if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209]:
       if juicer in member.roles:
@@ -533,7 +531,6 @@ class Commands(commands.Cog):
   
   @commands.command(aliases = ["demod", "demote"])
   async def unmod(self, ctx, member: discord.Member):
-    await ctx.trigger_typing()
     permitted = [410590963379994639, 533167218838470666]
     if ctx.author.id in permitted:
       if self.bot.moderatorRole in member.roles:
@@ -552,7 +549,6 @@ class Commands(commands.Cog):
   # @command.command()
   # @commands.cooldown(1, 5, BucketType.user) 
   # async def vc(ctx, argument):
-  #   await ctx.trigger_typing()
   #   if self.bot.adminRole in ctx.author.roles or self.bot.moderatorRole in ctx.author.roles:
   #     channel = ctx.message.author.voice.channel
   #     if channel is not None:

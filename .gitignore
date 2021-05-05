@@ -6,13 +6,13 @@ cogs/muteDatabase.json
 cogs/points.json
 
 # document scanner command input
-image.png
+# image.png
 
 # object ID and other variable assignments
 references.py
 
 # document scanner command output
-scanned.png
+# scanned.png
 
 # cache and extras
 __pycache__/
