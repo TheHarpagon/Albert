@@ -3,6 +3,7 @@ from datetime import datetime
 import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType
+import humanize
 import psutil
 import pytz
 import random
@@ -34,7 +35,7 @@ class Commands(commands.Cog):
       output += f"\n{member.mention}"
       if member.id == 320369001005842435:
         output += " :crown:"
-    embed = discord.Embed(title = f":pray: Allahs {len(allah.members)}/10", description = output, color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = f":pray: Allahs ({len(allah.members)}/10)", description = output, color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
@@ -143,9 +144,6 @@ class Commands(commands.Cog):
   async def juice(self, ctx, member: discord.Member):
     juicer = self.bot.server.get_role(835703896713330699)
     if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209]:
-      if member.id in [639668920835375104]:
-        await ctx.send(f"{self.bot.errorEmoji} no")
-        return
       if juicer not in member.roles:
         await member.add_roles(juicer)
         await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is now juicer :beverage_box:")
@@ -153,6 +151,18 @@ class Commands(commands.Cog):
         await ctx.send(f"{self.bot.errorEmoji} They already juicer :face_with_raised_eyebrow:")
     else:
       await ctx.send(f"{self.bot.errorEmoji} Man only owner and akshay ani uncles can do this")
+  
+  @commands.command(aliases = ["saucers"])
+  async def juicers(self, ctx):
+    juicer = self.bot.server.get_role(835703896713330699)
+    output = ""
+    for member in juicer.members:
+      output += f"\n{member.mention}"
+      if member.id in [410590963379994639, 335083840001540119, 394731512068702209]:
+        output += " :crown:"
+    embed = discord.Embed(title = f":beverage_box: Juicers ({len(juicer.members)})", description = output, color = 0xe67e22, timestamp = datetime.utcnow())
+    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+    await ctx.send(embed = embed)
   
   @commands.command()
   @commands.cooldown(1, 5, BucketType.user) 
@@ -486,6 +496,44 @@ class Commands(commands.Cog):
       await self.bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = argument))
       await ctx.send(f"{self.bot.checkmarkEmoji} Set!")
   
+  @commands.command(aliases = ["info", "user", "userinfo"])
+  @commands.cooldown(1, 5, BucketType.user) 
+  async def profile(self, ctx, member: discord.Member = None):
+    member = ctx.author if not member else member
+    embed = discord.Embed(title = ":busts_in_silhouette: Profile", description = member.mention, color = 0xe67e22, timestamp = datetime.utcnow())
+    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+    joinPos = sum(m.joined_at < member.joined_at for m in ctx.guild.members if m.joined_at is not None) + 1
+    embed.add_field(name = f"Join", value = f"`{joinPos}` / `{len(self.bot.server.members)}`\n{humanize.naturaltime(datetime.now() - member.joined_at)}", inline = True)
+    embed.add_field(name = f"Status", value = str(member.status).capitalize(), inline = True)
+    activity = ""
+    try:
+      try:
+        activity += f"**Name:** {member.activity.name}"
+        activity += f"**Details:** {member.activity.details}"
+        activity += f"**State:** {member.activity.state}"
+      except:
+        pass
+      activity += f"\n**Title:** {member.activity.title}"
+      activity += f"\n**Artist{'s' if len(member.activity.artists) > 1 else ''}:** {', '.join(member.activity.artists)}"
+      activity += f"\n**Album:** {member.activity.album}"
+      passed = round((datetime.now() - member.activity.start).total_seconds())
+      total = round((member.activity.end - member.activity.start).total_seconds())
+      duration = list("▱▱▱▱▱▱▱▱▱▱")
+      for i in range(int((passed / total) * len(duration))):
+        duration[i] = "▰"
+      activity += f"\n**Timestamp:** {int(passed / 60)}:{(passed % 60):02d} / {int(total / 60)}:{(total % 60):02d}"
+      activity += f"\n**Progress:** {''.join(duration)}"
+    except:
+      pass
+    if activity == "":
+      activity = "None"
+    embed.add_field(name = f"Activity", value = activity, inline = False)
+    # embed.add_field(name = "Activity", value = output, inline = False)
+    embed.set_thumbnail(url = member.avatar_url)
+    # print(member.activity.type == discord.ActivityType.listening)
+    # print(member.activity)
+    await ctx.send(embed = embed)
+
   # @commands.command()
   # @commands.cooldown(1, 5, BucketType.user) 
   # async def test(ctx, username, password):

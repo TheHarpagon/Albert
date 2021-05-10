@@ -7,6 +7,7 @@ from discord.ext import commands
 from discord.ext.commands import BucketType
 import html2text
 import humanize
+import io
 # import imutils
 import json
 # import numpy
@@ -15,7 +16,6 @@ import portolan
 import random
 # import requests
 # from skimage.filters import threshold_local
-import tempfile
 import tinydb
 import uuid
 
@@ -426,50 +426,38 @@ class DatabaseCommands(commands.Cog):
   
   @commands.command(aliases = ["read"])
   @commands.cooldown(1, 30, BucketType.user)
-  async def ocr(self, ctx, engine = 1):
+  async def ocr(self, ctx, engine = 2):
     message = await ctx.send(f"{self.bot.loadingEmoji} Loading... (this will take a bit)")
     if ctx.message.attachments:
       if engine not in [1, 2]:
         await message.edit(content = f"{self.bot.errorEmoji} Invalid engine, choose `1` or `2` (more info at https://ocr.space/ocrapi#ocrengine)")
         return
-      filetypes = [".gif", ".jpg", ".pdf", ".png", ".webp"]
       for i in ctx.message.attachments:
-        if list(filter(i.filename.lower().endswith, filetypes)) != []:
-          if i.size / 1000 <= 1024:
-            async def process(url, apiKey, engine, link):
-              payload = {"url": url, "apikey": apiKey, "isCreateSearchablePdf": link, "OCREngine": engine}
-              async with aiohttp.ClientSession() as session:
-                async with session.post("https://api.ocr.space/parse/image", data = payload) as reply:
-                  return await reply.json()
-            results = await process(i.url, "35c2b7ce5288957", 2, False)
-            if results["IsErroredOnProcessing"]:
-              await message.edit(content = f"{self.bot.errorEmoji} An error occured\n```yaml\n{results['ErrorMessage'][0]}```")
-              return
-            if not results["ParsedResults"][0]["ParsedText"]:
-              await message.edit(content = f"{self.bot.errorEmoji} No text was found")
-              return
-            print(len(results["ParsedResults"][0]["ParsedText"]))
-            if len(results["ParsedResults"][0]["ParsedText"]) > 1898:
-              embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms", color = 0xe67e22, timestamp = datetime.utcnow())
-              embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-              with tempfile.TemporaryFile(mode = "w+") as file:
-                file.write(results["ParsedResults"][0]["ParsedText"])
-                file.seek(0)
-                await message.delete()
-                embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms", color = 0xe67e22, timestamp = datetime.utcnow())
-                embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-                await ctx.send(embed = embed)
-                await ctx.send(file = discord.File(file, filename = "response.txt"))
-                return
-            embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms\n\nDetected Text:\n```yaml\n{results['ParsedResults'][0]['ParsedText']}```", color = 0xe67e22, timestamp = datetime.utcnow())
+        if i.size / 1000 <= 1024:
+          async def process(url, apiKey, engine):
+            payload = {"url": url, "apikey": apiKey, "OCREngine": engine}
+            async with aiohttp.ClientSession() as session:
+              async with session.post("https://api.ocr.space/parse/image", data = payload) as reply:
+                return await reply.json()
+          results = await process(i.url, "35c2b7ce5288957", engine)
+          if results["IsErroredOnProcessing"]:
+            await message.edit(content = f"{self.bot.errorEmoji} An error occured\n```yaml\n{results['ErrorMessage'][0]}```")
+            return
+          if not results["ParsedResults"][0]["ParsedText"]:
+            await message.edit(content = f"{self.bot.errorEmoji} No text was found (if this is an error, try again with `!ocr 1`)")
+            return
+          if len(results["ParsedResults"][0]["ParsedText"]) > 1898:
+            embed = discord.Embed(title = ":printer: Text Recogition", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms", color = 0xe67e22, timestamp = datetime.utcnow())
             embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
             await message.edit(content = None, embed = embed)
-          else:
-            await message.edit(content = f"{self.bot.errorEmoji} Your file exceeds the `1024` kb limit")
+            # file = io.StringIO(results["ParsedResults"][0]["ParsedText"])
+            await ctx.send(file = discord.File(io.StringIO(results["ParsedResults"][0]["ParsedText"]), filename = "results.txt"))
             return
+          embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms\n\nDetected Text:\n```yaml\n{results['ParsedResults'][0]['ParsedText']}```", color = 0xe67e22, timestamp = datetime.utcnow())
+          embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+          await message.edit(content = None, embed = embed)
         else:
-          await message.edit(content = f"{self.bot.errorEmoji} Inavlid file type a `.gif`, `.jpg`, `.pdf`, `.png`, `.webp`")
-          return
+          await message.edit(content = f"{self.bot.errorEmoji} Your file exceeds the `1024` kb limit")
     else:
       await message.edit(content = f"{self.bot.errorEmoji} Try attaching something")
   
