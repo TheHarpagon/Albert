@@ -510,15 +510,14 @@ class Commands(commands.Cog):
     duration = list("▱▱▱▱▱▱▱▱")
     for i in range(int((passed / total) * len(duration))):
       duration[i] = "▰"
-    # 0xe67e22
-    embed = discord.Embed(title = ":musical_note: Spotify", color = member.activity.color, timestamp = datetime.utcnow())
-    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+    embed = discord.Embed(title = ":musical_note: Spotify", description = member.mention, color = member.activity.color, timestamp = datetime.utcnow())
     embed.add_field(name = "Title", value = member.activity.title, inline = True)
     embed.add_field(name = f"Artist{'s' if len(member.activity.artists) > 1 else ''}", value = ", ".join(member.activity.artists), inline = True)
     embed.add_field(name = "Album", value = member.activity.album, inline = True)
     embed.add_field(name = "Timestamp", value = f"```yaml\n{int(passed / 60)}:{(passed % 60):02d} / {int(total / 60)}:{(total % 60):02d}```", inline = True)
     embed.add_field(name = "Duration", value = f"```yaml\n{''.join(duration)}```", inline = True)
     embed.set_image(url = member.activity.album_cover_url)
+    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
   @commands.command(aliases = ["activity", "info", "status", "user", "userinfo"])
