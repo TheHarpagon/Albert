@@ -496,42 +496,57 @@ class Commands(commands.Cog):
       await self.bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = argument))
       await ctx.send(f"{self.bot.checkmarkEmoji} Set!")
   
-  @commands.command(aliases = ["info", "user", "userinfo"])
+  @commands.command(aliases = ["music"])
+  @commands.cooldown(1, 5, BucketType.user) 
+  async def spotify(self, ctx, member: discord.Member = None):
+    member = ctx.author if not member else member
+    try:
+      member.activity.title
+    except:
+      await ctx.send(f"{self.bot.errorEmoji} {'You' if member == ctx.author else 'They'} aren't listening to anything")
+      return
+    passed = int((datetime.now() - member.activity.start).total_seconds())
+    total = int((member.activity.end - member.activity.start).total_seconds())
+    duration = list("▱▱▱▱▱▱▱▱")
+    for i in range(int((passed / total) * len(duration))):
+      duration[i] = "▰"
+    # 0xe67e22
+    embed = discord.Embed(title = ":musical_note: Spotify", color = member.activity.color, timestamp = datetime.utcnow())
+    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+    embed.add_field(name = "Title", value = member.activity.title, inline = True)
+    embed.add_field(name = f"Artist{'s' if len(member.activity.artists) > 1 else ''}", value = ", ".join(member.activity.artists), inline = True)
+    embed.add_field(name = "Album", value = member.activity.album, inline = True)
+    embed.add_field(name = "Timestamp", value = f"```yaml\n{int(passed / 60)}:{(passed % 60):02d} / {int(total / 60)}:{(total % 60):02d}```", inline = True)
+    embed.add_field(name = "Duration", value = f"```yaml\n{''.join(duration)}```", inline = True)
+    embed.set_image(url = member.activity.album_cover_url)
+    await ctx.send(embed = embed)
+  
+  @commands.command(aliases = ["activity", "info", "status", "user", "userinfo"])
   @commands.cooldown(1, 5, BucketType.user) 
   async def profile(self, ctx, member: discord.Member = None):
     member = ctx.author if not member else member
     embed = discord.Embed(title = ":busts_in_silhouette: Profile", description = member.mention, color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-    joinPos = sum(m.joined_at < member.joined_at for m in ctx.guild.members if m.joined_at is not None) + 1
+    joinPos = sum(m.joined_at < member.joined_at for m in self.bot.server.members if m.joined_at is not None) + 1
     embed.add_field(name = f"Join", value = f"`{joinPos}` / `{len(self.bot.server.members)}`\n{humanize.naturaltime(datetime.now() - member.joined_at)}", inline = True)
     embed.add_field(name = f"Status", value = str(member.status).capitalize(), inline = True)
     activity = ""
     try:
       try:
         activity += f"**Name:** {member.activity.name}"
-        activity += f"**Details:** {member.activity.details}"
-        activity += f"**State:** {member.activity.state}"
+        activity += f"\n**Details:** {member.activity.details}"
+        activity += f"\n**State:** {member.activity.state}"
       except:
         pass
-      activity += f"\n**Title:** {member.activity.title}"
-      activity += f"\n**Artist{'s' if len(member.activity.artists) > 1 else ''}:** {', '.join(member.activity.artists)}"
-      activity += f"\n**Album:** {member.activity.album}"
-      passed = round((datetime.now() - member.activity.start).total_seconds())
-      total = round((member.activity.end - member.activity.start).total_seconds())
-      duration = list("▱▱▱▱▱▱▱▱▱▱")
-      for i in range(int((passed / total) * len(duration))):
-        duration[i] = "▰"
-      activity += f"\n**Timestamp:** {int(passed / 60)}:{(passed % 60):02d} / {int(total / 60)}:{(total % 60):02d}"
-      activity += f"\n**Progress:** {''.join(duration)}"
     except:
       pass
-    if activity == "":
-      activity = "None"
+    activity = "None" if activity == "" else activity
+    try:
+      activity = f"Spotify (view more with `!spotify @{member.display_name}`)" if member.activity.title else activity
+    except:
+      pass
     embed.add_field(name = f"Activity", value = activity, inline = False)
-    # embed.add_field(name = "Activity", value = output, inline = False)
     embed.set_thumbnail(url = member.avatar_url)
-    # print(member.activity.type == discord.ActivityType.listening)
-    # print(member.activity)
     await ctx.send(embed = embed)
 
   # @commands.command()
