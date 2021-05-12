@@ -500,23 +500,28 @@ class Commands(commands.Cog):
   @commands.cooldown(1, 5, BucketType.user) 
   async def spotify(self, ctx, member: discord.Member = None):
     member = ctx.author if not member else member
-    try:
-      member.activity.title
-    except:
+    listening = False
+    if member.activities:
+      for i in member.activities:
+        if i.type == discord.ActivityType.listening:
+          listening = True
+          activity = i
+          break
+    if not listening:
       await ctx.send(f"{self.bot.errorEmoji} {'You' if member == ctx.author else 'They'} aren't listening to anything")
       return
-    passed = int((datetime.now() - member.activity.start).total_seconds())
-    total = int((member.activity.end - member.activity.start).total_seconds())
+    passed = int((datetime.now() - activity.start).total_seconds())
+    total = int((activity.end - activity.start).total_seconds())
     duration = list("▱▱▱▱▱▱▱▱")
     for i in range(int((passed / total) * len(duration))):
       duration[i] = "▰"
-    embed = discord.Embed(title = ":musical_note: Spotify", description = member.mention, color = member.activity.color, timestamp = datetime.utcnow())
-    embed.add_field(name = "Title", value = member.activity.title, inline = True)
-    embed.add_field(name = f"Artist{'s' if len(member.activity.artists) > 1 else ''}", value = ", ".join(member.activity.artists), inline = True)
-    embed.add_field(name = "Album", value = member.activity.album, inline = True)
+    embed = discord.Embed(title = "<:spotify:841831747867377684> Spotify", description = member.mention, color = activity.color, timestamp = datetime.utcnow())
+    embed.add_field(name = "Title", value = f"[{activity.title}](https://open.spotify.com/track/{activity.track_id})", inline = True)
+    embed.add_field(name = f"Artist{'s' if len(activity.artists) > 1 else ''}", value = ", ".join(activity.artists), inline = True)
+    embed.add_field(name = "Album", value = activity.album, inline = True)
     embed.add_field(name = "Timestamp", value = f"```yaml\n{int(passed / 60)}:{(passed % 60):02d} / {int(total / 60)}:{(total % 60):02d}```", inline = True)
     embed.add_field(name = "Duration", value = f"```yaml\n{''.join(duration)}```", inline = True)
-    embed.set_image(url = member.activity.album_cover_url)
+    embed.set_image(url = activity.album_cover_url)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
@@ -529,22 +534,24 @@ class Commands(commands.Cog):
     joinPos = sum(m.joined_at < member.joined_at for m in self.bot.server.members if m.joined_at is not None) + 1
     embed.add_field(name = f"Join", value = f"`{joinPos}` / `{len(self.bot.server.members)}`\n{humanize.naturaltime(datetime.now() - member.joined_at)}", inline = True)
     embed.add_field(name = f"Status", value = str(member.status).capitalize(), inline = True)
-    activity = ""
-    try:
-      try:
-        activity += f"**Name:** {member.activity.name}"
-        activity += f"\n**Details:** {member.activity.details}"
-        activity += f"\n**State:** {member.activity.state}"
-      except:
-        pass
-    except:
-      pass
-    activity = "None" if activity == "" else activity
-    try:
-      activity = f"Spotify (view more with `!spotify @{member.display_name}`)" if member.activity.title else activity
-    except:
-      pass
-    embed.add_field(name = f"Activity", value = activity, inline = False)
+    if member.activities:
+      activity = ""
+      j = 1
+      for i in member.activities:
+        try:
+          name = f"Spotify\nView more with `!spotify @{member.name}`" if i.type == discord.ActivityType.listening else f"{i.emoji} {i.name}" if i.emoji else i.name
+          activity += f"Name: {name}"
+          activity += f"\nDetails: {i.details}" if i.details else ""
+          activity += f"\nState: {i.state}" if i.state else ""
+          elapsed = int((datetime.now() - i.start).total_seconds())
+          activity += f"\nElapsed: `{int(elapsed / 3600):02d}`:`{int((elapsed % 3600) / 60):02d}`:`{(elapsed % 60):02d}`"
+        except:
+          pass
+        if not activity:
+          activity = "Error during retrieval"
+        embed.add_field(name = f"Activity ({j})", value = activity, inline = False)
+        j += 1
+        activity = ""
     embed.set_thumbnail(url = member.avatar_url)
     await ctx.send(embed = embed)
 

@@ -130,7 +130,7 @@ class DatabaseCommands(commands.Cog):
     await message.edit(content = None, embed = embed)
   
   @commands.command(aliases = ["f", "race", "r"])
-  @commands.cooldown(1, 10, BucketType.user)
+  @commands.cooldown(1, 10, BucketType.channel)
   async def fast(self, ctx):
     original = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
     choice = random.choice(["math", "word", "find"])
