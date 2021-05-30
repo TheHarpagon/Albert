@@ -63,10 +63,10 @@ class Events(commands.Cog):
               nickname = i.display_name
             # w/o message
             if not data[str(i.id)][1]:
-              await message.channel.send(f":spy: **{nickname}** is AFK ({humanize.naturaltime(time)})")
+              await message.channel.send(f":spy: `{nickname}` is AFK ({humanize.naturaltime(time)})")
             # with message
             else:
-              await message.channel.send(f":spy: **{nickname}** is AFK: {data[str(i.id)][1]} ({humanize.naturaltime(time)})")
+              await message.channel.send(f":spy: `{nickname}` is AFK: `{data[str(i.id)][1]}` ({humanize.naturaltime(time)})")
             print("✅　AFK (MENTION) Event")
     
     # viraj moment

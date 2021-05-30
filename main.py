@@ -98,9 +98,9 @@ async def assignments():
   bot.wedFriTimes = {"08:10 AM": "A", "09:25 AM": "Passing", "09:35 AM": "2", "10:50 AM": "Passing", "11:05 AM": "4", "12:20 PM": "Lunch", "12:55 PM": "Passing", "01:05 PM": "6", "02:20 PM": "Passing", "02:30 PM": "Student Support"}
   bot.daySchedule = {1: bot.monTimes, 2: bot.tuesThursTimes, 3: bot.wedFriTimes, 4: bot.tuesThursTimes, 5: bot.wedFriTimes}
 
-  bot.monTimesMinutes = {495: 'A', 525: 'Passing', 530: '1', 560: 'Passing', 565: '2', 595: 'Passing', 600: '3', 630: 'Passing', 635: '4', 665: 'Lunch', 695: 'Passing', 700: '5', 730: 'Passing', 735: '6'}
-  bot.tuesThursTimesMinutes = {580: '1', 655: 'Passing', 670: '3', 745: 'Lunch', 780: 'Passing', 790: '5', 865: 'Passing', 875: 'Student Support'}
-  bot.wedFriTimesMinutes = {495: 'A', 570: 'Passing', 580: '2', 655: 'Passing', 670: '4', 745: 'Lunch', 780: 'Passing', 790: '6', 865: 'Passing', 875: 'Student Support'}
+  bot.monTimesMinutes = {495: "A", 525: "Passing", 530: "1", 560: "Passing", 565: "2", 595: "Passing", 600: "3", 630: "Passing", 635: "4", 665: "Lunch", 695: "Passing", 700: "5", 730: "Passing", 735: "6"}
+  bot.tuesThursTimesMinutes = {580: "1", 655: "Passing", 670: "3", 745: "Lunch", 780: "Passing", 790: "5", 865: "Passing", 875: "Student Support"}
+  bot.wedFriTimesMinutes = {495: "A", 570: "Passing", 580: "2", 655: "Passing", 670: "4", 745: "Lunch", 780: "Passing", 790: "6", 865: "Passing", 875: "Student Support"}
   bot.dayScheduleMinutes = {1: bot.monTimesMinutes, 2: bot.tuesThursTimesMinutes, 3: bot.wedFriTimesMinutes, 4: bot.tuesThursTimesMinutes, 5: bot.wedFriTimesMinutes}
   
   def altCheck(ctx):

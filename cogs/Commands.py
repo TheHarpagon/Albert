@@ -144,6 +144,9 @@ class Commands(commands.Cog):
   async def juice(self, ctx, member: discord.Member):
     juicer = self.bot.server.get_role(835703896713330699)
     if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209]:
+      if member.id == 639668920835375104:
+        await ctx.send(f"{self.bot.errorEmoji} {member.mention} is haram as hell :face_with_raised_eyebrow:")
+        return
       if juicer not in member.roles:
         await member.add_roles(juicer)
         await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is now juicer :beverage_box:")
@@ -449,6 +452,35 @@ class Commands(commands.Cog):
   #     embed.add_field(name = "Account Creation", value = f"{member.created_at.strftime('`%a`, `%B` `%#d`, `%Y`')}", inline = True)
   #     embed.add_field(name = "Server Joined", value = f"{member.joined_at.strftime('`%a`, `%B` `%#d`, `%Y`')}", inline = True)
   #     await ctx.send(embed = embed)
+
+  @commands.command(aliases = ["activity", "info", "status", "user", "userinfo"])
+  @commands.cooldown(1, 5, BucketType.user) 
+  async def profile(self, ctx, member: discord.Member = None):
+    member = ctx.author if not member else member
+    embed = discord.Embed(title = ":busts_in_silhouette: Profile", description = member.mention, color = 0xe67e22, timestamp = datetime.utcnow())
+    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+    joinPos = sum(m.joined_at < member.joined_at for m in self.bot.server.members if m.joined_at is not None) + 1
+    embed.add_field(name = f"Join", value = f"`{joinPos}` / `{len(self.bot.server.members)}`\n{humanize.naturaltime(datetime.now() - member.joined_at)}", inline = True)
+    embed.add_field(name = f"Status", value = str(member.status).capitalize(), inline = True)
+    if member.activities:
+      activity = ""
+      j = 1
+      for i in member.activities:
+        try:
+          name = f"Spotify\nView more with `!spotify @{member.name}`" if i.type == discord.ActivityType.listening else f"{i.emoji} {i.name}" if i.emoji else i.name
+          activity += f"Name: {name}"
+          activity += f"\nDetails: {i.details}" if i.details else ""
+          activity += f"\nState: {i.state}" if i.state else ""
+          elapsed = int((datetime.now() - i.start).total_seconds())
+          activity += f"\nElapsed: `{int(elapsed / 3600):02d}`:`{int((elapsed % 3600) / 60):02d}`:`{(elapsed % 60):02d}`"
+        except:
+          pass
+        activity = "Error during retrieval" if not activity else activity
+        embed.add_field(name = f"Activity ({j})", value = activity, inline = False)
+        j += 1
+        activity = ""
+    embed.set_thumbnail(url = member.avatar_url)
+    await ctx.send(embed = embed)
   
   @commands.command()
   @commands.is_owner()
@@ -523,36 +555,6 @@ class Commands(commands.Cog):
     embed.add_field(name = "Duration", value = f"```yaml\n{''.join(duration)}```", inline = True)
     embed.set_image(url = activity.album_cover_url)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-    await ctx.send(embed = embed)
-  
-  @commands.command(aliases = ["activity", "info", "status", "user", "userinfo"])
-  @commands.cooldown(1, 5, BucketType.user) 
-  async def profile(self, ctx, member: discord.Member = None):
-    member = ctx.author if not member else member
-    embed = discord.Embed(title = ":busts_in_silhouette: Profile", description = member.mention, color = 0xe67e22, timestamp = datetime.utcnow())
-    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-    joinPos = sum(m.joined_at < member.joined_at for m in self.bot.server.members if m.joined_at is not None) + 1
-    embed.add_field(name = f"Join", value = f"`{joinPos}` / `{len(self.bot.server.members)}`\n{humanize.naturaltime(datetime.now() - member.joined_at)}", inline = True)
-    embed.add_field(name = f"Status", value = str(member.status).capitalize(), inline = True)
-    if member.activities:
-      activity = ""
-      j = 1
-      for i in member.activities:
-        try:
-          name = f"Spotify\nView more with `!spotify @{member.name}`" if i.type == discord.ActivityType.listening else f"{i.emoji} {i.name}" if i.emoji else i.name
-          activity += f"Name: {name}"
-          activity += f"\nDetails: {i.details}" if i.details else ""
-          activity += f"\nState: {i.state}" if i.state else ""
-          elapsed = int((datetime.now() - i.start).total_seconds())
-          activity += f"\nElapsed: `{int(elapsed / 3600):02d}`:`{int((elapsed % 3600) / 60):02d}`:`{(elapsed % 60):02d}`"
-        except:
-          pass
-        if not activity:
-          activity = "Error during retrieval"
-        embed.add_field(name = f"Activity ({j})", value = activity, inline = False)
-        j += 1
-        activity = ""
-    embed.set_thumbnail(url = member.avatar_url)
     await ctx.send(embed = embed)
 
   # @commands.command()
