@@ -3,8 +3,8 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import CheckFailure, CommandOnCooldown, CommandNotFound
 import humanize
-import json
 import ordinal
+from replit import db
 
 class Events(commands.Cog):
   def __init__(self, bot):
@@ -33,50 +33,38 @@ class Events(commands.Cog):
         await ctx.send(f"```{error}```")
     print(f"❌‎‎‎　ERROR ({error})")
   
-  # on message sent event
-  ## going to use sql or replit database instead of json later
   @commands.Cog.listener()
   async def on_message(self, message):
     # afk user returns
-    if not message.content.lower().startswith("!afk"):
-      with open("cogs/afks.json", "r") as file:
-        data = json.load(file)
-        # if afk user returns
-        if str(message.author.id) in data:
-          del data[str(message.author.id)]
-          with open("cogs/afks.json", "w") as file:
-            json.dump(data, file, indent = 2)
-          if message.author.id != 410590963379994639:
-            await message.author.edit(nick = message.author.display_name[6:])
-          await message.reply(f":wave: Welcome back, I removed your AFK", delete_after = 3)
-          print("✅　AFK (RETURN) Event")
+    if not message.content.lower().startswith("!afk "):
+      if str(message.author.id) in db:
+        del db[str(message.author.id)]
+        if message.author.id != 410590963379994639:
+          await message.author.edit(nick = message.author.display_name[6:])
+        await message.reply(f":wave: Welcome back, I removed your AFK", delete_after = 3)
+        print("✅　AFK RETURN Event")
 
     # afk user mentioned
     if message.mentions:
       for i in message.mentions:
-        with open("cogs/afks.json", "r") as file:
-          data = json.load(file)
-          if str(i.id) in data:
-            time = datetime.now() - datetime.strptime(data[str(i.id)][0], '%Y-%m-%d %H:%M:%S.%f')
-            nickname = i.display_name[6:]
-            if i.id == 410590963379994639:
-              nickname = i.display_name
-            # w/o message
-            if not data[str(i.id)][1]:
-              await message.channel.send(f":spy: `{nickname}` is AFK ({humanize.naturaltime(time)})")
-            # with message
-            else:
-              await message.channel.send(f":spy: `{nickname}` is AFK: `{data[str(i.id)][1]}` ({humanize.naturaltime(time)})")
-            print("✅　AFK (MENTION) Event")
+        if str(i.id) in db:
+          time = datetime.now() - datetime.strptime(db[str(i.id)][0], '%Y-%m-%d %H:%M:%S.%f')
+          nickname = i.display_name[6:]
+          if i.id == 410590963379994639:
+            nickname = i.display_name
+          # w/o message
+          if not db[str(i.id)][1]:
+            await message.channel.send(f":spy: `{nickname}` is AFK ({humanize.naturaltime(time)})")
+          # with message
+          else:
+            await message.channel.send(f":spy: `{nickname}` is AFK: `{db[str(i.id)][1]}` ({humanize.naturaltime(time)})")
+          print("✅　AFK MENTION Event")
     
     # viraj moment
     if message.author.id == 320369001005842435:
       if message.channel.id == 700074631935295532:
-        if "ask" in message.content.lower() or "punz" in message.content.lower():
+        if "ask" in message.content.lower():
           await message.delete()
-    
-    # breaks the bot
-    # await self.bot.process_commands(message)
   
   @commands.Cog.listener()
   async def on_message_delete(self, message):
@@ -87,8 +75,6 @@ class Events(commands.Cog):
       embed.add_field(name = "Author", value = message.author.mention, inline = True)
       embed.add_field(name = "Channel", value = message.channel.mention, inline = True)
       embed.add_field(name = "Content", value = message.content, inline = True)
-      # if (message.attachments[0].size > 0):
-      #   embed.set_image(url = message.attachments[0].proxy_url)
       await self.bot.logChannel.send(embed = embed)
       print("✅　DELETE Event")
   
@@ -103,8 +89,6 @@ class Events(commands.Cog):
       embed.add_field(name = "Message", value = f"[Jump!]({before.jump_url})", inline = True)
       embed.add_field(name = "Before", value = before.content, inline = True)
       embed.add_field(name = "After", value = after.content, inline = True)
-      # if (message.attachments[0].size > 0):
-      #   embed.set_image(url = message.attachments[0].proxy_url)
       await self.bot.logChannel.send(embed = embed)
       print("✅　EDIT Event")
   
@@ -131,7 +115,6 @@ class Events(commands.Cog):
       await member.remove_roles(self.bot.mutedRole)
     print("✅　JOIN Event")
 
-  # on member exit event
   @commands.Cog.listener()
   async def on_member_remove(self, member):
     if member.bot == False:
@@ -148,7 +131,6 @@ class Events(commands.Cog):
       await self.bot.welcomeChannel.send(f"Goodbye, {member.mention}", embed = embed)
     print("✅　LEAVE Event")
   
-  # reaction roles (add)
   @commands.Cog.listener()
   async def on_raw_reaction_add(self, payload):
     if payload.message_id == 759521601170833469:
@@ -161,7 +143,6 @@ class Events(commands.Cog):
       await payload.member.send(f"{self.bot.plusEmoji} Added the **{self.bot.gameRRDict[payload.emoji.id].name}** role")
       print("✅　REACTION (ADD) Event")
 
-  # reaction roles (remove)
   @commands.Cog.listener()
   async def on_raw_reaction_remove(self, payload):
     member = self.bot.server.get_member(payload.user_id)
@@ -174,18 +155,6 @@ class Events(commands.Cog):
       await member.remove_roles(self.bot.gameRRDict[payload.emoji.id])
       await member.send(f"{self.bot.minusEmoji} Removed the **{self.bot.gameRRDict[payload.emoji.id].name}** role")
       print("✅　REACTION (REMOVE) Event")
-  
-  # @bot.event
-  # async def on_member_update(before, after):
-  #   if str(before.activity).lower() == "streaming":
-  #     await after.remove_roles(bot.liveOnTwitchRole)
-  #   if str(after.activity).lower() == "streaming":
-  #     await after.add_roles(bot.liveOnTwitchRole)
-
-  # @bot.event
-  # async def on_voice_state_update(member, before, after):
-  #   if after.self_stream:
-  #     await bot.logChannel.send(f":red_circle: `{member}` went live in `{after.channel.name}` VC")
 
 def setup(bot):
   bot.add_cog(Events(bot))

@@ -14,6 +14,7 @@ import json
 import ordinal
 import portolan
 import random
+from replit import db
 # import requests
 # from skimage.filters import threshold_local
 import tinydb
@@ -27,23 +28,17 @@ class DatabaseCommands(commands.Cog):
   async def afk(self, ctx, *, message = None):
     if ctx.author.display_name.startswith("[AFK] "):
       return
-    if ctx.message.mentions:
-      await ctx.send(f"{self.bot.errorEmoji} You can't ping anything in your status")
     else:
       if not ctx.author.id == 410590963379994639:
         if len(ctx.author.display_name) <= 26:
           await ctx.author.edit(nick = f"[AFK] {ctx.author.display_name}")
         else:
           await ctx.author.edit(nick = f"[AFK] {ctx.author.display_name[:-6]}")
-      with open("cogs/afks.json", "r") as file:
-        data = json.load(file)
-        data[str(ctx.author.id)] = [str(ctx.message.created_at), message]
-      with open("cogs/afks.json", "w") as file:
-        json.dump(data, file, indent = 2)
-      if not message:
-        await ctx.send(f"{self.bot.checkmarkEmoji} Set your AFK")
-      else:
-        await ctx.send(f"{self.bot.checkmarkEmoji} Set your AFK to `{message}`")
+      db[str(ctx.author.id)] = [str(ctx.message.created_at), message]
+      text = f"{self.bot.checkmarkEmoji} Set your AFK"
+    if message:
+      text += f"\n```{message}```"
+    await ctx.send(text)
   
   # slowing down bot so commented
   # @commands.command(aliases = ["camscan"])
@@ -133,13 +128,11 @@ class DatabaseCommands(commands.Cog):
   @commands.cooldown(1, 10, BucketType.channel)
   async def fast(self, ctx):
     original = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
-    choice = random.choice(["math", "word", "find"])
+    choice = random.randint(0, 2)
+    print(choice)
 
-    # math
-    if choice == "math":
-      operation = random.choice(["×", "/", "+", "-"])
-      numbers = []
-      answer = 0
+    def math():
+      operation, numbers, answer = random.choice(["×", "/", "+", "-"]), [], 0
       if operation == "×":
         numbers = [random.randint(0, 20), random.randint(0, 20)]
         answer = numbers[0] * numbers[1]
@@ -147,73 +140,62 @@ class DatabaseCommands(commands.Cog):
         denominator = random.randint(1, 20)
         answer = random.randint(1, 20)
         numbers = [denominator * answer, denominator]
-      
       elif operation == "+":
         numbers = [random.randint(50, 100), random.randint(50, 100)]
         answer = numbers[0] + numbers[1]
       else:
         numbers = [random.randint(50, 100), random.randint(50, 100)]
-        if numbers[0] < numbers[1]:
-          numbers[0], numbers[1] = numbers[1], numbers[0]
+        while numbers[0] < numbers[1]:
+          numbers = [random.randint(50, 100), random.randint(50, 100)]
         answer = numbers[0] - numbers[1]
       
       embed = discord.Embed(title = ":zap: Math Showdown", description = f"First to solve the following wins!\n```py\n{numbers[0]} {operation} {numbers[1]}```", color = 0xe67e22, timestamp = datetime.utcnow())
       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-      await original.edit(content = None, embed = embed)
-      
-      def check(message):
-        return message.content == str(int(answer)) and message.channel == ctx.channel
-      try:
-        message = await self.bot.wait_for("message", timeout = 15, check = check)
-      except asyncio.TimeoutError:
-        await original.edit(content = f"{self.bot.errorEmoji} Event has expired", embed = None)
-      else:
-        await message.add_reaction(self.bot.checkmarkEmoji)
-        await ctx.send(f"{message.author.mention} wins!")
-    # word
-    elif choice == "word":
+      return [embed, answer]
+    
+    async def word():
       async with aiohttp.ClientSession() as session:
         async with session.get("https://random-word-api.herokuapp.com/word?number=1") as reply:
           wordDB = await reply.json()
+      answer = wordDB[0][::-1]
       embed = discord.Embed(title = ":zap: Word Showdown", description = f"First to type the following backwards wins!\n```yaml\n{wordDB[0]}```", color = 0xe67e22, timestamp = datetime.utcnow())
       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-      await original.edit(content = None, embed = embed)
-      def check(message):
-        return message.content == (wordDB[0])[::-1] and message.channel == ctx.channel
-      try:
-        message = await self.bot.wait_for("message", timeout = 15, check = check)
-      except asyncio.TimeoutError:
-        await original.edit(content = f"{self.bot.errorEmoji} Event has expired", embed = None)
-      else:
-        await message.add_reaction(self.bot.checkmarkEmoji)
-        await ctx.send(f"{message.author.mention} wins!")
+      return [embed, answer]
     
-    # find
-    else:
-      wrong, right = random.choice(self.bot.emojis), random.choice(self.bot.emojis)
+    def find():
+      wrong, correct = ":white_large_square:", ":brown_square:"
       table = [[wrong, wrong, wrong], [wrong, wrong, wrong], [wrong, wrong, wrong]]
-      row, column = random.randint(0, 2), random.randint(0, 2)
-      table[row][column] = right
-      rowPH = ["A", "B", "C"]
-      printedTable = "⠀⠀`1`⠀`2`⠀`3`\n"
+      answerTable = [["1a", "1b", "1c"], ["2a", "2b", "2c"], ["3a", "3b", "3c"]]
+      randChoice = [random.randint(0, 2), random.randint(0, 2)]
+      row, column, answer = randChoice[0], randChoice[1], answerTable[randChoice[0]][randChoice[1]]
+      table[row][column] = correct
+      rowPH = ["`1`", "`2`", "`3`"]
+      printedTable = "⠀⠀`A`⠀`B`⠀`C`\n"
       for i in range(0, 3):
         printedTable += f"`{rowPH[i]}` "
         for j in range(0, 3):
           printedTable += f"||{table[i][j]}|| "
         printedTable += "\n"
-      answer = (rowPH[row] + str(column + 1)).lower()
-      embed = discord.Embed(title = ":zap: Bubble Wrap", description = f"First to type the location to {right} wins!\n(ex: `B2` or `2B`)\n\n{printedTable}", color = 0xe67e22, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":zap: Bubble Wrap", description = f"First to type the location to {correct} wins!\n(ex: `B2` or `2B`)\n\n{printedTable}", color = 0xe67e22, timestamp = datetime.utcnow())
       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-      await original.edit(content = None, embed = embed)
-      def check(message):
-        return message.content.lower() in [answer, answer[::-1]] and message.channel == ctx.channel
-      try:
-        message = await self.bot.wait_for("message", timeout = 15, check = check)
-      except asyncio.TimeoutError:
-        await original.edit(content = f"{self.bot.errorEmoji} Event has expired", embed = None)
+      return [embed, answer]
+    
+    pack = await [math, word, find][choice]() if choice == 1 else [math, word, find][choice]()
+    await ctx.send(embed = pack[0])
+    print(pack[1])
+    
+    def check(message):
+      if choice == 2:
+        return message.content.lower() in [pack[1], pack[1][::-1]] and message.channel == ctx.channel
       else:
-        await message.add_reaction(self.bot.checkmarkEmoji)
-        await ctx.send(f"{message.author.mention} wins!")
+        return message.content.lower() == str(pack[1]) and message.channel == ctx.channel
+    try:
+      message = await self.bot.wait_for("message", timeout = 15, check = check)
+    except asyncio.TimeoutError:
+      await original.edit(content = f"{self.bot.errorEmoji} Event has expired", embed = None)
+    else:
+      await message.add_reaction(self.bot.checkmarkEmoji)
+      await ctx.send(f"{message.author.mention} wins!")
   
   @commands.command()
   @commands.cooldown(1, 10, BucketType.user) 

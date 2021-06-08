@@ -2,10 +2,10 @@ import art
 from datetime import datetime
 import discord
 from discord.ext import commands
-import json
 from keepAlive import keepAlive
 import os
 import references
+from replit import db
 
 bot = commands.Bot(command_prefix = "!", intents = discord.Intents.all(), case_insensitive = True)
 
@@ -137,16 +137,14 @@ async def on_ready():
   await bot.updateStatus()
   print(f" DPY Version: {discord.__version__}")
   art.tprint(bot.user.name)
-  with open("cogs/afks.json", "r") as file:
-    data = json.load(file)
-    for id in list(data):
-      if not bot.server.get_member(int(id)).display_name.startswith("[AFK] "):
-        del data[str(id)]
-    for member in bot.server.members:
-      if str(member.id) not in data and member.display_name.startswith("[AFK] "):
-        data[str(member.id)] = [str(datetime.now()), None]
-  with open("cogs/afks.json", "w") as file:
-    json.dump(data, file, indent = 2)
+  for server in bot.guilds:
+    for member in server.members:
+      if str(member.id) in db:
+        if not member.display_name.startswith("[AFK] "):
+          del db[str(member.id)]
+      else:
+        if member.display_name.startswith("[AFK] "):
+          db[str(member.id)] = [str(datetime.now()), None]
   # for i in muteDatabase:
   #   ids = i["id"].split(" ")
   #   server = bot.get_guild(int(ids[1]))
