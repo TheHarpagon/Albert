@@ -189,68 +189,68 @@ class Commands(commands.Cog):
     else:
       await ctx.send(f"{self.bot.errorEmoji} Invalid link")
   
-  @commands.command(aliases = ["minsleft", "bruh"])
-  @commands.cooldown(1, 5, BucketType.user) 
-  async def left(self, ctx):
-    # time.strftime("%I:%M %p")
-    timezone = pytz.timezone("America/Los_Angeles")
-    current = datetime.now(timezone)
-    currentMinutes = (int(current.strftime("%H")) * 60) + (int(current.strftime("%M")))
-    print(currentMinutes)
-    # adjust day if schedule is off
-    day = current.isoweekday()
-    inSession = False
-    emoji = ""
-    currentPeriod = ""
-    minutesLeft = 0
-    output = ""
-    if day in self.bot.daySchedule:
-      if day == 1 and 495 <= currentMinutes <= 765:
-        inSession = True
-        for i in self.bot.monTimesMinutes:
-          if i > currentMinutes:
-            minutesLeft = i - currentMinutes
-            currentPeriod = list(self.bot.monTimesMinutes.values())[list(self.bot.monTimesMinutes.keys()).index(i) - 1]
-            break
-      elif day in [2, 4] and 580 <= currentMinutes <= 915:
-        inSession = True
-        for i in self.bot.dayScheduleMinutes[day]:
-          if i > currentMinutes:
-            minutesLeft = i - currentMinutes
-            currentPeriod = list(self.bot.dayScheduleMinutes[day].values())[list(self.bot.dayScheduleMinutes[day].keys()).index(i) - 1]
-            break
-      elif day in [3, 5] and 495 <= currentMinutes <= 915:
-        inSession = True
-        for i in self.bot.dayScheduleMinutes[day]:
-          if i > currentMinutes:
-            minutesLeft = i - currentMinutes
-            currentPeriod = list(self.bot.dayScheduleMinutes[day].values())[list(self.bot.dayScheduleMinutes[day].keys()).index(i) - 1]
-            break
-      else:
-        # change this
-        if currentMinutes <= 495:
-          output = "School hasn't started yet"
-        else:
-          output = "School isn't in session"
-    else:
-      output = "My guy, it's the weekend :neutral_face:"
+  # @commands.command(aliases = ["bruh"])
+  # @commands.cooldown(1, 5, BucketType.user) 
+  # async def left(self, ctx):
+  #   # time.strftime("%I:%M %p")
+  #   timezone = pytz.timezone("America/Los_Angeles")
+  #   current = datetime.now(timezone)
+  #   currentMinutes = (int(current.strftime("%H")) * 60) + (int(current.strftime("%M")))
+  #   print(currentMinutes)
+  #   # adjust day if schedule is off
+  #   day = 1
+  #   inSession = False
+  #   emoji = ""
+  #   currentPeriod = ""
+  #   minutesLeft = 0
+  #   output = ""
+  #   if day in self.bot.daySchedule:
+  #     if day == 1 and 495 <= currentMinutes <= 765:
+  #       inSession = True
+  #       for i in self.bot.monTimesMinutes:
+  #         if i > currentMinutes:
+  #           minutesLeft = i - currentMinutes
+  #           currentPeriod = list(self.bot.monTimesMinutes.values())[list(self.bot.monTimesMinutes.keys()).index(i) - 1]
+  #           break
+  #     elif day in [2, 4] and 580 <= currentMinutes <= 915:
+  #       inSession = True
+  #       for i in self.bot.dayScheduleMinutes[day]:
+  #         if i > currentMinutes:
+  #           minutesLeft = i - currentMinutes
+  #           currentPeriod = list(self.bot.dayScheduleMinutes[day].values())[list(self.bot.dayScheduleMinutes[day].keys()).index(i) - 1]
+  #           break
+  #     elif day in [3, 5] and 495 <= currentMinutes <= 915:
+  #       inSession = True
+  #       for i in self.bot.dayScheduleMinutes[day]:
+  #         if i > currentMinutes:
+  #           minutesLeft = i - currentMinutes
+  #           currentPeriod = list(self.bot.dayScheduleMinutes[day].values())[list(self.bot.dayScheduleMinutes[day].keys()).index(i) - 1]
+  #           break
+  #     else:
+  #       # change this
+  #       if currentMinutes <= 495:
+  #         output = "School hasn't started yet"
+  #       else:
+  #         output = "School isn't in session"
+  #   else:
+  #     output = "My guy, it's the weekend :neutral_face:"
 
-    if inSession:
-      if "Passing" in currentPeriod:
-        emoji = ":dividers:"
-      elif "Lunch" in currentPeriod:
-        emoji = ":dividers:"
-      elif "Student Support" in currentPeriod:
-        emoji = ":jigsaw:"
-      else:
-        emoji = ":books: Period"
-      output = f"{emoji} `{currentPeriod}` has `{minutesLeft}` minutes left!"
-      embed = discord.Embed(title = "<a:rotatingHourglass:817538734597341235> Time Left", description = output, color = 0xe67e22, timestamp = datetime.utcnow())
-      embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-      embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
-      await ctx.send(embed = embed)
-    else:
-      await ctx.send(f"{self.bot.errorEmoji} {output}")
+  #   if inSession:
+  #     if "Passing" in currentPeriod:
+  #       emoji = ":dividers:"
+  #     elif "Lunch" in currentPeriod:
+  #       emoji = ":dividers:"
+  #     elif "Student Support" in currentPeriod:
+  #       emoji = ":jigsaw:"
+  #     else:
+  #       emoji = ":books: Period"
+  #     output = f"{emoji} `{currentPeriod}` has `{minutesLeft}` minutes left!"
+  #     embed = discord.Embed(title = "<a:rotatingHourglass:817538734597341235> Time Left", description = output, color = 0xe67e22, timestamp = datetime.utcnow())
+  #     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+  #     embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
+  #     await ctx.send(embed = embed)
+  #   else:
+  #     await ctx.send(f"{self.bot.errorEmoji} {output}")
   
   @commands.command(aliases = ["promote"])
   @commands.cooldown(1, 5, BucketType.user) 

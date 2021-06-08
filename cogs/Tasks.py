@@ -6,7 +6,6 @@ import pytz
 class Tasks(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
-    self.bellSchedule.start()
     
   @tasks.loop(minutes = 1)
   async def bellSchedule(self):
@@ -14,7 +13,7 @@ class Tasks(commands.Cog):
     time = datetime.now(timezone)
     stringTime = time.strftime("%I:%M %p")
     # adjust day if schedule is off
-    day = time.isoweekday()
+    day = 1
     if day in self.bot.daySchedule:
       if stringTime in self.bot.daySchedule[day]:
         output = ""
