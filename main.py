@@ -1,13 +1,21 @@
-import art
+from art import tprint
 from datetime import datetime
 import discord
 from discord.ext import commands
+from HelpCommand import HelpCommand
 from keepAlive import keepAlive
 import os
 import references
 from replit import db
 
 bot = commands.Bot(command_prefix = "!", intents = discord.Intents.all(), case_insensitive = True)
+
+bot.help_command = HelpCommand(command_attrs = {
+   "name": "help",
+   "help": "Displays this message",
+   "aliases": ["info"],
+   "cooldown": commands.Cooldown(1, 5, commands.BucketType.user)
+})
 
 async def assignments():
   s = bot.get_guild(references.serverID)
@@ -29,6 +37,7 @@ async def assignments():
   bot.mutedRole = s.get_role(references.mutedRoleID)
   bot.vipRole = s.get_role(references.vipRoleID)
   bot.allahRole = s.get_role(references.allahRoleID)
+  bot.juiceRole = s.get_role(references.juiceRoleID)
   bot.memberRole = s.get_role(references.memberRoleID)
   bot.botRole = s.get_role(references.botRoleID)
   
@@ -93,25 +102,6 @@ async def assignments():
 
   bot.gameRRDict = {references.amongUsEmojiID: bot.amongUsRole, references.chessEmojiID: bot.chessRole, references.krunkerEmojiID: bot.krunkerRole, references.minecraftEmojiID: bot.minecraftRole, references.skribblEmojiID: bot.skribblRole, references.valorantEmojiID: bot.valorantRole, references.vcEmojiID: bot.vcRole}
 
-  bot.monTimes = {"08:10 AM": "A", "08:40 AM": "Passing", "08:45 AM": "1", "09:15 AM": "Passing","09:20 AM": "2", "09:50 AM": "Passing", "09:55 AM": "3", "10:25 AM": "Passing", "10:30 AM": "4", "11:00 AM": "Lunch", "11:30 AM": "Passing", "11:35 AM": "5", "12:05 PM": "Passing", "12:10 PM": "6"}
-  bot.tuesThursTimes = {"09:35 AM": "1", "10:50 AM": "Passing", "11:05 AM": "3", "12:20 PM": "Lunch", "12:55 PM": "Passing", "01:05 PM": "5", "02:20 PM": "Passing", "02:30 PM": "Student Support"}
-  bot.wedFriTimes = {"08:10 AM": "A", "09:25 AM": "Passing", "09:35 AM": "2", "10:50 AM": "Passing", "11:05 AM": "4", "12:20 PM": "Lunch", "12:55 PM": "Passing", "01:05 PM": "6", "02:20 PM": "Passing", "02:30 PM": "Student Support"}
-  bot.daySchedule = {1: bot.monTimes, 2: bot.tuesThursTimes, 3: bot.wedFriTimes, 4: bot.tuesThursTimes, 5: bot.wedFriTimes}
-
-  bot.monTimesMinutes = {495: "A", 525: "Passing", 530: "1", 560: "Passing", 565: "2", 595: "Passing", 600: "3", 630: "Passing", 635: "4", 665: "Lunch", 695: "Passing", 700: "5", 730: "Passing", 735: "6"}
-  bot.tuesThursTimesMinutes = {580: "1", 655: "Passing", 670: "3", 745: "Lunch", 780: "Passing", 790: "5", 865: "Passing", 875: "Student Support"}
-  bot.wedFriTimesMinutes = {495: "A", 570: "Passing", 580: "2", 655: "Passing", 670: "4", 745: "Lunch", 780: "Passing", 790: "6", 865: "Passing", 875: "Student Support"}
-  bot.dayScheduleMinutes = {1: bot.monTimesMinutes, 2: bot.tuesThursTimesMinutes, 3: bot.wedFriTimesMinutes, 4: bot.tuesThursTimesMinutes, 5: bot.wedFriTimesMinutes}
-  
-  def altCheck(ctx):
-    return ctx.author.id == 582313253208850433
-  bot.altCheck = altCheck
-
-  def staff(ctx):
-    staff = [bot.adminRole, bot.moderatorRole]
-    return any(role in ctx.author.roles for role in staff)
-  bot.staff = staff
-
   def memberCount():
     return len([member for member in bot.get_all_members() if not member.bot])
   bot.memberCount = memberCount
@@ -127,16 +117,15 @@ async def assignments():
 # bot startup event
 @bot.event
 async def on_ready():
+  print(f" Discord.py {discord.__version__}")
   print(f"Loading Cogs:")
   for filename in os.listdir("./cogs"):
     if filename.endswith(".py"):
       bot.load_extension(f"cogs.{filename[:-3]}")
       print(f"- {filename}")
   await assignments()
-  bot.startTime = datetime.now()
-  await bot.updateStatus()
-  print(f" DPY Version: {discord.__version__}")
-  art.tprint(bot.user.name)
+  
+  # afk reapplication
   for server in bot.guilds:
     for member in server.members:
       if str(member.id) in db:
@@ -145,20 +134,10 @@ async def on_ready():
       else:
         if member.display_name.startswith("[AFK] "):
           db[str(member.id)] = [str(datetime.now()), None]
-  # for i in muteDatabase:
-  #   ids = i["id"].split(" ")
-  #   server = bot.get_guild(int(ids[1]))
-  #   member = bot.server.get_member(int(ids[0]))
-  #   if bot.mutedRole in member.roles:
-  #     await member.remove_roles(bot.mutedRole)
-  #     await member.add_roles(bot.memberRole)
-  #   muteDatabase.remove(query.id == (str(member.id) + " " + str(server.id)))
-  #   generalChannel = bot.get_channel(references.generalChannelID)
-  #   embed = discord.Embed(title = ":loud_sound: Unmuted", description = f"{member.mention} was unmuted on bot startup", color = 0x00FF00, timestamp = datetime.utcnow())
-  #   embed.set_footer(text = f"Unmuted  by {bot.user}", icon_url = bot.user.avatar_url)
-  #   embed.set_thumbnail(url = member.avatar_url)
-  #   await generalChannel.send(embed = embed)
-  #   print(f"{bot.eventLabel} Unmuted (Automatic)")
+  
+  tprint(bot.user.name)
+  await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{bot.memberCount()} Members • !help"))
+  bot.startTime = datetime.now()
   
   rulesMessage = await bot.rulesChannel.fetch_message(790036264648441897)
   embed = discord.Embed(title = "Rules :scroll:", color = 0xe67e22)

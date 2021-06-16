@@ -18,25 +18,18 @@ class Events(commands.Cog):
   async def on_command_error(self, ctx, error):
     if isinstance(error, CheckFailure):
       await ctx.trigger_typing()
-      await ctx.send(f"{self.bot.errorEmoji} Missing permissions")
+      await ctx.send(f"{self.bot.errorEmoji} You are missing permissions")
+    elif isinstance(error, CommandOnCooldown):
+      await ctx.send(f"{self.bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 2)}` seconds")
     elif not isinstance(error, CommandNotFound):
-      if isinstance(error, CommandOnCooldown):
-        await ctx.trigger_typing()
-        await ctx.send(f"{self.bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 2)}` seconds")
-      else:
-        await ctx.trigger_typing()
-        await ctx.send(f"```{error}```")
-        if ctx.command:
-          ctx.command.reset_cooldown(ctx)
-    else:
-      if not any(x in str(error) for x in ["\"ban\"", "\"kick\"", "\"levels\"", "\"rank\"", "\"slowmode\"", "\"warn\"", "\"unban\""]):
-        await ctx.send(f"```{error}```")
+      await ctx.send(f"{self.bot.errorEmoji} An error occurred\n```{error}```")
     print(f"❌‎‎‎　ERROR ({error})")
   
   @commands.Cog.listener()
   async def on_message(self, message):
     # afk user returns
-    if not message.content.lower().startswith("!afk "):
+    ctx = await self.bot.get_context(message)
+    if not any(alias in str(ctx.command) for alias in ["afk", "busy", "bye", "gn"]):
       if str(message.author.id) in db:
         del db[str(message.author.id)]
         if message.author.id != 410590963379994639:
@@ -107,7 +100,6 @@ class Events(commands.Cog):
       await member.remove_roles(self.bot.mutedRole)
 
     else:
-      await member.add_roles(self.bot.botRole)
       embed = discord.Embed(title = ":inbox_tray: Bot Joined", description = f"You are the `{ordinal.ordinal(self.bot.memberCount())}` member!\n{self.bot.botRole.mention} role added", color = 0x00FF00, timestamp = datetime.utcnow())
       embed.set_footer(text = self.bot.server.name, icon_url = self.bot.server.icon_url)
       embed.set_thumbnail(url = member.avatar_url)

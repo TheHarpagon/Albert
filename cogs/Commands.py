@@ -8,14 +8,20 @@ import psutil
 import pytz
 import random
 
+async def isStaff(ctx):
+  return any(role in ctx.author.roles for role in [ctx.bot.adminRole, ctx.bot.moderatorRole])
+
+async def isJuiceStaff(ctx):
+  return ctx.bot.juiceRole in ctx.author.roles
+
 class Commands(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
   
-  @commands.command(aliases = ["hijab"])
+  @commands.command(help = "Allahs a user", aliases = ["hijab"])
   async def allah(self, ctx, member: discord.Member):
     allah = self.bot.server.get_role(736358205994696846)
-    if (ctx.author.id == 320369001005842435 and allah in ctx.author.roles) or ctx.author.id == 410590963379994639:
+    if ctx.author.id == 320369001005842435 or ctx.author.id == 410590963379994639:
       if allah not in member.roles:
         if len(allah.members) < 10:
           await member.add_roles(allah)
@@ -27,7 +33,7 @@ class Commands(commands.Cog):
     else:
       await ctx.send(f"{self.bot.errorEmoji} Shut the fuck up haram ass, this is only for virajallah")
   
-  @commands.command(aliases = ["hijabs"])
+  @commands.command(help = "Displays all users with the allah role", aliases = ["hijabs"])
   async def allahs(self, ctx):
     allah = self.bot.server.get_role(736358205994696846)
     output = ""
@@ -39,7 +45,17 @@ class Commands(commands.Cog):
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
-  @commands.command(aliases = ["au"])
+  @commands.command(help = "Displays all aso emotes")
+  @commands.cooldown(1, 20, BucketType.default) 
+  async def aso(self, ctx):
+    output = ""
+    for i in self.bot.emojis:
+      if len(i.name) >= 4:
+        if "so" in i.name[-2:]:
+          output += f"{i}"
+    await ctx.send(output)
+  
+  @commands.command(help = "Posts an Among Us code", aliases = ["au"])
   async def amongus(self, ctx, code):
     if len(code) == 6 and not any(char.isdigit() for char in code):
       await ctx.message.delete()
@@ -50,8 +66,20 @@ class Commands(commands.Cog):
       await ctx.send(f"{self.bot.checkmarkEmoji} Posted in {self.bot.joinGameChannel.mention}")
     else:
       await ctx.send(f"{self.bot.errorEmoji} Invalid code")
+    
+  @commands.command(help = "Bans a user")
+  @commands.check(isStaff)
+  async def ban(self, ctx, member: discord.Member, *, reason = None):
+    if self.bot.adminRole in member.roles or self.bot.moderatorRole in member.roles:
+      await ctx.send(f"{self.bot.errorEmoji} You can't do that")
+      return
+    await member.ban(reason = reason)
+    embed = discord.Embed(title = ":lock: Ban", description = f"User: {member.mention}\nReason: {reason}", color = 0xFF0000, timestamp = datetime.utcnow())
+    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+    embed.set_thumbnail(url = member.avatar_url)
+    await ctx.send(embed = embed)
   
-  @commands.command(aliases = ["c"])
+  @commands.command(help = "Posts a Chess link", aliases = ["c"])
   async def chess(self, ctx, link):
     if "play.chess.com/" in link:
       await ctx.message.delete()
@@ -63,33 +91,37 @@ class Commands(commands.Cog):
     else:
       await ctx.send(f"{self.bot.errorEmoji} Invalid link")
   
-  @commands.command()
+  @commands.command(help = "Displays a hex code", aliases = ["colour"])
+  @commands.cooldown(1, 5, BucketType.user)
   async def color(self, ctx, hexCode: discord.Color):
-    embed = discord.Embed(title = ":trackball: Color Search", description = str(hexCode).lower(), color = hexCode, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":trackball: Color", description = str(hexCode).lower(), color = hexCode, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_image(url = f"https://www.colorhexa.com/{str(hexCode).lower()[1:]}.png")
     await ctx.send(embed = embed)
   
-  @commands.command()
+  @commands.command(help = "Disables a command")
   @commands.is_owner()
   async def disable(self, ctx, command):
-    if ctx.author.id == 410590963379994639:
-      self.bot.remove_command(command)
-      await ctx.send(f"{self.bot.checkmarkEmoji} Disabled the `{command}` command")
-    else:
-      await ctx.send(f"{self.bot.errorEmoji} Missing permissions")
+    self.bot.remove_command(command)
+    await ctx.send(f"{self.bot.checkmarkEmoji} Disabled the `{command}` command")
   
-  @commands.command()
-  @commands.cooldown(1, 10, BucketType.user) 
+  @commands.command(help = "DMs a user")
+  @commands.cooldown(1, 10, BucketType.user)
   async def dm(self, ctx, member: discord.Member, *, message):
-    if self.bot.vipRole in ctx.author.roles:
-      await member.send(message + f"\n- from {ctx.author.mention}")
+    if ctx.author.id == member.id:
+      await ctx.send(f"{self.bot.errorEmoji} You can't DM yourself")
+      return
+    if member.bot == True:
+      await ctx.send(f"{self.bot.errorEmoji} You can't DM a bot")
+      return
+    try:
+      await member.send(f"{message}\n- from {ctx.author.mention}")
       await ctx.send(f"{self.bot.checkmarkEmoji} Sent!")
-    else:
-      await ctx.send(f"{self.bot.errorEmoji} Missing permissions")
+    except:
+      await ctx.send(f"{self.bot.errorEmoji} That person has blocked me")
   
-  @commands.command()
-  @commands.cooldown(1, 5, BucketType.user) 
+  @commands.command(help = "Enables a command")
+  @commands.cooldown(1, 5, BucketType.user)
   async def enable(self, ctx, command):
     if ctx.author.id == 410590963379994639:
       self.bot.add_command(command)
@@ -97,34 +129,38 @@ class Commands(commands.Cog):
     else:
       await ctx.send(f"{self.bot.errorEmoji} Missing permissions")
   
-  @commands.command(aliases = ["coinflip"])
+  @commands.command(help = "Flips a coin", aliases = ["coin", "coinflip", "flipcoin"])
+  @commands.cooldown(1, 5, BucketType.user)
   async def flip(self, ctx):
     responses = {"Heads": "https://i.imgur.com/92xg7uR.png", "Tails": "https://i.imgur.com/TjqDdBI.png"}
     choice = random.choice(["Heads", "Tails"])
-    embed = discord.Embed(title = "<:discord_coin:728695789316210860> Flip a Coin", description = f"It's `{choice}`", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":coin: Flip a Coin", description = f"It's `{choice}`", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_thumbnail(url = responses[choice])
     await ctx.send(embed = embed)
   
-  # @commands.command()
-  # async def help(self, ctx):
-  
-  @commands.command(aliases = ["servericon"])
-  @commands.cooldown(1, 5, BucketType.user) 
+  @commands.command(help = "Displays the server icon", aliases = ["servericon"])
+  @commands.guild_only()
+  @commands.cooldown(1, 5, BucketType.user)
   async def icon(self, ctx):
     embed = discord.Embed(title = ":frame_photo: Server Icon", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-    embed.set_image(url = self.bot.server.icon_url)
+    embed.set_image(url = ctx.guild.icon_url)
     await ctx.send(embed = embed)
   
-  # invite command
-  @commands.command(aliases = ["inv"])
-  @commands.cooldown(1, 5, BucketType.user) 
+  @commands.command(help = "Displays invite links", aliases = ["inv"])
+  @commands.cooldown(1, 5, BucketType.user)
   async def invite(self, ctx):
-    await ctx.send("discord.gg/fG8vTrj")
+    embed = discord.Embed(title = ":inbox_tray: Invite Link", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed.set_thumbnail(url = self.bot.user.avatar_url)
+    embed.add_field(name = "Bot", value = "[Link](https://discord.com/api/oauth2/authorize?client_id=851538022356615208&permissions=134605888&scope=bot)", inline = False)
+    embed.add_field(name = "Server", value = "discord.gg/vrushank", inline = False)
+    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+    await ctx.send(embed = embed)
   
-  @commands.command(aliases = ["mcip"])
-  @commands.cooldown(1, 5, BucketType.user) 
+  # todo
+  @commands.command(help = "Displays the Minecraft server's info", aliases = ["mc", "mcip", "minecraft"])
+  @commands.cooldown(1, 5, BucketType.user)
   async def ip(self, ctx):
     embed = discord.Embed(title = f"{self.bot.minecraftEmoji} Minecraft Server IPs", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
@@ -140,10 +176,10 @@ class Commands(commands.Cog):
     embed.add_field(name = f"{self.bot.plusEmoji} How to Join", value = "• join the IP\n• DM the code you get to <@693313699779313734>\n• once you're in, do `/register <password>`", inline = False)
     await ctx.send(embed = embed)
   
-  @commands.command(aliases = ["sauce"])
+  @commands.command(help = "Juices a user", aliases = ["joose"])
   async def juice(self, ctx, member: discord.Member):
     juicer = self.bot.server.get_role(835703896713330699)
-    if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209]:
+    if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209, 612056767551111168]:
       if member.id == 639668920835375104:
         await ctx.send(f"{self.bot.errorEmoji} {member.mention} is haram as hell :face_with_raised_eyebrow:")
         return
@@ -155,7 +191,7 @@ class Commands(commands.Cog):
     else:
       await ctx.send(f"{self.bot.errorEmoji} Man only owner and akshay ani uncles can do this")
   
-  @commands.command(aliases = ["saucers"])
+  @commands.command(help = "Displays all juiced users", aliases = ["joosers"])
   async def juicers(self, ctx):
     juicer = self.bot.server.get_role(835703896713330699)
     output = ""
@@ -167,17 +203,26 @@ class Commands(commands.Cog):
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
-  @commands.command()
-  @commands.cooldown(1, 5, BucketType.user) 
-  async def kill(self, ctx):
-    if ctx.author.id == 410590963379994639:
-      await ctx.send(f"{self.bot.checkmarkEmoji} Ending process! (start manually in repl)")
-      await self.bot.close()
-    else:
-      await ctx.send(f"{self.bot.errorEmoji} You do not have access to use this command!")
+  @commands.command(help = "Kicks a user")
+  @commands.check(isStaff)
+  async def kick(self, ctx, member: discord.Member, *, reason = None):
+    if self.bot.adminRole in member.roles or self.bot.moderatorRole in member.roles:
+      await ctx.send(f"{self.bot.errorEmoji} You can't do that")
+      return
+    await member.kick(reason = reason)
+    embed = discord.Embed(title = ":soccer: Kick", description = f"User: {member.mention}\nReason: {reason}", color = 0xFF0000, timestamp = datetime.utcnow())
+    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+    embed.set_thumbnail(url = member.avatar_url)
+    await ctx.send(embed = embed)
   
-  @commands.command(aliases = ["k"])
-  @commands.cooldown(1, 5, BucketType.user) 
+  @commands.command(help = "Shuts me down", aliases = ["die", "dropdead"])
+  @commands.is_owner()
+  async def kill(self, ctx):
+    await ctx.send(f"{self.bot.checkmarkEmoji} Jumping off a cliff!")
+    await self.bot.close()
+  
+  @commands.command(help = "Posts a Krunker link", aliases = ["k"])
+  @commands.cooldown(1, 5, BucketType.user)
   async def krunker(self, ctx, link):
     if "krunker.io/?game=" in link:
       await ctx.message.delete()
@@ -189,71 +234,8 @@ class Commands(commands.Cog):
     else:
       await ctx.send(f"{self.bot.errorEmoji} Invalid link")
   
-  # @commands.command(aliases = ["bruh"])
-  # @commands.cooldown(1, 5, BucketType.user) 
-  # async def left(self, ctx):
-  #   # time.strftime("%I:%M %p")
-  #   timezone = pytz.timezone("America/Los_Angeles")
-  #   current = datetime.now(timezone)
-  #   currentMinutes = (int(current.strftime("%H")) * 60) + (int(current.strftime("%M")))
-  #   print(currentMinutes)
-  #   # adjust day if schedule is off
-  #   day = 1
-  #   inSession = False
-  #   emoji = ""
-  #   currentPeriod = ""
-  #   minutesLeft = 0
-  #   output = ""
-  #   if day in self.bot.daySchedule:
-  #     if day == 1 and 495 <= currentMinutes <= 765:
-  #       inSession = True
-  #       for i in self.bot.monTimesMinutes:
-  #         if i > currentMinutes:
-  #           minutesLeft = i - currentMinutes
-  #           currentPeriod = list(self.bot.monTimesMinutes.values())[list(self.bot.monTimesMinutes.keys()).index(i) - 1]
-  #           break
-  #     elif day in [2, 4] and 580 <= currentMinutes <= 915:
-  #       inSession = True
-  #       for i in self.bot.dayScheduleMinutes[day]:
-  #         if i > currentMinutes:
-  #           minutesLeft = i - currentMinutes
-  #           currentPeriod = list(self.bot.dayScheduleMinutes[day].values())[list(self.bot.dayScheduleMinutes[day].keys()).index(i) - 1]
-  #           break
-  #     elif day in [3, 5] and 495 <= currentMinutes <= 915:
-  #       inSession = True
-  #       for i in self.bot.dayScheduleMinutes[day]:
-  #         if i > currentMinutes:
-  #           minutesLeft = i - currentMinutes
-  #           currentPeriod = list(self.bot.dayScheduleMinutes[day].values())[list(self.bot.dayScheduleMinutes[day].keys()).index(i) - 1]
-  #           break
-  #     else:
-  #       # change this
-  #       if currentMinutes <= 495:
-  #         output = "School hasn't started yet"
-  #       else:
-  #         output = "School isn't in session"
-  #   else:
-  #     output = "My guy, it's the weekend :neutral_face:"
-
-  #   if inSession:
-  #     if "Passing" in currentPeriod:
-  #       emoji = ":dividers:"
-  #     elif "Lunch" in currentPeriod:
-  #       emoji = ":dividers:"
-  #     elif "Student Support" in currentPeriod:
-  #       emoji = ":jigsaw:"
-  #     else:
-  #       emoji = ":books: Period"
-  #     output = f"{emoji} `{currentPeriod}` has `{minutesLeft}` minutes left!"
-  #     embed = discord.Embed(title = "<a:rotatingHourglass:817538734597341235> Time Left", description = output, color = 0xe67e22, timestamp = datetime.utcnow())
-  #     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-  #     embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
-  #     await ctx.send(embed = embed)
-  #   else:
-  #     await ctx.send(f"{self.bot.errorEmoji} {output}")
-  
-  @commands.command(aliases = ["promote"])
-  @commands.cooldown(1, 5, BucketType.user) 
+  @commands.command(help = "Gives a user mod", aliases = ["promote"])
+  @commands.cooldown(1, 5, BucketType.user)
   async def mod(self, ctx, member: discord.Member):
     permitted = [410590963379994639, 533167218838470666]
     if ctx.author.id in permitted:
@@ -270,8 +252,8 @@ class Commands(commands.Cog):
     else:
       await ctx.send(f"{self.bot.errorEmoji} Missing permissions")
   
-  @commands.command(aliases = ["silenced", "banished"])
-  @commands.cooldown(1, 5, BucketType.user) 
+  @commands.command(help = "Displays muted users", aliases = ["silenced", "banished"])
+  @commands.cooldown(1, 5, BucketType.user)
   async def muted(self, ctx):
     output = ""
     for member in self.bot.mutedRole.members:
@@ -280,17 +262,18 @@ class Commands(commands.Cog):
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
 
-  @commands.command(aliases = ["nickname"])
-  @commands.cooldown(1, 5, BucketType.user) 
+  @commands.command(help = "Sets your nickname", aliases = ["nickname", "setnick", "setnickname"])
+  @commands.guild_only()
+  @commands.cooldown(1, 5, BucketType.user)
   async def nick(self, ctx, *, nickname):
     if len(nickname) >= 1 and len(nickname) <= 32:
       await ctx.author.edit(nick = nickname)
-      await ctx.send(f"{self.bot.checkmarkEmoji} Your nickname was set to `{nickname}`!")
+      await ctx.send(f"{self.bot.checkmarkEmoji} Set your nickname to `{nickname}`")
     else:
-      await ctx.send(f"{self.bot.errorEmoji} Nicknames can only be upto `32` characters long!")
+      await ctx.send(f"{self.bot.errorEmoji} Nicknames can only be up to `32` characters long!")
   
-  @commands.command(aliases = ["avatar", "av"])
-  @commands.cooldown(1, 5, BucketType.user) 
+  @commands.command(help = "Displays a user's profile picture", aliases = ["avatar", "av", "pic", "picture"])
+  @commands.cooldown(1, 5, BucketType.user)
   async def pfp(self, ctx, member: discord.Member = None):
     member = ctx.author if not member else member
     embed = discord.Embed(title = ":frame_photo: Profile Picture", description = member.mention, color = 0xe67e22, timestamp = datetime.utcnow())
@@ -298,66 +281,40 @@ class Commands(commands.Cog):
     embed.set_image(url = member.avatar_url)
     await ctx.send(embed = embed)
   
-  @commands.command(aliases = ["latency"])
-  @commands.cooldown(1, 5, BucketType.user) 
+  @commands.command(help = "Displays my latency among other statistics", aliases = ["latency", "statistics", "stats"])
+  @commands.cooldown(1, 5, BucketType.user)
   async def ping(self, ctx):
-    time = datetime.now() - self.bot.startTime
-    days = time.days
-    hours, remainder = divmod(time.seconds, 3600)
-    minutes, seconds = divmod(remainder, 60)
-
-    dunit = "day"
-    hunit = "hour"
-    munit = "minute"
-    sunit = "second"
-
-    if days > 1 or days == 0:
-      dunit += "s"
-    
-    if hours > 1 or hours == 0:
-      hunit += "s"
-    
-    if minutes > 1 or minutes == 0:
-      munit += "s"
-    
-    if seconds > 1 or seconds == 0:
-      sunit += "s"
-
     embed = discord.Embed(title = "🏓 Pong!", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-    embed.add_field(name = ":signal_strength: Latency", value = f"`{round(self.bot.latency * 1000)}`ms", inline = True)
-    embed.add_field(name = ":robot: Hardware", value = f"`{psutil.cpu_count()}` Cores \n`{round(psutil.cpu_percent())}`% CPU Usage \n`{round(psutil.virtual_memory().percent)}`% RAM Usage", inline = True)
-    embed.add_field(name = ":chart_with_upwards_trend: Uptime", value = f"`{days}` {dunit} \n`{hours}` {hunit} \n`{minutes}` {munit} \n`{seconds}` {sunit}", inline = True)
+    embed.add_field(name = "Latency", value = f"`{round(self.bot.latency * 1000)}`ms", inline = True)
+    embed.add_field(name = "Hardware", value = f"`{psutil.cpu_count()}` Cores \n`{round(psutil.cpu_percent())}`% CPU Usage \n`{round(psutil.virtual_memory().percent)}`% RAM Usage", inline = True)
+    embed.add_field(name = "Last Restart", value = humanize.naturaltime(datetime.now() - self.bot.startTime), inline = True)
     await ctx.send(embed = embed)
   
-  @commands.command(aliases = ["dong"])
-  @commands.cooldown(1, 5, BucketType.user) 
+  @commands.command(help = "Displays your dong size", aliases = ["dong"])
+  @commands.cooldown(1, 5, BucketType.user)
   async def pp(self, ctx):
     length = float(random.randint(0, 400)) / 10
     output = ""
     i = 0
-
-    while i != round(length):
-      output += "="
-      i += 1
-    if length <= 8:
-      rating = "Atomlike"
-    elif length <= 16:
-      rating = "Smol"
-    elif length <= 24:
-      rating = "Average"
-    elif length <= 32:
-      rating = "Large"
-    elif length <= 40:
-      rating = "BBC"
-
-    embed = discord.Embed(title = ":eggplant: PP Rater", description = f"8{output}D \n**Length:** `{round(length, 2)}` inches \n**Rating:** `{rating}`", color = 0xe67e22, timestamp = datetime.utcnow())
+    ratings = {8: "Atomlike", 16: "Smol", 24: "Average", 32: "Large", 40: "BBC"}
+    index = 0
+    
+    for i in ratings:
+      if length > i:
+        index += 1
+      else:
+        break
+    for i in range(round(length)):
+     output += "="
+    
+    embed = discord.Embed(title = ":eggplant: PP Rater", description = f"8{output}D \n**Length:** `{round(length, 2)}` inches \n**Rating:** `{ratings[list(ratings.keys())[index]]}`", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_thumbnail(url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
-  @commands.command(aliases = ["goatsacrifice"])
-  @commands.cooldown(1, 15, BucketType.guild) 
+  @commands.command(help = "Prays to allah", aliases = ["goatsacrifice"])
+  @commands.cooldown(1, 15, BucketType.guild)
   async def pray(self, ctx):
     allah = self.bot.server.get_role(736358205994696846)
     if allah in ctx.author.roles:
@@ -372,7 +329,7 @@ class Commands(commands.Cog):
       await ctx.send("haram ass you cant use this bs")
   
   # @commands.command()
-  # @commands.cooldown(1, 5, BucketType.user) 
+  # @commands.cooldown(1, 5, BucketType.user)
   # async def profile(self, ctx, member: discord.Member = None):
   #   member = ctx.author if not member else member
   #   roleCount = len([role for role in member.roles]) - 1
@@ -453,8 +410,9 @@ class Commands(commands.Cog):
   #     embed.add_field(name = "Server Joined", value = f"{member.joined_at.strftime('`%a`, `%B` `%#d`, `%Y`')}", inline = True)
   #     await ctx.send(embed = embed)
 
-  @commands.command(aliases = ["activity", "info", "status", "user", "userinfo"])
-  @commands.cooldown(1, 5, BucketType.user) 
+  @commands.command(help = "Displays a user's profile", aliases = ["activity", "status", "user", "userinfo"])
+  @commands.guild_only()
+  @commands.cooldown(1, 5, BucketType.user)
   async def profile(self, ctx, member: discord.Member = None):
     member = ctx.author if not member else member
     embed = discord.Embed(title = ":busts_in_silhouette: Profile", description = member.mention, color = 0xe67e22, timestamp = datetime.utcnow())
@@ -482,54 +440,36 @@ class Commands(commands.Cog):
     embed.set_thumbnail(url = member.avatar_url)
     await ctx.send(embed = embed)
   
-  @commands.command()
+  @commands.command(help = "Reacts with aso to a message")
+  @commands.cooldown(1, 20, BucketType.default) 
+  async def reactaso(self, ctx, msgID):
+    try:
+      message = await ctx.fetch_message(msgID)
+    except:
+      await ctx.send(f"{self.bot.errorEmoji} Invalid message ID")
+    await ctx.message.clear_reactions()
+    output = []
+    for i in self.bot.emojis:
+      if len(i.name) >= 4:
+        if "so" in i.name[-2:]:
+          output.append(i)
+    for i in output:
+      await message.add_reaction(i)
+    await ctx.send(":neutral_face:")
+  
+  @commands.command(help = "Sets my status")
   @commands.is_owner()
-  @commands.cooldown(1, 5, BucketType.user) 
-  async def randomperson(self, ctx):
-    await ctx.send(f"{random.choice(self.bot.sever.members).mention} is the random person!")
-  
-  # @commands.command()
-  # @commands.cooldown(1, 10, BucketType.user)
-  # async def rr(ctx):
-  #   if ctx.author.id == 410590963379994639:
-  #     message = await ctx.send("react to this message with anything to play russian roulette\none person is randomly muted\nneeds 4 ppl to activate")
-  #     await message.add_reaction(self.bot.checkmarkEmoji)
-  #     def check(reaction, user):
-  #       return len(message.reactions) == 4
-  #     try:
-  #       reaction, user = await self.bot.wait_for("reaction_add", timeout = 15, check = check)
-  #     except asyncio.TimeoutError:
-  #       await message.edit(content = "not enough ppl reacted")
-  #     else:
-  #       allMembers = []
-  #       for reaction in message.reactions:
-  #         for user in reaction.users:
-  #           allMembers.append(user.mention)
-  #       mute(ctx, random.choice(random.choice(allMembers)), 1)
-
-  #   else:
-  #     await ctx.send("in testing")
-  
-  @commands.command(aliases = ["s"])
-  @commands.cooldown(1, 5, BucketType.user) 
-  async def schedule(self, ctx):
-    embed = discord.Embed(title = ":bell: DVHS Bell Schedule", color = 0xe67e22, timestamp = datetime.utcnow())
-    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-    embed.set_image(url = "https://i.imgur.com/ES49tLo.jpg")
-    await ctx.send(embed = embed)
-  
-  @commands.command()
-  @commands.is_owner()
-  async def setstatus(self, ctx, *, argument):
-    if argument.lower() == "normal":
+  async def setstatus(self, ctx, *, argument = None):
+    if not argument:
       await self.bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{self.bot.memberCount()} Members • !help"))
       await ctx.send(f"{self.bot.checkmarkEmoji} Set!")
     else:
       await self.bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = argument))
       await ctx.send(f"{self.bot.checkmarkEmoji} Set!")
   
-  @commands.command(aliases = ["music"])
-  @commands.cooldown(1, 5, BucketType.user) 
+  @commands.command(help = "Displays a user's spotify status", aliases = ["music"])
+  @commands.guild_only()
+  @commands.cooldown(1, 5, BucketType.user)
   async def spotify(self, ctx, member: discord.Member = None):
     member = ctx.author if not member else member
     listening = False
@@ -556,27 +496,8 @@ class Commands(commands.Cog):
     embed.set_image(url = activity.album_cover_url)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
-
-  # @commands.command()
-  # @commands.cooldown(1, 5, BucketType.user) 
-  # async def test(ctx, username, password):
-  #   if ctx.author.id == 410590963379994639:
-  #     url = f"https://dvhs.schoolloop.com/mapi/login?version=3&devToken={uuid4()}&devOS=iPhone9,4&year={datetime.now().year}"
-  #     result = requests.get(url, auth = HTTPBasicAuth(username, password))
-  #     if result.status_code != 200:
-  #       await ctx.send(result.text)
-  #       return
-  #     studentID = result.json().get("userID")
-  #     url = f"https://dvhs.schoolloop.com/mapi/report_card?studentID={studentID}"
-  #     result = requests.get(url, auth = HTTPBasicAuth(username, password))
-  #     if result.status_code != 200:
-  #       await ctx.send(result.text)
-  #       return
-  #     print(f"```json\n{result.json()}```")
-  #   else:
-  #     await ctx.send("no")
   
-  @commands.command(aliases = ["unhijab"])
+  @commands.command(help = "Unallahs a user", aliases = ["unhijab"])
   async def unallah(self, ctx, member: discord.Member):
     allah = self.bot.server.get_role(736358205994696846)
     if (ctx.author.id == 320369001005842435 and allah in ctx.author.roles) or ctx.author.id == 410590963379994639:
@@ -588,10 +509,10 @@ class Commands(commands.Cog):
     else:
       await ctx.send(f"{self.bot.errorEmoji} Shut the fuck up haram ass, this is only for virajallah")
   
-  @commands.command(aliases = ["unsauce"])
+  @commands.command(help = "Unjuices a user", aliases = ["unjoose"])
   async def unjuice(self, ctx, member: discord.Member):
     juicer = self.bot.server.get_role(835703896713330699)
-    if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209]:
+    if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209, 612056767551111168]:
       if juicer in member.roles:
         await member.remove_roles(juicer)
         await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is not juicer anymore :angry:")
@@ -600,7 +521,7 @@ class Commands(commands.Cog):
     else:
       await ctx.send(f"{self.bot.errorEmoji} Man only owner and akshay ani uncles can do this")
   
-  @commands.command(aliases = ["demod", "demote"])
+  @commands.command(help = "Removes mod from a user", aliases = ["demod", "demote"])
   async def unmod(self, ctx, member: discord.Member):
     permitted = [410590963379994639, 533167218838470666]
     if ctx.author.id in permitted:
@@ -618,7 +539,7 @@ class Commands(commands.Cog):
       await ctx.send(f"{self.bot.errorEmoji} Missing permissions")
   
   # @command.command()
-  # @commands.cooldown(1, 5, BucketType.user) 
+  # @commands.cooldown(1, 5, BucketType.user)
   # async def vc(ctx, argument):
   #   if self.bot.adminRole in ctx.author.roles or self.bot.moderatorRole in ctx.author.roles:
   #     channel = ctx.message.author.voice.channel

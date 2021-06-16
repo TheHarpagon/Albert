@@ -24,24 +24,22 @@ class DatabaseCommands(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
   
-  @commands.command()
+  @commands.command(help = "Sets your AFK status", aliases = ["busy", "bye", "gn"])
   async def afk(self, ctx, *, message = None):
     if ctx.author.display_name.startswith("[AFK] "):
       return
-    else:
-      if not ctx.author.id == 410590963379994639:
-        if len(ctx.author.display_name) <= 26:
-          await ctx.author.edit(nick = f"[AFK] {ctx.author.display_name}")
-        else:
-          await ctx.author.edit(nick = f"[AFK] {ctx.author.display_name[:-6]}")
-      db[str(ctx.author.id)] = [str(ctx.message.created_at), message]
-      text = f"{self.bot.checkmarkEmoji} Set your AFK"
-    if message:
-      text += f"\n```{message}```"
+    if not ctx.author.guild_permissions.administrator:
+      if len(ctx.author.display_name) <= 26:
+        await ctx.author.edit(nick = f"[AFK] {ctx.author.display_name}")
+      else:
+        await ctx.author.edit(nick = f"[AFK] {ctx.author.display_name[:-6]}")
+    db[str(ctx.author.id)] = [str(ctx.message.created_at), message]
+    text = f"{self.bot.checkmarkEmoji} Set your AFK"
+    text += f"\n```{message}```" if message else ""
     await ctx.send(text)
   
   # slowing down bot so commented
-  # @commands.command(aliases = ["camscan"])
+  # @commands.command(help = "Sends a scanned version of your attachment", aliases = ["camscan"])
   # @commands.cooldown(1, 30, BucketType.user) 
   # async def scan(self, ctx):
   #   def order_points(pts):
@@ -113,23 +111,23 @@ class DatabaseCommands(commands.Cog):
   #   await message.delete()
   #   await ctx.send(content = f"{self.bot.checkmarkEmoji} Scanned", file = discord.File(f"scanned.png"))
   
-  @commands.command()
+  @commands.command(help = "Displays a ranodom fact", aliases = ["randomfact"])
   @commands.cooldown(1, 10, BucketType.user) 
   async def fact(self, ctx):
     message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
     async with aiohttp.ClientSession() as session:
       async with session.get("https://uselessfacts.jsph.pl/random.json?language=en") as reply:
-        factDB = await reply.json()
-    embed = discord.Embed(title = ":book: A useless fact", description = f"{factDB['text']}", color = 0xe67e22, timestamp = datetime.utcnow())
+        data = await reply.json()
+    embed = discord.Embed(title = ":book: Fact", description = f"{data['text']}", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await message.edit(content = None, embed = embed)
   
-  @commands.command(aliases = ["f", "race", "r"])
+  @commands.command(help = "Sends a multiplayer quiz", aliases = ["f", "race", "r"])
+  @commands.guild_only()
   @commands.cooldown(1, 10, BucketType.channel)
   async def fast(self, ctx):
     original = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
     choice = random.randint(0, 2)
-    print(choice)
 
     def math():
       operation, numbers, answer = random.choice(["×", "/", "+", "-"]), [], 0
@@ -156,9 +154,9 @@ class DatabaseCommands(commands.Cog):
     async def word():
       async with aiohttp.ClientSession() as session:
         async with session.get("https://random-word-api.herokuapp.com/word?number=1") as reply:
-          wordDB = await reply.json()
-      answer = wordDB[0][::-1]
-      embed = discord.Embed(title = ":zap: Word Showdown", description = f"First to type the following backwards wins!\n```yaml\n{wordDB[0]}```", color = 0xe67e22, timestamp = datetime.utcnow())
+          data = await reply.json()
+      answer = data[0][::-1]
+      embed = discord.Embed(title = ":zap: Word Showdown", description = f"First to type the following backwards wins!\n```yaml\n{data[0]}```", color = 0xe67e22, timestamp = datetime.utcnow())
       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
       return [embed, answer]
     
@@ -176,13 +174,12 @@ class DatabaseCommands(commands.Cog):
         for j in range(0, 3):
           printedTable += f"||{table[i][j]}|| "
         printedTable += "\n"
-      embed = discord.Embed(title = ":zap: Bubble Wrap", description = f"First to type the location to {correct} wins!\n(ex: `B2` or `2B`)\n\n{printedTable}", color = 0xe67e22, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":zap: Bubble Wrap", description = f"First to type the location to the white square wins!\n(ex: `B2` or `2B`)\n\n{printedTable}", color = 0xe67e22, timestamp = datetime.utcnow())
       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
       return [embed, answer]
     
     pack = await [math, word, find][choice]() if choice == 1 else [math, word, find][choice]()
-    await ctx.send(embed = pack[0])
-    print(pack[1])
+    await original.edit(content = None, embed = pack[0])
     
     def check(message):
       if choice == 2:
@@ -197,127 +194,54 @@ class DatabaseCommands(commands.Cog):
       await message.add_reaction(self.bot.checkmarkEmoji)
       await ctx.send(f"{message.author.mention} wins!")
   
-  @commands.command()
+  @commands.command(help = "Displays your grades (read [here](https://pastebin.com/30DtnU4p))")
+  @commands.cooldown(1, 20, BucketType.user) 
+  async def grades(self, ctx, username, password):
+    message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
+    if ctx.message.guild:
+      await ctx.message.delete()
+      embed = discord.Embed(title = ":books: Grades", description = f"You can't use this command here, please DM me and try again", color = 0xe67e22, timestamp = datetime.utcnow())
+      embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+      await message.edit(content = None, embed = embed)
+      ctx.command.reset_cooldown(ctx)
+      return
+    async with aiohttp.ClientSession(auth = aiohttp.BasicAuth(username, password)) as session:
+      async with session.get(f"https://dvhs.schoolloop.com/mapi/login?version=3&devToken={uuid.uuid4()}&devOS=iPhone9,4&year={datetime.now().year}") as reply:
+        if reply.status != 200:
+          if "user" in await reply.text():
+            await message.edit(content = f"{self.bot.errorEmoji} Username not found")
+          else:
+            await message.edit(content = f"{self.bot.errorEmoji} Incorrect password")
+          return
+        studentDB = await reply.json(content_type = None)
+      async with session.get(f"https://dvhs.schoolloop.com/mapi/report_card?studentID={studentDB['userID']}") as reply:
+        resultDB = await reply.json(content_type = None)
+    
+    embed = discord.Embed(title = ":scroll: Grades", description = "Your grades/credentials are **never** saved (read [here](https://www.google.com/))", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+    for i in resultDB:
+      if i["courseName"] != "Access":
+        period = "A" if i["period"] == "0" else i["period"]
+        lastUpdated = "null" if i["lastUpdated"] == "null" else humanize.naturaltime(datetime.now() - datetime.strptime(i["lastUpdated"], "%m/%d/%y %I:%M %p"))
+        embed.add_field(name = f"{period} - {i['courseName']}", value = f"Teacher: `{i['teacherName']}`\nGrade: `{i['grade']}` (`{i['score']}`)\nLast Updated: {lastUpdated}", inline = False)
+    await message.edit(content = None, embed = embed)
+  
+  @commands.command(help = "Displays a random joke")
   @commands.cooldown(1, 10, BucketType.user) 
   async def joke(self, ctx):
     message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
     async with aiohttp.ClientSession() as session:
-        async with session.get("https://official-joke-api.appspot.com/jokes/random") as reply:
-          jokeDB = await reply.json()
-    embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDB['setup']}**", color = 0xe67e22, timestamp = datetime.utcnow())
+      async with session.get("https://official-joke-api.appspot.com/jokes/random") as reply:
+        data = await reply.json()
+    embed = discord.Embed(title = ":book: A joke", description = f"**{data['setup']}**", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await message.edit(content = None, embed = embed)
-    embed = discord.Embed(title = ":book: A joke", description = f"**{jokeDB['setup']}**\n{jokeDB['punchline']}", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":book: A joke", description = f"**{data['setup']}**\n{data['punchline']}", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await asyncio.sleep(2)
     await message.edit(content = None, embed = embed)
-  
-  @commands.command(aliases = ["lb", "top", "^"])
-  @commands.cooldown(1, 10, BucketType.user)
-  async def leaderboard(self, ctx):
-    with open("cogs/points.json", "r") as file:
-      data = json.load(file)
-      data = dict(sorted(data.items(), key = lambda item: item[1]))
-      data = dict(reversed(list(data.items())))
-      lb = []
-      for i in data:
-        noun = "points"
-        if data[i] == 1:
-          noun = "point"
-        if ctx.author.id == int(i):
-          lb.append(f"<@{i}> (`{data[i]}` {noun}) :arrow_left::arrow_left::arrow_left:")
-        else:
-          lb.append(f"<@{i}> (`{data[i]}` {noun})")
-      emojis = [":first_place:", ":second_place:", ":third_place:"]
-      output = ""
-      if len(lb) <= 15:
-        for i in lb:
-          if lb.index(i) <= 2:
-            output += f"\n{emojis[lb.index(i)]} "
-          else:
-            output += f"\n**{ordinal(lb.index(i) + 1)} **"
-          output += lb[lb.index(i)]
-      else:
-        for i in range(15):
-          if i <= 2:
-            output += f"\n{emojis[i]} "
-          else:
-            output += f"\n**{ordinal(i + 1)}** "
-          output += lb[i]
-    
-    embed = discord.Embed(title = ":trophy: Leaderboard", description = f"Top 15 of the `!trivia` command users\n{output}", color = 0xe67e22, timestamp = datetime.utcnow())
-    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-    await ctx.send(embed = embed)
 
-  # @commands.command()
-  # @commands.cooldown(1, 10, BucketType.user) 
-  # async def mlink(self, ctx):
-  #   arr = ["A", "1", "2", "3", "4", "5", "6"]
-
-  #   embed = discord.Embed(title = "Link Meetings", description = "What is your schedule?\nex: 1-6", color = 0xe67e22, timestamp = datetime.utcnow())
-  #   embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-  #   embed.set_thumbnail(url = "https://i.imgur.com/2SB21jS.png")
-  #   await ctx.send(embed = embed)
-  #   def check(message):
-  #     response = message.content.replace(" ", "").upper()
-  #     return len(response) == 3 and response[1] == "-" and all(item in arr for item in [response.replace("-", "")[0], response.replace("-", "")[1]]) and arr.index(response[0]) < arr.index(response[2])
-  #   try:
-  #     message = await self.bot.wait_for("message", timeout = 15, check = check)
-  #   except asyncio.TimeoutError:
-  #     await ctx.send(content = f"{self.bot.errorEmoji} Event has expired", embed = None)
-  #   else:
-  #     await message.add_reaction(self.bot.checkmarkEmoji)
-  #     await ctx.send("Passed")
-  
-  @commands.command(aliases = ["testmute"])
-  @commands.is_owner()
-  async def tmute(self, ctx, member: discord.Member, duration = None):
-    if self.bot.adminRole in ctx.author.roles or self.bot.moderatorRole in ctx.author.roles:
-      if self.bot.adminRole not in member.roles or self.bot.moderatorRole not in member.roles:
-        if self.bot.mutedRole in member.roles:
-          await ctx.send(f"{self.bot.errorEmoji} They are already muted")
-          return
-        with open("cogs/mutes.json", "r") as file:
-          data = json.load(file)
-        if str(member.id) in data:
-          await ctx.send(f"{self.bot.errorEmoji} They are already muted")
-        else:
-          if duration:
-            if duration[-1] in ["m", "h"]:
-              seconds = 0
-              if duration[-1] == "m":
-                seconds = int(duration[:-1]) * 60
-              elif duration[-1] == "h":
-                seconds = int(duration[:-1]) * 3600
-              await member.remove_roles(self.bot.vipRole, self.bot.memberRole)
-              await member.add_roles(self.bot.mutedRole)
-              await ctx.send(f"{self.bot.checkmarkEmoji} Muted for `{duration}`")
-              data[str(ctx.author.id)] = seconds
-              with open("cogs/mutes.json", "w") as file:
-                json.dump(data, file, indent = 2)
-              await asyncio.sleep(seconds)
-              with open("cogs/mutes.json", "r") as file:
-                data = json.load(file)
-              del data[str(ctx.author.id)]
-              with open("cogs/mutes.json", "w") as file:
-                json.dump(data, file, indent = 2)
-            else:
-              await ctx.send(f"{self.bot.errorEmoji} Invalid duration, use it as such\nex: `13m` or `0.75h`")
-              return
-          else:
-            await member.remove_roles(self.bot.vipRole, self.bot.memberRole)
-            await member.add_roles(self.bot.mutedRole)
-            data[str(member.id)] = "infiniy"
-            with open("cogs/mutes.json", "w") as file:
-              json.dump(data, file, indent = 2)
-            await ctx.send(f"{self.bot.checkmarkEmoji} Muted")
-      else:
-        await ctx.send(f"{self.bot.errorEmoji} That person can't be muted")
-    else:
-      await ctx.send(f"{self.bot.errorEmoji} Missing permissions")
-
-  # mute command
-  @commands.command(aliases = ["stfu"])
+  @commands.command(help = "Mutes a user", aliases = ["stfu"])
   async def mute(self, ctx, user: str, mtime = None):
     mutes = {}
     muteDatabase = tinydb.TinyDB("cogs/muteDatabase.json")
@@ -406,10 +330,10 @@ class DatabaseCommands(commands.Cog):
     else:
       await ctx.send(f"{self.bot.errorEmoji} Missing permissions")
   
-  @commands.command(aliases = ["read"])
-  @commands.cooldown(1, 30, BucketType.user)
+  @commands.command(help = "Strips off text from an attachment", aliases = ["read", "scan"])
+  @commands.cooldown(1, 20, BucketType.user)
   async def ocr(self, ctx, engine = 2):
-    message = await ctx.send(f"{self.bot.loadingEmoji} Loading... (this will take a bit)")
+    message = await ctx.send(f"{self.bot.loadingEmoji} Scanning... (this will take a moment)")
     if ctx.message.attachments:
       if engine not in [1, 2]:
         await message.edit(content = f"{self.bot.errorEmoji} Invalid engine, choose `1` or `2` (more info at https://ocr.space/ocrapi#ocrengine)")
@@ -421,29 +345,32 @@ class DatabaseCommands(commands.Cog):
             async with aiohttp.ClientSession() as session:
               async with session.post("https://api.ocr.space/parse/image", data = payload) as reply:
                 return await reply.json()
-          results = await process(i.url, "35c2b7ce5288957", engine)
+          results = await process(i.url, "8031c0b2f488957", engine)
           if results["IsErroredOnProcessing"]:
-            await message.edit(content = f"{self.bot.errorEmoji} An error occured\n```yaml\n{results['ErrorMessage'][0]}```")
+            await message.edit(content = f"{self.bot.errorEmoji} An error occured (maybe try again with `!ocr {1 if engine == 2 else 2}`)\n```\n{results['ErrorMessage'][0]}```")
             return
           if not results["ParsedResults"][0]["ParsedText"]:
-            await message.edit(content = f"{self.bot.errorEmoji} No text was found (if this is an error, try again with `!ocr 1`)")
+            await message.edit(content = f"{self.bot.errorEmoji} No text found (if this is an error, try again with `!ocr {1 if engine == 2 else 2}`)")
             return
-          if len(results["ParsedResults"][0]["ParsedText"]) > 1898:
-            embed = discord.Embed(title = ":printer: Text Recogition", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms", color = 0xe67e22, timestamp = datetime.utcnow())
+          if len(results["ParsedResults"][0]["ParsedText"]) > 1024:
+            embed = discord.Embed(title = ":newspaper: Optical Character Recognition", color = 0xe67e22, timestamp = datetime.utcnow())
+            embed.add_field(name = "Details", value = f"Name: [{i.filename}]({i.url})\nSize: `{round(i.size / 1000, 2)}` kilobytes\nProcess: `{round(int(results['ProcessingTimeInMilliseconds']) / 1000, 2)}` seconds\nEngine: `{engine}` (see more [here](https://ocr.space/ocrapi#ocrengine))", inline = False)
+            embed.add_field(name = "Results", value = f"```\n{results['ParsedResults'][0]['ParsedText']}```", inline = False)
             embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
             await message.edit(content = None, embed = embed)
-            # file = io.StringIO(results["ParsedResults"][0]["ParsedText"])
             await ctx.send(file = discord.File(io.StringIO(results["ParsedResults"][0]["ParsedText"]), filename = "results.txt"))
             return
-          embed = discord.Embed(title = ":printer: OCR (Text Detection)", description = f"File Name: [`{i.filename}`]({i.url})\nFile Size: `{i.size / 1000}`kb\nOCR Engine: `{engine}`\nProcess: `{int(results['ProcessingTimeInMilliseconds']) / 1000}`ms\n\nDetected Text:\n```yaml\n{results['ParsedResults'][0]['ParsedText']}```", color = 0xe67e22, timestamp = datetime.utcnow())
+          embed = discord.Embed(title = ":newspaper: Optical Character Recognition", color = 0xe67e22, timestamp = datetime.utcnow())
+          embed.add_field(name = "Details", value = f"Name: [{i.filename}]({i.url})\nSize: `{round(i.size / 1000, 2)}` kilobytes\nProcess: `{round(int(results['ProcessingTimeInMilliseconds']) / 1000, 2)}` seconds\nEngine: `{engine}` (see more [here](https://ocr.space/ocrapi#ocrengine))", inline = False)
+          embed.add_field(name = "Results", value = f"```\n{results['ParsedResults'][0]['ParsedText']}```", inline = False)
           embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
           await message.edit(content = None, embed = embed)
         else:
-          await message.edit(content = f"{self.bot.errorEmoji} Your file exceeds the `1024` kb limit")
+          await message.edit(content = f"{self.bot.errorEmoji} Your file exceeds the `1024` kilobyte limit")
     else:
       await message.edit(content = f"{self.bot.errorEmoji} Try attaching something")
   
-  # @commands.command(aliases = ["p"])
+  # @commands.command(help = "Modifies a user's points for trivia", aliases = ["p"])
   # @commands.check(botOwner)
   # @commands.cooldown(1, 5, BucketType.user)
   # async def points(self, ctx, action, member: discord.Member, amount):
@@ -476,19 +403,35 @@ class DatabaseCommands(commands.Cog):
   #       await ctx.send(f"{self.bot.errorEmoji} Enter an amount greater than `0`")
   #   else:
   #     await ctx.send(f"{self.bot.errorEmoji} Invalid argument")
-  
-  @commands.command(aliases = ["roast", "insultme", "insult"])
+
+  @commands.command(help = "Predicts your fortune", aliases = ["8ball"])
   @commands.cooldown(1, 10, BucketType.user)
-  async def roastme(self, ctx):
+  async def predict(self, ctx, *, question: str):
     message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
     async with aiohttp.ClientSession() as session:
-        async with session.get("https://evilinsult.com/generate_insult.php?lang=en&type=json") as reply:
-          roastDB = await reply.json()
-    embed = discord.Embed(title = ":pensive: An insult", description = roastDB["insult"], color = 0xe67e22, timestamp = datetime.utcnow())
+      async with session.get(f"https://8ball.delegator.com/magic/JSON/{question}") as reply:
+        data = await reply.json()
+    embed = discord.Embed(title = ":8ball: The Mighty 8Ball", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed.add_field(name = "Question", value = question, inline = False)
+    embed.add_field(name = "Response", value = data["magic"]["answer"], inline = False)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+    embed.set_thumbnail(url = "https://i.imgur.com/LkSBSuR.gif")
     await message.edit(content = None, embed = embed)
   
-  # @commands.command()
+  @commands.command(help = "Roasts a user", aliases = ["burn", "insult"])
+  @commands.cooldown(1, 10, BucketType.user)
+  async def roast(self, ctx, *, member: discord.Member = None):
+    member = ctx.author if not member else member
+    content = None if not member else member.mention
+    message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
+    async with aiohttp.ClientSession() as session:
+      async with session.get("https://evilinsult.com/generate_insult.php?lang=en&type=json") as reply:
+        data = await reply.json()
+    embed = discord.Embed(title = "<:pepeLaugh:812786514911428608> Insult", description = data["insult"], color = 0xe67e22, timestamp = datetime.utcnow())
+    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+    await message.edit(content = content, embed = embed)
+  
+  # @commands.command(help = "Shortens a URL", aliases = ["link", "short", "tiny"])
   # @commands.cooldown(1, 5, BucketType.user) 
   # async def shorten(self, ctx, *, URL: str):
   #   message = await ctx.send(f"{self.bot.loadingEmoji} Shortening URL...")
@@ -502,156 +445,184 @@ class DatabaseCommands(commands.Cog):
   #   embed.set_thumbnail(url = "https://i.imgur.com/YmjXC7s.png")
   #   await message.edit(content = None, embed = embed)
   
-  @commands.command()
-  @commands.cooldown(1, 20, BucketType.user) 
-  async def grades(self, ctx, username, password):
-    message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
-    if ctx.message.guild:
-      await ctx.message.delete()
-      embed = discord.Embed(title = ":scroll: Grades", description = f"You cannot use this command here, please go [here](https://discord.com/channels/@me/704582015667798146) and try again", color = 0xe67e22, timestamp = datetime.utcnow())
-      embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-      await message.edit(content = None, embed = embed)
-      ctx.command.reset_cooldown(ctx)
-      return
-    async with aiohttp.ClientSession(auth = aiohttp.BasicAuth(username, password)) as session:
-      async with session.get(f"https://dvhs.schoolloop.com/mapi/login?version=3&devToken={uuid.uuid4()}&devOS=iPhone9,4&year={datetime.now().year}") as reply:
-        if reply.status != 200:
-          if "user" in await reply.text():
-            await message.edit(content = f"{self.bot.errorEmoji} Username not found")
-          else:
-            await message.edit(content = f"{self.bot.errorEmoji} Incorrect password")
+  @commands.command(help = "Beta mute command", aliases = ["testmute"])
+  @commands.is_owner()
+  async def tmute(self, ctx, member: discord.Member, duration = None):
+    if self.bot.adminRole in ctx.author.roles or self.bot.moderatorRole in ctx.author.roles:
+      if self.bot.adminRole not in member.roles or self.bot.moderatorRole not in member.roles:
+        if self.bot.mutedRole in member.roles:
+          await ctx.send(f"{self.bot.errorEmoji} They are already muted")
           return
-        studentDB = await reply.json(content_type = None)
-      async with session.get(f"https://dvhs.schoolloop.com/mapi/report_card?studentID={studentDB['userID']}") as reply:
-        resultDB = await reply.json(content_type = None)
-    
-    embed = discord.Embed(title = ":scroll: Grades", description = "Your grades/credentials are never saved", color = 0xe67e22, timestamp = datetime.utcnow())
-    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-    for i in resultDB:
-      if i["courseName"] != "Access":
-        period = "A" if i["period"] == "0" else i["period"]
-        lastUpdated = "null" if i["lastUpdated"] == "null" else humanize.naturaltime(datetime.now() - datetime.strptime(i["lastUpdated"], "%m/%d/%y %I:%M %p"))
-        embed.add_field(name = f"{period} :small_orange_diamond: {i['courseName']}", value = f"Teacher: `{i['teacherName']}`\nGrade: `{i['grade']}` (`{i['score']}`)\nLast Updated: `{lastUpdated}`", inline = False)
-    await message.edit(content = None, embed = embed)
+        with open("cogs/mutes.json", "r") as file:
+          data = json.load(file)
+        if str(member.id) in data:
+          await ctx.send(f"{self.bot.errorEmoji} They are already muted")
+        else:
+          if duration:
+            if duration[-1] in ["m", "h"]:
+              seconds = 0
+              if duration[-1] == "m":
+                seconds = int(duration[:-1]) * 60
+              elif duration[-1] == "h":
+                seconds = int(duration[:-1]) * 3600
+              await member.remove_roles(self.bot.vipRole, self.bot.memberRole)
+              await member.add_roles(self.bot.mutedRole)
+              await ctx.send(f"{self.bot.checkmarkEmoji} Muted for `{duration}`")
+              data[str(ctx.author.id)] = seconds
+              with open("cogs/mutes.json", "w") as file:
+                json.dump(data, file, indent = 2)
+              await asyncio.sleep(seconds)
+              with open("cogs/mutes.json", "r") as file:
+                data = json.load(file)
+              del data[str(ctx.author.id)]
+              with open("cogs/mutes.json", "w") as file:
+                json.dump(data, file, indent = 2)
+            else:
+              await ctx.send(f"{self.bot.errorEmoji} Invalid duration, use it as such\nex: `13m` or `0.75h`")
+              return
+          else:
+            await member.remove_roles(self.bot.vipRole, self.bot.memberRole)
+            await member.add_roles(self.bot.mutedRole)
+            data[str(member.id)] = "infiniy"
+            with open("cogs/mutes.json", "w") as file:
+              json.dump(data, file, indent = 2)
+            await ctx.send(f"{self.bot.checkmarkEmoji} Muted")
+      else:
+        await ctx.send(f"{self.bot.errorEmoji} That person can't be muted")
+    else:
+      await ctx.send(f"{self.bot.errorEmoji} Missing permissions")
   
-  @commands.command(aliases = ["q", "question", "quiz", "t"])
+  @commands.command(help = "Displays the trivia leaderboard", aliases = ["lb", "leaderboard", "^"])
+  @commands.cooldown(1, 10, BucketType.user)
+  async def top(self, ctx):
+    with open("cogs/points.json", "r") as file:
+      data = json.load(file)
+    data = dict(sorted(data.items(), key = lambda item: item[1]))
+    data = dict(reversed(list(data.items())))
+    lb = []
+    for i in data:
+      if ctx.author.id == int(i):
+        lb.append(f"<@{i}> • `{data[i]}` :star:")
+      else:
+        lb.append(f"<@{i}> • `{data[i]}`")
+    emojis = [":first_place:", ":second_place:", ":third_place:"]
+    output = ""
+    if len(lb) <= 15:
+      for i in lb:
+        if lb.index(i) <= 2:
+          output += f"\n{emojis[lb.index(i)]} "
+        else:
+          output += f"\n**{ordinal(lb.index(i) + 1)} **"
+        output += lb[lb.index(i)]
+    else:
+      for i in range(15):
+        if i <= 2:
+          output += f"\n{emojis[i]} "
+        else:
+          output += f"\n**{ordinal(i + 1)}** "
+        output += lb[i]
+
+    embed = discord.Embed(title = ":trophy: Leaderboard", description = f"Top 15 Trivia Command Users\nLevel up with `!trivia`\n{output}", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+    await ctx.send(embed = embed)
+  
+  @commands.command(help = "Sends a singleplayer quiz", aliases = ["q", "question", "quiz", "t"])
   @commands.cooldown(1, 20, BucketType.user)
   async def trivia(self, ctx, difficulty: str = None):
-    if ctx.channel.id == 612059384721440791:
-      await ctx.send(f"{self.bot.errorEmoji} Any channel but here lmao")
-      # trivia.reset_cooldown(ctx)
-      ctx.command.reset_cooldown(ctx)
-      return
-
     message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
+    difficulties = {"e": "easy", "m": "medium", "h": "hard"}
+    points = {"easy": 1, "medium": 2, "hard": 3}
+    
     if difficulty:
-      if difficulty.startswith("e"):
-        difficulty = "easy"
-      elif difficulty.startswith("m"):
-        difficulty = "medium"
-      elif difficulty.startswith("h"):
-        difficulty = "hard"
+      if difficulty[0].lower() in difficulties:
+        difficulty = difficulties[difficulty[0].lower()]
       else:
         await message.edit(content = f"{self.bot.errorEmoji} You can only choose an `easy`, `medium`, or `hard` question")
-        # trivia.reset_cooldown(ctx)
         ctx.command.reset_cooldown(ctx)
         return
     else:
-      difficulty = random.choice(["easy", "medium", "hard"])
+      difficulty = random.choice(list(difficulties.values()))
     
     async with aiohttp.ClientSession() as session:
-        async with session.get(f"https://opentdb.com/api.php?amount=1&difficulty={difficulty}&type=multiple") as reply:
-          triviaDB = await reply.json()
+      async with session.get(f"https://opentdb.com/api.php?amount=1&difficulty={difficulty}&type=multiple") as reply:
+        data = await reply.json()
 
-    category = html2text.html2text(triviaDB["results"][0]["category"]).replace("\n", "")
-    question = html2text.html2text(triviaDB["results"][0]["question"]).replace("\n", "")    
-    choices = [html2text.html2text(triviaDB["results"][0]["correct_answer"]).replace("\n", ""), 
-    html2text.html2text(triviaDB["results"][0]["incorrect_answers"][0]).replace("\n", ""), 
-    html2text.html2text(triviaDB["results"][0]["incorrect_answers"][1]).replace("\n", ""), 
-    html2text.html2text(triviaDB["results"][0]["incorrect_answers"][2]).replace("\n", "")]
+    category = html2text.html2text(data["results"][0]["category"]).replace("\n", "")
+    question = html2text.html2text(data["results"][0]["question"]).replace("\n", "")
+    choices = [html2text.html2text(data["results"][0]["correct_answer"]).replace("\n", "")]
+    for i in data["results"][0]["incorrect_answers"]:
+      choices.append(html2text.html2text(i).replace("\n", ""))
     random.shuffle(choices)
-    correctIndex = choices.index(html2text.html2text(triviaDB["results"][0]["correct_answer"]).replace("\n", ""))
+    correctIndex = choices.index(html2text.html2text(data["results"][0]["correct_answer"]).replace("\n", ""))
     reactionsList = ["🇦", "🇧", "🇨", "🇩"]
-
-    embed = discord.Embed(title = "<a:lightbulb:819465502320623657> Trivia", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nreact with your answer within `10` seconds", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":student: Trivia", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nreact with your answer within `10` seconds", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await message.edit(content = None, embed = embed)
-    
     for i in reactionsList:
       await message.add_reaction(i)
-
+    
     def check(reaction, user):
       return user == ctx.author and str(reaction.emoji) in reactionsList
-    
     try:
       reaction, user = await self.bot.wait_for("reaction_add", timeout = 10, check = check)
     
-    # did not respond in time
+    # expired
     except asyncio.TimeoutError:
       await message.clear_reactions()
       # points system
-      diffPoints = {"easy": 1, "medium": 2, "hard": 3}
       with open("cogs/points.json", "r") as file:
         data = json.load(file)
-        if str(ctx.author.id) in data:
-          if data[str(ctx.author.id)] > diffPoints[difficulty]:
-            data[str(ctx.author.id)] -= 1
-          else:
-            data[str(ctx.author.id)] = 0
+      if str(ctx.author.id) in data:
+        if data[str(ctx.author.id)] > 0:
+          data[str(ctx.author.id)] -= 1
       with open("cogs/points.json", "w") as file:
         json.dump(data, file, indent = 2)
       
       reactionsList[correctIndex] = self.bot.checkmarkEmoji
-      embed = discord.Embed(title = f":alarm_clock: Expired! (-{diffPoints[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview leaderboard with `!top`", color = 0xFF383E, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = f":alarm_clock: Expired! (-{points[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview the global leaderboard with `!top`", color = 0xFF383E, timestamp = datetime.utcnow())
       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
       await message.edit(content = None, embed = embed)
     
-    # responded in time
+    # responded
     else:
       await message.clear_reactions()
-      
       # correct answer
       if reactionsList.index(str(reaction.emoji)) == correctIndex:
         # points system
-        diffPoints = {"easy": 1, "medium": 2, "hard": 3}
         with open("cogs/points.json", "r") as file:
           data = json.load(file)
-          if str(ctx.author.id) not in data:
-            data[str(ctx.author.id)] = diffPoints[difficulty]
-          else:
-            data[str(ctx.author.id)] += diffPoints[difficulty]
+        if str(ctx.author.id) not in data:
+          data[str(ctx.author.id)] = points[difficulty]
+        else:
+          data[str(ctx.author.id)] += points[difficulty]
         with open("cogs/points.json", "w") as file:
           json.dump(data, file, indent = 2)
         
-        # embed
         reactionsList[correctIndex] = self.bot.checkmarkEmoji
-        embed = discord.Embed(title = f"{self.bot.checkmarkEmoji} Correct! (+{diffPoints[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview leaderboard with `!top`", color = 0x3FB97C, timestamp = datetime.utcnow())
+        embed = discord.Embed(title = f"{self.bot.checkmarkEmoji} Correct! (+{points[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview the global leaderboard with `!top`", color = 0x3FB97C, timestamp = datetime.utcnow())
         embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
         await message.edit(content = None, embed = embed)
       
       # wrong answer
       else:
         # points system
-        diffPoints = {"easy": 1, "medium": 2, "hard": 3}
         with open("cogs/points.json", "r") as file:
           data = json.load(file)
-          if str(ctx.author.id) in data:
-            if data[str(ctx.author.id)] > diffPoints[difficulty]:
-              data[str(ctx.author.id)] -= diffPoints[difficulty]
-            else:
-              data[str(ctx.author.id)] = 0
-        with open("cogs/points.json", "w") as file:
-          json.dump(data, file, indent = 2)
+        if str(ctx.author.id) in data:
+          if data[str(ctx.author.id)] > points[difficulty]:
+            data[str(ctx.author.id)] -= points[difficulty]
+          else:
+            data[str(ctx.author.id)] = 0
+          with open("cogs/points.json", "w") as file:
+            json.dump(data, file, indent = 2)
         
-        # embed
         reactionsList[reactionsList.index(str(reaction.emoji))] = self.bot.errorEmoji
         reactionsList[correctIndex] = self.bot.checkmarkEmoji
-        embed = discord.Embed(title = f"{self.bot.errorEmoji} Incorrect! (-{diffPoints[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview leaderboard with `!top`", color = 0xFF383E, timestamp = datetime.utcnow())
+        embed = discord.Embed(title = f"{self.bot.errorEmoji} Incorrect! (-{points[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview the global leaderboard with `!top`", color = 0xFF383E, timestamp = datetime.utcnow())
         embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
         await message.edit(content = None, embed = embed)
   
-  # unmute command
-  @commands.command(aliases = ["unstfu"])
+  @commands.command(help = "Unmutes a user", aliases = ["unstfu"])
   async def unmute(self, ctx, user: str):
     mutes = {}
     muteDatabase = tinydb.TinyDB("cogs/muteDatabase.json")
@@ -684,53 +655,35 @@ class DatabaseCommands(commands.Cog):
       embed.set_thumbnail(url = member.avatar_url)
       await ctx.send(embed = embed)
   
-  @commands.command()
-  @commands.cooldown(1, 15, BucketType.user) 
+  @commands.command(help = "Displays the weather for a city")
+  @commands.cooldown(1, 20, BucketType.user) 
   async def weather(self, ctx, *, city = None):
     message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
-    
     if not city: city = "San Ramon"
-    
     async with aiohttp.ClientSession() as session:
-        async with session.get(f"http://api.openweathermap.org/data/2.5/weather?appid=e83935ef7ce7823925eeb0bfd2db3f7f&q={city}") as reply:
-          weatherDB = await reply.json()
+      async with session.get(f"http://api.openweathermap.org/data/2.5/weather?appid=e83935ef7ce7823925eeb0bfd2db3f7f&q={city}") as reply:
+        data = await reply.json()
     
-    if weatherDB["cod"] == "404":
+    if data["cod"] == "404":
       await message.edit(content = f"{self.bot.errorEmoji} Invalid city")
       return
     
-    sunrise = datetime.fromtimestamp(int(weatherDB["sys"]["sunrise"])) - timedelta(hours = 8)
-    sunset = datetime.fromtimestamp(int(weatherDB["sys"]["sunset"])) - timedelta(hours = 8)
+    sunrise = datetime.fromtimestamp(int(data["sys"]["sunrise"])) - timedelta(hours = 7)
+    sunset = datetime.fromtimestamp(int(data["sys"]["sunset"])) - timedelta(hours = 7)
     embed = discord.Embed(title = ":partly_sunny: Weather", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-    embed.set_thumbnail(url = f"https://openweathermap.org/img/wn/{weatherDB['weather'][0]['icon']}@4x.png")
-    embed.add_field(name = "City", value = f"`{weatherDB['name']}`, `{weatherDB['sys']['country']}`", inline = True)
-    embed.add_field(name = "Condition", value = f"`{(weatherDB['weather'][0]['description']).title()}`", inline = True)
-    embed.add_field(name = "Cloudiness", value = f"`{weatherDB['clouds']['all']}`%", inline = True)
-    embed.add_field(name = "Temperature", value = f"`{round((1.8 * ((weatherDB['main']['temp']) - 273.15)) + 32)}`°F", inline = True)
-    embed.add_field(name = "Humidity", value = f"`{weatherDB['main']['humidity']}`%", inline = True)
-    embed.add_field(name = "Wind", value = f"`{round((weatherDB['wind']['speed'] * 2.24), 1)}`mph `{portolan.abbr(degree = weatherDB['wind']['deg'])}`", inline = True)
+    embed.set_thumbnail(url = f"https://openweathermap.org/img/wn/{data['weather'][0]['icon']}@4x.png")
+    embed.add_field(name = "City", value = f"`{data['name']}`, `{data['sys']['country']}`", inline = True)
+    embed.add_field(name = "Condition", value = f"`{(data['weather'][0]['description']).title()}`", inline = True)
+    embed.add_field(name = "Cloudiness", value = f"`{data['clouds']['all']}`%", inline = True)
+    embed.add_field(name = "Temperature", value = f"`{round((1.8 * ((data['main']['temp']) - 273.15)) + 32)}`°F", inline = True)
+    embed.add_field(name = "Humidity", value = f"`{data['main']['humidity']}`%", inline = True)
+    embed.add_field(name = "Wind", value = f"`{round((data['wind']['speed'] * 2.24), 1)}`mph `{portolan.abbr(degree = data['wind']['deg'])}`", inline = True)
     embed.add_field(name = "Sunrise", value = f"{sunrise.strftime('`%I`:`%M` `%p`')} PST", inline = True)
     embed.add_field(name = "Sunset", value = f"{sunset.strftime('`%I`:`%M` `%p`')} PST", inline = True)
     await message.edit(content = None, embed = embed)
   
-  # predict command
-  @commands.command(aliases = ["8ball"])
-  @commands.cooldown(1, 15, BucketType.user) 
-  async def predict(self, ctx, *, question: str):
-    message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
-    async with aiohttp.ClientSession() as session:
-        async with session.get(f"https://8ball.delegator.com/magic/JSON/{question}") as reply:
-          predictDB = await reply.json()
-    embed = discord.Embed(title = ":8ball: The Mighty 8Ball", color = 0xe67e22, timestamp = datetime.utcnow())
-    embed.add_field(name = "Question", value = question, inline = False)
-    embed.add_field(name = "Response", value = predictDB["magic"]["answer"], inline = False)
-    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-    embed.set_thumbnail(url = "https://i.imgur.com/LkSBSuR.gif")
-    await message.edit(content = None, embed = embed)
-  
-  # # upload commands
-  # @commands.command()
+  # @commands.command(help = "Produces a URL for an attachment")
   # @commands.cooldown(1, 15, BucketType.user) 
   # async def upload(self, ctx):
   #   message = await ctx.send(f"{self.bot.loadingEmoji} Loading... (this will take a bit)")
