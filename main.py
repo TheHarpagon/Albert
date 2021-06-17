@@ -117,7 +117,7 @@ async def assignments():
 # bot startup event
 @bot.event
 async def on_ready():
-  print(f" Discord.py {discord.__version__}")
+  print(f"Discord.py {discord.__version__}")
   print(f"Loading Cogs:")
   for filename in os.listdir("./cogs"):
     if filename.endswith(".py"):
