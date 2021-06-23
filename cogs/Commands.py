@@ -154,7 +154,7 @@ class Commands(commands.Cog):
     embed = discord.Embed(title = ":inbox_tray: Invite Link", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_thumbnail(url = self.bot.user.avatar_url)
     embed.add_field(name = "Bot", value = "[Link](https://discord.com/api/oauth2/authorize?client_id=851538022356615208&permissions=134605888&scope=bot)", inline = False)
-    embed.add_field(name = "Server", value = "discord.gg/vrushank", inline = False)
+    embed.add_field(name = "Server", value = "discord.gg/uncle", inline = False)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
@@ -457,6 +457,17 @@ class Commands(commands.Cog):
       await message.add_reaction(i)
     await ctx.send(":neutral_face:")
   
+  @commands.command(help = "Reloads an extension")
+  @commands.is_owner()
+  async def reload(self, ctx, *, module):
+    try:
+      self.bot.unload_extension(f"cogs.{module}")
+      self.bot.load_extension(f"cogs.{module}")
+    except Exception as e:
+      await ctx.send(f"{self.bot.errorEmoji} An error occurred\n```{e}```")
+    else:
+      await ctx.send(f"{self.bot.checkmarkEmoji} Reloaded")
+  
   @commands.command(help = "Sets my status")
   @commands.is_owner()
   async def setstatus(self, ctx, *, argument = None):
@@ -480,7 +491,7 @@ class Commands(commands.Cog):
           activity = i
           break
     if not listening:
-      await ctx.send(f"{self.bot.errorEmoji} {'You' if member == ctx.author else 'They'} aren't listening to anything")
+      await ctx.send(f"{self.bot.errorEmoji} Can't detect {'your' if member == ctx.author else 'their'} listening status")
       return
     passed = int((datetime.now() - activity.start).total_seconds())
     total = int((activity.end - activity.start).total_seconds())

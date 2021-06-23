@@ -1,19 +1,8 @@
-# json databases
 cogs/afks.json
 cogs/mlinks.json
 cogs/mutes.json
 cogs/muteDatabase.json
 cogs/points.json
-
-# document scanner command input
-# image.png
-
-# object ID and other variable assignments
 references.py
-
-# document scanner command output
-# scanned.png
-
-# cache and extras
 __pycache__/
 *.py[cod]

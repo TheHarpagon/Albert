@@ -338,14 +338,19 @@ class DatabaseCommands(commands.Cog):
   @commands.cooldown(1, 20, BucketType.user)
   async def ocr(self, ctx, engine = 2):
     message = await ctx.send(f"{self.bot.loadingEmoji} Scanning... (this will take a moment)")
+    attachments = []
     if ctx.message.reference:
-      referenced = await ctx.fetch_message(ctx.message.reference.message_id)
-    if referenced.attachments or ctx.message.attachments:
+      reference = await ctx.fetch_message(ctx.message.reference.message_id)
+      attachments.extend(reference.attachments)
+    attachments.extend(ctx.message.attachments)
+
+    if attachments:
       if engine not in [1, 2]:
         await message.edit(content = f"{self.bot.errorEmoji} Invalid engine, choose `1` or `2` (more info at https://ocr.space/ocrapi#ocrengine)")
         return
-      decide = referenced.attachments if referenced.attachments else ctx.message.attachments
-      for i in decide:
+      
+      await message.delete()
+      for i in attachments:
         if i.size / 1000 <= 1024:
           async def process(url, apiKey, engine):
             payload = {"url": url, "apikey": apiKey, "OCREngine": engine}
@@ -359,23 +364,19 @@ class DatabaseCommands(commands.Cog):
           if not data["ParsedResults"][0]["ParsedText"]:
             await message.edit(content = f"{self.bot.errorEmoji} No text found (if this is an error, try again with `!ocr {1 if engine == 2 else 2}`)")
             return
-          if len(data["ParsedResults"][0]["ParsedText"]) > 1024:
-            embed = discord.Embed(title = ":newspaper: Optical Character Recognition", color = 0xe67e22, timestamp = datetime.utcnow())
-            embed.add_field(name = "Details", value = f"Name: [{i.filename}]({i.url})\nSize: `{round(i.size / 1000, 2)}` kilobytes\nProcess: `{round(int(data['ProcessingTimeInMilliseconds']) / 1000, 2)}` seconds\nEngine: `{engine}` (see more [here](https://ocr.space/ocrapi#ocrengine))", inline = False)
-            embed.add_field(name = "Results", value = f"```\n{data['ParsedResults'][0]['ParsedText']}```", inline = False)
-            embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-            await message.edit(content = None, embed = embed)
-            await ctx.send(file = discord.File(io.StringIO(data["ParsedResults"][0]["ParsedText"]), filename = "results.txt"))
-            return
-          embed = discord.Embed(title = ":newspaper: Optical Character Recognition", color = 0xe67e22, timestamp = datetime.utcnow())
+          embed = discord.Embed(title = ":newspaper: Text Scanner", color = 0xe67e22, timestamp = datetime.utcnow())
           embed.add_field(name = "Details", value = f"Name: [{i.filename}]({i.url})\nSize: `{round(i.size / 1000, 2)}` kilobytes\nProcess: `{round(int(data['ProcessingTimeInMilliseconds']) / 1000, 2)}` seconds\nEngine: `{engine}` (see more [here](https://ocr.space/ocrapi#ocrengine))", inline = False)
-          embed.add_field(name = "Results", value = f"```\n{data['ParsedResults'][0]['ParsedText']}```", inline = False)
           embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-          await message.edit(content = None, embed = embed)
+          if len(data["ParsedResults"][0]["ParsedText"]) > 1024:
+            await ctx.send(embed = embed, file = discord.File(io.StringIO(data["ParsedResults"][0]["ParsedText"]), filename = "results.txt"))
+          else:
+            embed.add_field(name = "Results", value = f"```\n{data['ParsedResults'][0]['ParsedText']}```", inline = False)
+            await ctx.send(embed = embed)
         else:
-          await message.edit(content = f"{self.bot.errorEmoji} Your file exceeds the `1024` kilobyte limit")
+          await ctx.send(content = f"{self.bot.errorEmoji} `{i.filename}` exceeds the `1024` kilobyte limit")
     else:
-      await message.edit(content = f"{self.bot.errorEmoji} Try attaching something")
+      await message.edit(content = f"{self.bot.errorEmoji} Try attaching/referencing something")
+      ctx.command.reset_cooldown(ctx)
   
   # @commands.command(help = "Modifies a user's points for trivia", aliases = ["p"])
   # @commands.check(botOwner)
