@@ -17,7 +17,6 @@ class Events(commands.Cog):
   @commands.Cog.listener()
   async def on_command_error(self, ctx, error):
     if isinstance(error, CheckFailure):
-      await ctx.trigger_typing()
       await ctx.send(f"{self.bot.errorEmoji} You are missing permissions")
     elif isinstance(error, CommandOnCooldown):
       await ctx.send(f"{self.bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 2)}` seconds")
@@ -61,9 +60,8 @@ class Events(commands.Cog):
   
   @commands.Cog.listener()
   async def on_message_delete(self, message):
-    if message.author.bot == False and self.bot.memberRole in message.author.roles and message.channel.id not in [690647361139245136, 816540206572109824, 835694338230452228] and not message.content.startswith(":") and not message.content.endswith(":") and not message.author.id == 320369001005842435:
+    if self.bot.memberRole in message.author.roles and message.channel.id not in [690647361139245136, 816540206572109824, 835694338230452228, 857404361331441694, 860643594900602900] and not message.author.id == 320369001005842435 and not (message.content.startswith(":") or message.content.endswith(":")):
       embed = discord.Embed(title = ":wastebasket: Message Deleted", color = 0xe67e22, timestamp = datetime.utcnow())
-      embed.set_footer(text = self.bot.server.name, icon_url = self.bot.server.icon_url)
       embed.set_thumbnail(url = message.author.avatar_url)
       embed.add_field(name = "Author", value = message.author.mention, inline = True)
       embed.add_field(name = "Channel", value = message.channel.mention, inline = True)
@@ -73,9 +71,8 @@ class Events(commands.Cog):
   
   @commands.Cog.listener()
   async def on_message_edit(self, before, after):
-    if before.author.bot == False and before.content != after.content and self.bot.memberRole in before.author.roles and before.channel.id not in [690647361139245136, 816540206572109824, 835694338230452228]:
+    if before.author.bot == False and before.content != after.content and self.bot.memberRole in before.author.roles and before.channel.id not in [690647361139245136, 816540206572109824, 835694338230452228, 860643594900602900]:
       embed = discord.Embed(title = ":pencil: Message Edited", color = 0xe67e22, timestamp = datetime.utcnow())
-      embed.set_footer(text = self.bot.server.name, icon_url = self.bot.server.icon_url)
       embed.set_thumbnail(url = before.author.avatar_url)
       embed.add_field(name = "Author", value = before.author.mention, inline = True)
       embed.add_field(name = "Channel", value = before.channel.mention, inline = True)
@@ -92,7 +89,6 @@ class Events(commands.Cog):
       await member.add_roles(self.bot.memberRole)
       await self.bot.updateStatus()
       embed = discord.Embed(title = ":inbox_tray: Member Joined", description = f"You are the `{ordinal.ordinal(self.bot.memberCount())}` member!", color = 0x00FF00, timestamp = datetime.utcnow())
-      embed.set_footer(text = self.bot.server.name, icon_url = self.bot.server.icon_url)
       embed.set_thumbnail(url = member.avatar_url)
       embed.add_field(name = "Get Roles", value = f"Go to {self.bot.rolesChannel.mention}", inline = False)
       embed.add_field(name = "Main Info :loudspeaker:", value = f"Read the {self.bot.rulesChannel.mention}\nJoin the talk in {self.bot.generalChannel.mention}", inline = False)
@@ -101,7 +97,6 @@ class Events(commands.Cog):
 
     else:
       embed = discord.Embed(title = ":inbox_tray: Bot Joined", description = f"You are the `{ordinal.ordinal(self.bot.memberCount())}` member!\n{self.bot.botRole.mention} role added", color = 0x00FF00, timestamp = datetime.utcnow())
-      embed.set_footer(text = self.bot.server.name, icon_url = self.bot.server.icon_url)
       embed.set_thumbnail(url = member.avatar_url)
       await self.bot.welcomeChannel.send(f"Welcome, {member.mention}", embed = embed)
       await member.remove_roles(self.bot.mutedRole)
@@ -109,44 +104,25 @@ class Events(commands.Cog):
 
   @commands.Cog.listener()
   async def on_member_remove(self, member):
-    if member.bot == False:
-      await self.bot.updateStatus()
-      embed = discord.Embed(title = ":outbox_tray: Member Left", description = "Either kicked/banned/left", color = 0xFF0000, timestamp = datetime.utcnow())
-      embed.set_footer(text = self.bot.server.name, icon_url = self.bot.server.icon_url)
-      embed.set_thumbnail(url = member.avatar_url)
-      await self.bot.welcomeChannel.send(f"Goodbye, {member.mention}", embed = embed)
-
-    else:
-      embed = discord.Embed(title = ":outbox_tray: Bot Left", description = "Either kicked/banned/left", color = 0xFF0000, timestamp = datetime.utcnow())
-      embed.set_footer(text = self.bot.server.name, icon_url = self.bot.server.icon_url)
-      embed.set_thumbnail(url = member.avatar_url)
-      await self.bot.welcomeChannel.send(f"Goodbye, {member.mention}", embed = embed)
+    await self.bot.updateStatus()
+    embed = discord.Embed(title = f":outbox_tray: {'Bot' if member.bot else 'Member'} Left", description = "Either kicked/banned/left", color = 0xFF0000, timestamp = datetime.utcnow())
+    embed.set_thumbnail(url = member.avatar_url)
+    await self.bot.welcomeChannel.send(f"Goodbye, {member.mention}", embed = embed)
     print("✅　LEAVE Event")
   
   @commands.Cog.listener()
   async def on_raw_reaction_add(self, payload):
-    if payload.message_id == 759521601170833469:
-      await payload.member.add_roles(self.bot.schoolRRDict[str(payload.emoji.name)], self.bot.dividerOneRole)
-      await payload.member.send(f"{self.bot.plusEmoji} Added the **{self.bot.schoolRRDict[str(payload.emoji.name)].name}** role")
-      print("✅　REACTION (ADD) Event")
-    
     if payload.message_id == 759534246607585300:
-      await payload.member.add_roles(self.bot.gameRRDict[payload.emoji.id], self.bot.dividerTwoRole)
-      await payload.member.send(f"{self.bot.plusEmoji} Added the **{self.bot.gameRRDict[payload.emoji.id].name}** role")
+      await payload.member.add_roles(self.bot.gameRRDict[str(payload.emoji.name)], self.bot.dividerTwoRole)
+      await payload.member.send(f"{self.bot.plusEmoji} Added the **{self.bot.gameRRDict[str(payload.emoji.name)]}** role")
       print("✅　REACTION (ADD) Event")
 
   @commands.Cog.listener()
   async def on_raw_reaction_remove(self, payload):
     member = self.bot.server.get_member(payload.user_id)
-    if payload.message_id == 759521601170833469:
-      await member.remove_roles(self.bot.schoolRRDict[str(payload.emoji.name)])
-      await member.send(f"{self.bot.minusEmoji} Removed the **{self.bot.schoolRRDict[str(payload.emoji.name)].name}** role")
-      print("✅　REACTION (REMOVE) Event")
-    
     if payload.message_id == 759534246607585300:
-      await member.remove_roles(self.bot.gameRRDict[payload.emoji.id])
-      await member.send(f"{self.bot.minusEmoji} Removed the **{self.bot.gameRRDict[payload.emoji.id].name}** role")
-      print("✅　REACTION (REMOVE) Event")
+      await member.remove_roles(self.bot.gameRRDict[str(payload.emoji.name)])
+      await member.send(f"{self.bot.minusEmoji} Removed the **{self.bot.gameRRDict[str(payload.emoji.name)]}** role")
 
 def setup(bot):
   bot.add_cog(Events(bot))

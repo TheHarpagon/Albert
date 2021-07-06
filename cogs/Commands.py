@@ -78,6 +78,14 @@ class Commands(commands.Cog):
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_thumbnail(url = member.avatar_url)
     await ctx.send(embed = embed)
+
+  @commands.command(help = "Displays the banner")
+  @commands.cooldown(1, 5, BucketType.user)
+  async def banner(self, ctx):
+    embed = discord.Embed(title = ":frame_photo: Banner", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+    embed.set_image(url = ctx.guild.banner_url)
+    await ctx.send(embed = embed)
   
   @commands.command(help = "Posts a Chess link", aliases = ["c"])
   async def chess(self, ctx, link):
@@ -158,29 +166,24 @@ class Commands(commands.Cog):
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
-  # todo
   @commands.command(help = "Displays the Minecraft server's info", aliases = ["mc", "mcip", "minecraft"])
   @commands.cooldown(1, 5, BucketType.user)
   async def ip(self, ctx):
-    embed = discord.Embed(title = f"{self.bot.minecraftEmoji} Minecraft Server IPs", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = f":pick: Minecraft Server", color = 0xe67e22, timestamp = datetime.utcnow())
+    bot = await self.bot.server.fetch_member(693313699779313734)
+    embed.add_field(name = "Status", value = f"{'<a:onlineGIF:791185651311575051> Online' if bot.status is discord.Status.online else '<a:dndGIF:791185650996346891> Offline'}", inline = True)
+    embed.add_field(name = "Version", value = "`Paper 1.17`", inline = True)
+    embed.add_field(name = "IP", value = "`uncle.ddns.net`", inline = True)
+    embed.add_field(name = "How to Join", value = "• Join the IP\n• DM the code you get to <@693313699779313734>\n• Rejoin and register with a password (`/register <password>`)", inline = False)
+    embed.add_field(name = "Other", value = "[Live Dynamic Map](http://uncle.ddns.net:6969/)\n[Mods and Texture Packs](https://www.dropbox.com/sh/2w67poksq0j41yl/AADgp6Vf2FCSopEC8A4EdAica?dl=0) (mention <@410590963379994639> for help)", inline = True)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-    a = "<a:dndGIF:791185650996346891>"
-    b = "<a:dndGIF:791185650996346891>"
-    if self.bot.survivalServerBot.status is discord.Status.online:
-      a = "<a:onlineGIF:791185651311575051>"
-    # private server 2 bot status
-    if self.bot.creativeServerBot.status is discord.Status.online:
-      b = "<a:onlineGIF:791185651311575051>"
-    embed.add_field(name = f"{a} Survival Server", value = "Version: `1.16.5`\nIP Address: `ballin-survival.ddns.net`\nBridged Chat: <#693321555366903851>", inline = False)
-    embed.add_field(name = f"{b} Creative Server", value = "Version: `1.16.5`\nIP Address: `swiftspirit1408.aternos.me`\nBridged Chat: <#659885014603005953>", inline = False)
-    embed.add_field(name = f"{self.bot.plusEmoji} How to Join", value = "• join the IP\n• DM the code you get to <@693313699779313734>\n• once you're in, do `/register <password>`", inline = False)
     await ctx.send(embed = embed)
   
   @commands.command(help = "Juices a user", aliases = ["joose"])
   async def juice(self, ctx, member: discord.Member):
     juicer = self.bot.server.get_role(835703896713330699)
-    if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209, 612056767551111168]:
-      if member.id == 639668920835375104:
+    if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209, 859967744467664917]:
+      if member.id in [639668920835375104, 793709787396440095]:
         await ctx.send(f"{self.bot.errorEmoji} {member.mention} is haram as hell :face_with_raised_eyebrow:")
         return
       if juicer not in member.roles:
@@ -242,11 +245,11 @@ class Commands(commands.Cog):
       if self.bot.memberRole in member.roles:
         await member.remove_roles(self.bot.memberRole)
         await member.add_roles(self.bot.moderatorRole)
-        embed = discord.Embed(title = "<:upvote:732640878145044623> Demoted", description = f"{member.mention} is now a {self.bot.moderatorRole.mention}", color = 0xe67e22, timestamp = datetime.utcnow())       
-        embed.set_footer(text = f"Demoted by {ctx.author}", icon_url = ctx.author.avatar_url)
+        embed = discord.Embed(title = "<:upvote:732640878145044623> Promoted", description = f"{member.mention} is now a {self.bot.moderatorRole.mention}", color = 0xe67e22, timestamp = datetime.utcnow())       
+        embed.set_footer(text = f"Promoted by {ctx.author}", icon_url = ctx.author.avatar_url)
         embed.set_thumbnail(url = member.avatar_url)
         await ctx.send(embed = embed)
-        await self.bot.staffOnlyChannel.send(f"<:upvote:732640878145044623> {member.mention} was promoted")
+        await self.bot.vipChannel.send(f"<:upvote:732640878145044623> {member.mention} was promoted")
       else:
         await ctx.send(f"{self.bot.errorEmoji} They are already a moderator")
     else:
@@ -514,7 +517,7 @@ class Commands(commands.Cog):
     if (ctx.author.id == 320369001005842435 and allah in ctx.author.roles) or ctx.author.id == 410590963379994639:
       if allah in member.roles:
         await member.remove_roles(allah)
-        await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is not allah anymore :angry:")
+        await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is not allah anymore :rage:")
       else:
         await ctx.send(f"{self.bot.errorEmoji} {member.mention} is not even allah you dumd :face_with_raised_eyebrow:")
     else:
@@ -523,10 +526,10 @@ class Commands(commands.Cog):
   @commands.command(help = "Unjuices a user", aliases = ["unjoose"])
   async def unjuice(self, ctx, member: discord.Member):
     juicer = self.bot.server.get_role(835703896713330699)
-    if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209, 612056767551111168]:
+    if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209, 859967744467664917]:
       if juicer in member.roles:
         await member.remove_roles(juicer)
-        await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is not juicer anymore :angry:")
+        await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is not juicer anymore :rage:")
       else:
         await ctx.send(f"{self.bot.errorEmoji} They ain't even juicer :face_with_raised_eyebrow:")
     else:
@@ -548,6 +551,24 @@ class Commands(commands.Cog):
         await ctx.send(f"{self.bot.errorEmoji} They aren't even a moderator")
     else:
       await ctx.send(f"{self.bot.errorEmoji} Missing permissions")
+  
+  @commands.command(help = "UnVIPs a user")
+  @commands.is_owner()
+  async def unvip(self, ctx, member: discord.Member):
+    if self.bot.vipRole in member.roles:
+      await member.remove_roles(self.bot.vipRole)
+      await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is not VIP anymore :rage:")
+    else:
+      await ctx.send(f"{self.bot.errorEmoji} They ain't even VIP :face_with_raised_eyebrow:")
+  
+  @commands.command(help = "VIPs a user")
+  @commands.is_owner()
+  async def vip(self, ctx, member: discord.Member):
+    if self.bot.vipRole not in member.roles:
+      await member.add_roles(self.bot.vipRole)
+      await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is now VIP :gem:")
+    else:
+      await ctx.send(f"{self.bot.errorEmoji} They already VIP :face_with_raised_eyebrow:")
   
   # @command.command()
   # @commands.cooldown(1, 5, BucketType.user)

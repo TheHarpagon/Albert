@@ -11,7 +11,7 @@ import io
 # import imutils
 import json
 # import numpy
-import ordinal
+from ordinal import ordinal
 import portolan
 import random
 from replit import db
@@ -349,7 +349,6 @@ class DatabaseCommands(commands.Cog):
         await message.edit(content = f"{self.bot.errorEmoji} Invalid engine, choose `1` or `2` (more info at https://ocr.space/ocrapi#ocrengine)")
         return
       
-      await message.delete()
       for i in attachments:
         if i.size / 1000 <= 1024:
           async def process(url, apiKey, engine):
@@ -374,6 +373,7 @@ class DatabaseCommands(commands.Cog):
             await ctx.send(embed = embed)
         else:
           await ctx.send(content = f"{self.bot.errorEmoji} `{i.filename}` exceeds the `1024` kilobyte limit")
+      await message.delete()
     else:
       await message.edit(content = f"{self.bot.errorEmoji} Try attaching/referencing something")
       ctx.command.reset_cooldown(ctx)
@@ -510,9 +510,9 @@ class DatabaseCommands(commands.Cog):
     lb = []
     for i in data:
       if ctx.author.id == int(i):
-        lb.append(f"<@{i}> • `{data[i]}` :star:")
+        lb.append(f"<@{i}> `{data[i]}` :arrow_left:")
       else:
-        lb.append(f"<@{i}> • `{data[i]}`")
+        lb.append(f"<@{i}> `{data[i]}`")
     emojis = [":first_place:", ":second_place:", ":third_place:"]
     output = ""
     if len(lb) <= 15:
