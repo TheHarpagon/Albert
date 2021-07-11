@@ -286,7 +286,7 @@ class Commands(commands.Cog):
   @commands.command(help = "Displays your dong size", aliases = ["dong"])
   @commands.cooldown(1, 5, BucketType.user)
   async def pp(self, ctx):
-    length = float(random.randint(0, 400)) / 10 if not ctx.author.id == 335083840001540119 else random.choice([39.3, 39.2, 40.0, 39.8, 39.6, 39.5])
+    length = float(random.randint(0, 400)) / 10 if not ctx.author.id == 639668920835375104 else 0.0
     output = ""
     i = 0
     ratings = {8: "Atomlike", 16: "Smol", 24: "Average", 32: "Large", 40: "BBC"}
@@ -433,16 +433,16 @@ class Commands(commands.Cog):
     embed.set_thumbnail(url = member.avatar_url)
     await ctx.send(embed = embed)
   
-  # @commands.command(help = "Reloads an extension")
-  # @commands.is_owner()
-  # async def reload(self, ctx, *, module):
-  #   try:
-  #     self.bot.unload_extension(f"cogs.{module}")
-  #     self.bot.load_extension(f"cogs.{module}")
-  #   except Exception as e:
-  #     await ctx.send(f"{self.bot.errorEmoji} An error occurred\n```{e}```")
-  #   else:
-  #     await ctx.send(f"{self.bot.checkmarkEmoji} Reloaded")
+  @commands.command(help = "Reloads an extension")
+  @commands.is_owner()
+  async def reload(self, ctx, *, module):
+    try:
+      self.bot.unload_extension(f"cogs.{module}")
+      self.bot.load_extension(f"cogs.{module}")
+    except Exception as e:
+      await ctx.send(f"{self.bot.errorEmoji} An error occurred\n```{e}```")
+    else:
+      await ctx.send(f"{self.bot.checkmarkEmoji} Reloaded")
   
   # @commands.command(help = "Reminds you")
   # @commands.cooldown(1, 7200, BucketType.user) 
