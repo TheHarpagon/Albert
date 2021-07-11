@@ -255,7 +255,7 @@ class DatabaseCommands(commands.Cog):
     if float(mtime) > 0:
       mtime = float(mtime)
 
-    if ((self.bot.adminRole in ctx.message.author.roles) or (self.bot.moderatorRole in ctx.message.author.roles)) and (self.bot.memberRole not in ctx.message.author.roles):
+    if ((ctx.message.author.id == 410590963379994639) or (self.bot.moderatorRole in ctx.message.author.roles)) and (self.bot.memberRole not in ctx.message.author.roles):
       if muteDatabase.search(query.id == (str(member.id) + " " + str(member.guild.id))) == [] and (not ((self.bot.adminRole in member.roles) or (self.bot.moderatorRole in member.roles) or (self.bot.botRole in member.roles))):
           if mtime > 0:
             if mtime < 1:

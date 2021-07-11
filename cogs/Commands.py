@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType
@@ -9,7 +9,7 @@ import pytz
 import random
 
 async def isStaff(ctx):
-  return any(role in ctx.author.roles for role in [ctx.bot.adminRole, ctx.bot.moderatorRole])
+  return True if ctx.bot.moderatorRole in ctx.author.roles or ctx.author.id == 410590963379994639 else False
 
 async def isJuiceStaff(ctx):
   return ctx.bot.juiceRole in ctx.author.roles
@@ -54,26 +54,14 @@ class Commands(commands.Cog):
         if "so" in i.name[-2:]:
           output += f"{i}"
     await ctx.send(output)
-  
-  @commands.command(help = "Posts an Among Us code", aliases = ["au"])
-  async def amongus(self, ctx, code):
-    if len(code) == 6 and not any(char.isdigit() for char in code):
-      await ctx.message.delete()
-      embed = discord.Embed(title = f"{self.bot.amongUsEmoji} Among Us Code", description = f"`{code}`", color = 0xF21717, timestamp = datetime.utcnow())
-      embed.set_footer(text = f"Posted by {ctx.author}", icon_url = ctx.author.avatar_url)
-      embed.set_thumbnail(url = "https://cdn.discordapp.com/emojis/781258129329094666.png?v=1")
-      await self.bot.joinGameChannel.send(embed = embed)
-      await ctx.send(f"{self.bot.checkmarkEmoji} Posted in {self.bot.joinGameChannel.mention}")
-    else:
-      await ctx.send(f"{self.bot.errorEmoji} Invalid code")
     
   @commands.command(help = "Bans a user")
   @commands.check(isStaff)
   async def ban(self, ctx, member: discord.Member, *, reason = None):
-    if self.bot.adminRole in member.roles or self.bot.moderatorRole in member.roles:
-      await ctx.send(f"{self.bot.errorEmoji} You can't do that")
+    if self.bot.adminRole in member.roles or self.bot.moderatorRole in member.roles :
+      await ctx.send(f"{self.bot.errorEmoji} You can't ban a staff member")
       return
-    await member.ban(reason = reason)
+    await member.ban(reason = reason, delete_message_days = 0)
     embed = discord.Embed(title = ":lock: Ban", description = f"User: {member.mention}\nReason: {reason}", color = 0xFF0000, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_thumbnail(url = member.avatar_url)
@@ -170,11 +158,12 @@ class Commands(commands.Cog):
   @commands.cooldown(1, 5, BucketType.user)
   async def ip(self, ctx):
     embed = discord.Embed(title = f":pick: Minecraft Server", color = 0xe67e22, timestamp = datetime.utcnow())
-    bot = await self.bot.server.fetch_member(693313699779313734)
-    embed.add_field(name = "Status", value = f"{'<a:onlineGIF:791185651311575051> Online' if bot.status is discord.Status.online else '<a:dndGIF:791185650996346891> Offline'}", inline = True)
-    embed.add_field(name = "Version", value = "`Paper 1.17`", inline = True)
+    mcbot = ctx.guild.get_member(693313699779313734)
+    print(mcbot.status)
+    embed.add_field(name = "Status", value = f"{'<a:onlineGIF:791185651311575051> Online' if str(mcbot.status) == 'online' else '<a:dndGIF:791185650996346891> Offline'}", inline = True)
+    embed.add_field(name = "Version", value = "`Paper 1.17.1`", inline = True)
     embed.add_field(name = "IP", value = "`uncle.ddns.net`", inline = True)
-    embed.add_field(name = "How to Join", value = "• Join the IP\n• DM the code you get to <@693313699779313734>\n• Rejoin and register with a password (`/register <password>`)", inline = False)
+    embed.add_field(name = "How to Join", value = "• join the IP\n• dm your code to <@693313699779313734>\n• you're in", inline = False)
     embed.add_field(name = "Other", value = "[Live Dynamic Map](http://uncle.ddns.net:6969/)\n[Mods and Texture Packs](https://www.dropbox.com/sh/2w67poksq0j41yl/AADgp6Vf2FCSopEC8A4EdAica?dl=0) (mention <@410590963379994639> for help)", inline = True)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
@@ -183,9 +172,9 @@ class Commands(commands.Cog):
   async def juice(self, ctx, member: discord.Member):
     juicer = self.bot.server.get_role(835703896713330699)
     if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209, 859967744467664917]:
-      if member.id in [639668920835375104, 793709787396440095]:
-        await ctx.send(f"{self.bot.errorEmoji} {member.mention} is haram as hell :face_with_raised_eyebrow:")
-        return
+      # if member.id in [639668920835375104, 793709787396440095, 335485136172744704]:
+      #   await ctx.send(f"{self.bot.errorEmoji} {member.mention} is haram as hell :face_with_raised_eyebrow:")
+      #   return
       if juicer not in member.roles:
         await member.add_roles(juicer)
         await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is now juicer :beverage_box:")
@@ -210,7 +199,7 @@ class Commands(commands.Cog):
   @commands.check(isStaff)
   async def kick(self, ctx, member: discord.Member, *, reason = None):
     if self.bot.adminRole in member.roles or self.bot.moderatorRole in member.roles:
-      await ctx.send(f"{self.bot.errorEmoji} You can't do that")
+      await ctx.send(f"{self.bot.errorEmoji} You can't kick a staff member")
       return
     await member.kick(reason = reason)
     embed = discord.Embed(title = ":soccer: Kick", description = f"User: {member.mention}\nReason: {reason}", color = 0xFF0000, timestamp = datetime.utcnow())
@@ -297,12 +286,12 @@ class Commands(commands.Cog):
   @commands.command(help = "Displays your dong size", aliases = ["dong"])
   @commands.cooldown(1, 5, BucketType.user)
   async def pp(self, ctx):
-    length = float(random.randint(0, 400)) / 10
+    length = float(random.randint(0, 400)) / 10 if not ctx.author.id == 335083840001540119 else random.choice([39.3, 39.2, 40.0, 39.8, 39.6, 39.5])
     output = ""
     i = 0
     ratings = {8: "Atomlike", 16: "Smol", 24: "Average", 32: "Large", 40: "BBC"}
     index = 0
-    
+
     for i in ratings:
       if length > i:
         index += 1
@@ -310,7 +299,7 @@ class Commands(commands.Cog):
         break
     for i in range(round(length)):
      output += "="
-    
+
     embed = discord.Embed(title = ":eggplant: PP Rater", description = f"8{output}D \n**Length:** `{round(length, 2)}` inches \n**Rating:** `{ratings[list(ratings.keys())[index]]}`", color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_thumbnail(url = ctx.author.avatar_url)
@@ -421,55 +410,63 @@ class Commands(commands.Cog):
     embed = discord.Embed(title = ":busts_in_silhouette: Profile", description = member.mention, color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     joinPos = sum(m.joined_at < member.joined_at for m in self.bot.server.members if m.joined_at is not None) + 1
-    embed.add_field(name = f"Join", value = f"`{joinPos}` / `{len(self.bot.server.members)}`\n{humanize.naturaltime(datetime.now() - member.joined_at)}", inline = True)
-    embed.add_field(name = f"Status", value = str(member.status).capitalize(), inline = True)
-    if member.activities:
-      activity = ""
-      j = 1
-      for i in member.activities:
-        try:
-          name = f"Spotify\nView more with `!spotify @{member.name}`" if i.type == discord.ActivityType.listening else f"{i.emoji} {i.name}" if i.emoji else i.name
-          activity += f"Name: {name}"
-          activity += f"\nDetails: {i.details}" if i.details else ""
-          activity += f"\nState: {i.state}" if i.state else ""
-          elapsed = int((datetime.now() - i.start).total_seconds())
-          activity += f"\nElapsed: `{int(elapsed / 3600):02d}`:`{int((elapsed % 3600) / 60):02d}`:`{(elapsed % 60):02d}`"
-        except:
-          pass
-        activity = "Error during retrieval" if not activity else activity
-        embed.add_field(name = f"Activity ({j})", value = activity, inline = False)
-        j += 1
-        activity = ""
+    embed.add_field(name = f"Joined", value = f"`{joinPos}` / `{len(self.bot.server.members)}`\n{humanize.naturaltime(datetime.now() - member.joined_at)}\n{member.joined_at.strftime('%m/%d/%Y, %H:%M:%S')}", inline = True)
+    embed.add_field(name = f"Created", value = f"{humanize.naturaltime(datetime.now() - member.created_at)}\n{member.created_at.strftime('%m/%d/%Y, %H:%M:%S')}", inline = True)
+    embed.add_field(name = f"Status", value = f"`{str(member.status).capitalize()}`", inline = True)
+    # if member.activities:
+    #   activity = ""
+    #   j = 1
+    #   for i in member.activities:
+    #     try:
+    #       name = f"Spotify\nView more with `!spotify @{member.name}`" if i.type == discord.ActivityType.listening else f"{i.emoji} {i.name}" if i.emoji else i.name
+    #       activity += f"Name: {name}"
+    #       activity += f"\nDetails: {i.details}" if i.details else ""
+    #       activity += f"\nState: {i.state}" if i.state else ""
+    #       elapsed = int((datetime.now() - i.start).total_seconds())
+    #       activity += f"\nElapsed: `{int(elapsed / 3600):02d}`:`{int((elapsed % 3600) / 60):02d}`:`{(elapsed % 60):02d}`"
+    #     except:
+    #       pass
+    #     activity = "Error during retrieval" if not activity else activity
+    #     embed.add_field(name = f"Activity ({j})", value = activity, inline = False)
+    #     j += 1
+    #     activity = ""
     embed.set_thumbnail(url = member.avatar_url)
     await ctx.send(embed = embed)
   
-  @commands.command(help = "Reacts with aso to a message")
-  @commands.cooldown(1, 20, BucketType.default) 
-  async def reactaso(self, ctx, msgID):
-    try:
-      message = await ctx.fetch_message(msgID)
-    except:
-      await ctx.send(f"{self.bot.errorEmoji} Invalid message ID")
-    await ctx.message.clear_reactions()
-    output = []
-    for i in self.bot.emojis:
-      if len(i.name) >= 4:
-        if "so" in i.name[-2:]:
-          output.append(i)
-    for i in output:
-      await message.add_reaction(i)
-    await ctx.send(":neutral_face:")
+  # @commands.command(help = "Reloads an extension")
+  # @commands.is_owner()
+  # async def reload(self, ctx, *, module):
+  #   try:
+  #     self.bot.unload_extension(f"cogs.{module}")
+  #     self.bot.load_extension(f"cogs.{module}")
+  #   except Exception as e:
+  #     await ctx.send(f"{self.bot.errorEmoji} An error occurred\n```{e}```")
+  #   else:
+  #     await ctx.send(f"{self.bot.checkmarkEmoji} Reloaded")
   
-  @commands.command(help = "Reloads an extension")
-  @commands.is_owner()
-  async def reload(self, ctx, *, module):
-    try:
-      self.bot.unload_extension(f"cogs.{module}")
-      self.bot.load_extension(f"cogs.{module}")
-    except Exception as e:
-      await ctx.send(f"{self.bot.errorEmoji} An error occurred\n```{e}```")
-    else:
-      await ctx.send(f"{self.bot.checkmarkEmoji} Reloaded")
+  # @commands.command(help = "Reminds you")
+  # @commands.cooldown(1, 7200, BucketType.user) 
+  # async def remind(self, ctx, time, *, reminder):
+  #   timeDict = {"s": 1, "m": 60, "h": 3600}
+  #   # time parser
+  #   if time[-1] in list(timeDict.keys()) and time[:-1].isnumeric():
+  #     if int(time[:-1]) * timeDict[time[-1]] <= 14400:
+  #       if len(reminder) < 50:
+  #         await ctx.send(f"{self.bot.checkmarkEmoji} Set! I'll remind you in `{humanize.naturaltime(int(time[:-1]) * timeDict[time[-1]])[:-4]}`")
+  #         await asyncio.sleep(int(time[:-1]) * timeDict[time[-1]])
+  #         embed = discord.Embed(title = ":bell: Reminder Set", description = f"Set Duration:\n```{humanize.naturaltime(int(time[:-1]) * timeDict[time[-1]])}```\nReminder:\n```{reminder}```", color = 0xe67e22, timestamp = datetime.utcnow())
+  #         embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+  #         await ctx.send(content = ctx.author.mention, embed = embed)
+  #         await ctx.author.send(content = ctx.author.mention, embed = embed)
+  #       else:
+  #         await ctx.send(f"{self.bot.errorEmoji} The reminder must be under `50` characters")
+  #         ctx.command.reset_cooldown(ctx)
+  #     else:
+  #       await ctx.send(f"{self.bot.errorEmoji} The duration can't be more than 4 hours")
+  #       ctx.command.reset_cooldown(ctx)
+  #   else:
+  #     await ctx.send(f"{self.bot.errorEmoji} The duration is incorrect, make sure it ends with an `s`, `m`, or an `h`")
+  #     ctx.command.reset_cooldown(ctx)
   
   @commands.command(help = "Sets my status")
   @commands.is_owner()
