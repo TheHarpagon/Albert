@@ -34,7 +34,7 @@ async def assignments():
   bot.moderatorRole = s.get_role(references.moderatorRoleID)
   bot.mutedRole = s.get_role(references.mutedRoleID)
   bot.vipRole = s.get_role(references.vipRoleID)
-  bot.allahRole = s.get_role(references.allahRoleID)
+  bot.potatoRole = s.get_role(references.potatoRoleID)
   bot.juiceRole = s.get_role(references.juiceRoleID)
   bot.memberRole = s.get_role(references.memberRoleID)
   bot.botRole = s.get_role(references.botRoleID)

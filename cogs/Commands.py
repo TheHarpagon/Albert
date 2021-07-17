@@ -9,39 +9,38 @@ import pytz
 import random
 
 async def isStaff(ctx):
-  return True if ctx.bot.moderatorRole in ctx.author.roles or ctx.author.id == 410590963379994639 else False
+  return True if ctx.author.id == 410590963379994639 or ctx.bot.moderatorRole in ctx.author.roles else False
 
 async def isJuiceStaff(ctx):
-  return ctx.bot.juiceRole in ctx.author.roles
+  return ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209, 859967744467664917]
+
+async def isPotatoStaff(ctx):
+  return ctx.author.id in [410590963379994639, 320369001005842435]
 
 class Commands(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
   
-  @commands.command(help = "Allahs a user", aliases = ["hijab"])
-  async def allah(self, ctx, member: discord.Member):
-    allah = self.bot.server.get_role(736358205994696846)
-    if ctx.author.id == 320369001005842435 or ctx.author.id == 410590963379994639:
-      if allah not in member.roles:
-        if len(allah.members) < 10:
-          await member.add_roles(allah)
-          await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is now allah :pray:")
-        else:
-          await ctx.send(f"{self.bot.errorEmoji} There can only be 10 hijabs at once")
+  @commands.command(help = "Potatos a user", aliases = ["aloo"])
+  @commands.check(isPotatoStaff)
+  async def potato(self, ctx, member: discord.Member):
+    if self.bot.potatoRole not in member.roles:
+      if len(self.bot.potatoRole.members) < 10:
+        await member.add_roles(self.bot.potatoRole)
+        await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is now potato :potato:")
       else:
-        await ctx.send(f"{self.bot.errorEmoji} They already allah :face_with_raised_eyebrow:")
+        await ctx.send(f"{self.bot.errorEmoji} There can only be 10 hijabs at once")
     else:
-      await ctx.send(f"{self.bot.errorEmoji} Shut the fuck up haram ass, this is only for virajallah")
+      await ctx.send(f"{self.bot.errorEmoji} They already potato :face_with_raised_eyebrow:")
   
-  @commands.command(help = "Displays all users with the allah role", aliases = ["hijabs"])
-  async def allahs(self, ctx):
-    allah = self.bot.server.get_role(736358205994696846)
+  @commands.command(help = "Displays potatos", aliases = ["aloos"])
+  async def potatos(self, ctx):
     output = ""
-    for member in allah.members:
+    for member in self.bot.potatoRole.members:
       output += f"\n{member.mention}"
       if member.id == 320369001005842435:
         output += " :crown:"
-    embed = discord.Embed(title = f":pray: Allahs ({len(allah.members)}/10)", description = output, color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = f":potato: Potatos ({len(self.bot.potatoRole.members)}/10)", description = output, color = 0xe67e22, timestamp = datetime.utcnow())
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
@@ -169,21 +168,15 @@ class Commands(commands.Cog):
     await ctx.send(embed = embed)
   
   @commands.command(help = "Juices a user", aliases = ["joose"])
+  @commands.check(isJuiceStaff)
   async def juice(self, ctx, member: discord.Member):
-    juicer = self.bot.server.get_role(835703896713330699)
-    if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209, 859967744467664917]:
-      # if member.id in [639668920835375104, 793709787396440095, 335485136172744704]:
-      #   await ctx.send(f"{self.bot.errorEmoji} {member.mention} is haram as hell :face_with_raised_eyebrow:")
-      #   return
-      if juicer not in member.roles:
-        await member.add_roles(juicer)
-        await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is now juicer :beverage_box:")
-      else:
-        await ctx.send(f"{self.bot.errorEmoji} They already juicer :face_with_raised_eyebrow:")
+    if self.bot.juiceRole not in member.roles:
+      await member.add_roles(self.bot.juiceRole)
+      await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is now juicer :beverage_box:")
     else:
-      await ctx.send(f"{self.bot.errorEmoji} Man only owner and akshay ani uncles can do this")
+      await ctx.send(f"{self.bot.errorEmoji} They already juicer :face_with_raised_eyebrow:")
   
-  @commands.command(help = "Displays all juiced users", aliases = ["joosers"])
+  @commands.command(help = "Displays all juicers", aliases = ["joosers"])
   async def juicers(self, ctx):
     juicer = self.bot.server.get_role(835703896713330699)
     output = ""
@@ -304,21 +297,6 @@ class Commands(commands.Cog):
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_thumbnail(url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
-  
-  @commands.command(help = "Prays to allah", aliases = ["goatsacrifice"])
-  @commands.cooldown(1, 15, BucketType.guild)
-  async def pray(self, ctx):
-    allah = self.bot.server.get_role(736358205994696846)
-    if allah in ctx.author.roles:
-      await ctx.send(":goat:")
-      await asyncio.sleep(1)
-      await ctx.send(":pray:")
-      await asyncio.sleep(1)
-      await ctx.send(":goat: :knife: :drop_of_blood:")
-      await asyncio.sleep(1)
-      await ctx.send(":weary: ALLAH THE ALMIGHTY")
-    else:
-      await ctx.send("haram ass you cant use this bs")
   
   # @commands.command()
   # @commands.cooldown(1, 5, BucketType.user)
@@ -478,7 +456,7 @@ class Commands(commands.Cog):
       await self.bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = argument))
       await ctx.send(f"{self.bot.checkmarkEmoji} Set!")
   
-  @commands.command(help = "Displays a user's spotify status", aliases = ["music"])
+  @commands.command(help = "Displays a user's spotify status", aliases = ["music", "spotert"])
   @commands.guild_only()
   @commands.cooldown(1, 5, BucketType.user)
   async def spotify(self, ctx, member: discord.Member = None):
@@ -508,29 +486,22 @@ class Commands(commands.Cog):
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
-  @commands.command(help = "Unallahs a user", aliases = ["unhijab"])
-  async def unallah(self, ctx, member: discord.Member):
-    allah = self.bot.server.get_role(736358205994696846)
-    if (ctx.author.id == 320369001005842435 and allah in ctx.author.roles) or ctx.author.id == 410590963379994639:
-      if allah in member.roles:
-        await member.remove_roles(allah)
-        await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is not allah anymore :rage:")
-      else:
-        await ctx.send(f"{self.bot.errorEmoji} {member.mention} is not even allah you dumd :face_with_raised_eyebrow:")
+  @commands.command(help = "Unpotatos a user", aliases = ["unaloo"])
+  @commands.check(isPotatoStaff)
+  async def unpotato(self, ctx, member: discord.Member):
+    if self.bot.potatoRole in member.roles:
+      await member.remove_roles(self.bot.potatoRole)
+      await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is not potato anymore :rage:")
     else:
-      await ctx.send(f"{self.bot.errorEmoji} Shut the fuck up haram ass, this is only for virajallah")
+      await ctx.send(f"{self.bot.errorEmoji} They ain't even potato :face_with_raised_eyebrow:")
   
   @commands.command(help = "Unjuices a user", aliases = ["unjoose"])
   async def unjuice(self, ctx, member: discord.Member):
-    juicer = self.bot.server.get_role(835703896713330699)
-    if ctx.author.id in [410590963379994639, 335083840001540119, 394731512068702209, 859967744467664917]:
-      if juicer in member.roles:
-        await member.remove_roles(juicer)
-        await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is not juicer anymore :rage:")
-      else:
-        await ctx.send(f"{self.bot.errorEmoji} They ain't even juicer :face_with_raised_eyebrow:")
+    if self.bot.juiceRole in member.roles:
+      await member.remove_roles(self.bot.juiceRole)
+      await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is not juicer anymore :rage:")
     else:
-      await ctx.send(f"{self.bot.errorEmoji} Man only owner and akshay ani uncles can do this")
+      await ctx.send(f"{self.bot.errorEmoji} They ain't even juicer :face_with_raised_eyebrow:")
   
   @commands.command(help = "Removes mod from a user", aliases = ["demod", "demote"])
   async def unmod(self, ctx, member: discord.Member):
