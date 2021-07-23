@@ -14,15 +14,15 @@ class Events(commands.Cog):
   async def on_command_completion(self, ctx):
     print(f"✅　{ctx.command.name.upper()} Command")
   
-  @commands.Cog.listener()
-  async def on_command_error(self, ctx, error):
-    if isinstance(error, CheckFailure):
-      await ctx.send(f"{self.bot.errorEmoji} You are missing permissions")
-    elif isinstance(error, CommandOnCooldown):
-      await ctx.send(f"{self.bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 2)}` seconds")
-    elif not isinstance(error, CommandNotFound):
-      await ctx.send(f"{self.bot.errorEmoji} An error occurred\n```{error}```")
-    print(f"❌‎‎‎　ERROR ({error})")
+  # @commands.Cog.listener()
+  # async def on_command_error(self, ctx, error):
+  #   if isinstance(error, CheckFailure):
+  #     await ctx.send(f"{self.bot.errorEmoji} You are missing permissions")
+  #   elif isinstance(error, CommandOnCooldown):
+  #     await ctx.send(f"{self.bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 2)}` seconds")
+  #   elif not isinstance(error, CommandNotFound):
+  #     await ctx.send(f"{self.bot.errorEmoji} An error occurred\n```{error}```")
+  #   print(f"❌‎‎‎　ERROR ({error})")
   
   @commands.Cog.listener()
   async def on_message(self, message):
@@ -51,12 +51,6 @@ class Events(commands.Cog):
           else:
             await message.channel.send(f":spy: `{nickname}` is AFK: `{db[str(i.id)][1]}` ({humanize.naturaltime(time)})")
           print("✅　AFK MENTION Event")
-    
-    # viraj moment
-    if message.author.id == 320369001005842435:
-      if message.channel.id == 700074631935295532:
-        if "ask" in message.content.lower():
-          await message.delete()
   
   @commands.Cog.listener()
   async def on_message_delete(self, message):
@@ -88,7 +82,7 @@ class Events(commands.Cog):
     if not member.bot:
       await member.add_roles(self.bot.memberRole)
       await self.bot.updateStatus()
-      embed = discord.Embed(title = ":inbox_tray: Member Joined", description = f"You are the `{ordinal.ordinal(self.bot.memberCount())}` member!", color = 0x00FF00, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":inbox_tray: Member Joined", description = f"You are the `{ordinal.ordinal(self.bot.memberCount())}` member!", color = 0x00FF00)
       embed.set_thumbnail(url = member.avatar_url)
       embed.add_field(name = "Get Roles", value = f"Go to {self.bot.rolesChannel.mention}", inline = False)
       embed.add_field(name = "Main Info :loudspeaker:", value = f"Read the {self.bot.rulesChannel.mention}\nJoin the talk in {self.bot.generalChannel.mention}", inline = False)
@@ -96,7 +90,7 @@ class Events(commands.Cog):
       await member.remove_roles(self.bot.mutedRole)
 
     else:
-      embed = discord.Embed(title = ":inbox_tray: Bot Joined", description = f"You are the `{ordinal.ordinal(self.bot.memberCount())}` member!\n{self.bot.botRole.mention} role added", color = 0x00FF00, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":inbox_tray: Bot Joined", description = f"You are the `{ordinal.ordinal(self.bot.memberCount())}` member!\n{self.bot.botRole.mention} role added", color = 0x00FF00)
       embed.set_thumbnail(url = member.avatar_url)
       await self.bot.welcomeChannel.send(f"Welcome, {member.mention}", embed = embed)
       await member.remove_roles(self.bot.mutedRole)
@@ -105,7 +99,7 @@ class Events(commands.Cog):
   @commands.Cog.listener()
   async def on_member_remove(self, member):
     await self.bot.updateStatus()
-    embed = discord.Embed(title = f":outbox_tray: {'Bot' if member.bot else 'Member'} Left", description = "Either kicked/banned/left", color = 0xFF0000, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = f":outbox_tray: {'Bot' if member.bot else 'Member'} Left", description = "Either kicked/banned/left", color = 0xFF0000)
     embed.set_thumbnail(url = member.avatar_url)
     await self.bot.welcomeChannel.send(f"Goodbye, {member.mention}", embed = embed)
     print("✅　LEAVE Event")

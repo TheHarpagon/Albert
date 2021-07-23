@@ -1,9 +1,12 @@
+import aiohttp
 import asyncio
 from datetime import datetime, timedelta
 import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType
 import humanize
+import io
+from PIL import Image, ImageFont, ImageDraw
 import psutil
 import pytz
 import random
@@ -29,7 +32,7 @@ class Commands(commands.Cog):
         await member.add_roles(self.bot.potatoRole)
         await ctx.send(f"{self.bot.checkmarkEmoji} {member.mention} is now potato :potato:")
       else:
-        await ctx.send(f"{self.bot.errorEmoji} There can only be 10 hijabs at once")
+        await ctx.send(f"{self.bot.errorEmoji} There can only be 10 potatos at once")
     else:
       await ctx.send(f"{self.bot.errorEmoji} They already potato :face_with_raised_eyebrow:")
   
@@ -40,7 +43,7 @@ class Commands(commands.Cog):
       output += f"\n{member.mention}"
       if member.id == 320369001005842435:
         output += " :crown:"
-    embed = discord.Embed(title = f":potato: Potatos ({len(self.bot.potatoRole.members)}/10)", description = output, color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = f":potato: Potatos ({len(self.bot.potatoRole.members)}/10)", description = output, color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
@@ -61,7 +64,7 @@ class Commands(commands.Cog):
       await ctx.send(f"{self.bot.errorEmoji} You can't ban a staff member")
       return
     await member.ban(reason = reason, delete_message_days = 0)
-    embed = discord.Embed(title = ":lock: Ban", description = f"User: {member.mention}\nReason: {reason}", color = 0xFF0000, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":lock: Ban", description = f"User: {member.mention}\nReason: {reason}", color = 0xFF0000)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_thumbnail(url = member.avatar_url)
     await ctx.send(embed = embed)
@@ -69,7 +72,7 @@ class Commands(commands.Cog):
   @commands.command(help = "Displays the banner")
   @commands.cooldown(1, 5, BucketType.user)
   async def banner(self, ctx):
-    embed = discord.Embed(title = ":frame_photo: Banner", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":frame_photo: Banner", color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_image(url = ctx.guild.banner_url)
     await ctx.send(embed = embed)
@@ -78,7 +81,7 @@ class Commands(commands.Cog):
   async def chess(self, ctx, link):
     if "play.chess.com/" in link:
       await ctx.message.delete()
-      embed = discord.Embed(title = f"{self.bot.chessEmoji} Among Us Code", description = link, color = 0xF21717, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = f"{self.bot.chessEmoji} Among Us Code", description = link, color = 0xF21717)
       embed.set_footer(text = f"Posted by {ctx.author}", icon_url = ctx.author.avatar_url)
       embed.set_thumbnail(url = "https://cdn.discordapp.com/emojis/781259278417395732.png?v=1")
       await self.bot.joinGameChannel.send(embed = embed)
@@ -89,7 +92,7 @@ class Commands(commands.Cog):
   @commands.command(help = "Displays a hex code", aliases = ["colour"])
   @commands.cooldown(1, 5, BucketType.user)
   async def color(self, ctx, hexCode: discord.Color):
-    embed = discord.Embed(title = ":trackball: Color", description = str(hexCode).lower(), color = hexCode, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":trackball: Color", description = str(hexCode).lower(), color = hexCode)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_image(url = f"https://www.colorhexa.com/{str(hexCode).lower()[1:]}.png")
     await ctx.send(embed = embed)
@@ -129,7 +132,7 @@ class Commands(commands.Cog):
   async def flip(self, ctx):
     responses = {"Heads": "https://i.imgur.com/92xg7uR.png", "Tails": "https://i.imgur.com/TjqDdBI.png"}
     choice = random.choice(["Heads", "Tails"])
-    embed = discord.Embed(title = ":coin: Flip a Coin", description = f"It's `{choice}`", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":coin: Flip a Coin", description = f"It's `{choice}`", color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_thumbnail(url = responses[choice])
     await ctx.send(embed = embed)
@@ -138,7 +141,7 @@ class Commands(commands.Cog):
   @commands.guild_only()
   @commands.cooldown(1, 5, BucketType.user)
   async def icon(self, ctx):
-    embed = discord.Embed(title = ":frame_photo: Server Icon", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":frame_photo: Server Icon", color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_image(url = ctx.guild.icon_url)
     await ctx.send(embed = embed)
@@ -146,7 +149,7 @@ class Commands(commands.Cog):
   @commands.command(help = "Displays invite links", aliases = ["inv"])
   @commands.cooldown(1, 5, BucketType.user)
   async def invite(self, ctx):
-    embed = discord.Embed(title = ":inbox_tray: Invite Link", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":inbox_tray: Invite Link", color = 0xe67e22)
     embed.set_thumbnail(url = self.bot.user.avatar_url)
     embed.add_field(name = "Bot", value = "[Link](https://discord.com/api/oauth2/authorize?client_id=851538022356615208&permissions=134605888&scope=bot)", inline = False)
     embed.add_field(name = "Server", value = "discord.gg/uncle", inline = False)
@@ -156,7 +159,7 @@ class Commands(commands.Cog):
   @commands.command(help = "Displays the Minecraft server's info", aliases = ["mc", "mcip", "minecraft"])
   @commands.cooldown(1, 5, BucketType.user)
   async def ip(self, ctx):
-    embed = discord.Embed(title = f":pick: Minecraft Server", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = f":pick: Minecraft Server", color = 0xe67e22)
     mcbot = ctx.guild.get_member(693313699779313734)
     print(mcbot.status)
     embed.add_field(name = "Status", value = f"{'<a:onlineGIF:791185651311575051> Online' if str(mcbot.status) == 'online' else '<a:dndGIF:791185650996346891> Offline'}", inline = True)
@@ -184,7 +187,7 @@ class Commands(commands.Cog):
       output += f"\n{member.mention}"
       if member.id in [410590963379994639, 335083840001540119, 394731512068702209]:
         output += " :crown:"
-    embed = discord.Embed(title = f":beverage_box: Juicers ({len(juicer.members)})", description = output, color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = f":beverage_box: Juicers ({len(juicer.members)})", description = output, color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
@@ -195,7 +198,7 @@ class Commands(commands.Cog):
       await ctx.send(f"{self.bot.errorEmoji} You can't kick a staff member")
       return
     await member.kick(reason = reason)
-    embed = discord.Embed(title = ":soccer: Kick", description = f"User: {member.mention}\nReason: {reason}", color = 0xFF0000, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":soccer: Kick", description = f"User: {member.mention}\nReason: {reason}", color = 0xFF0000)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_thumbnail(url = member.avatar_url)
     await ctx.send(embed = embed)
@@ -211,7 +214,7 @@ class Commands(commands.Cog):
   async def krunker(self, ctx, link):
     if "krunker.io/?game=" in link:
       await ctx.message.delete()
-      embed = discord.Embed(title = f"{self.bot.krunkerEmoji} Krunker Link", description = link, color = 0xFEB938, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = f"{self.bot.krunkerEmoji} Krunker Link", description = link, color = 0xFEB938)
       embed.set_footer(text = f"Posted by {ctx.author}", icon_url = ctx.author.avatar_url)
       embed.set_thumbnail(url = "https://cdn.discordapp.com/emojis/699029209988726885.png?v=1")
       await self.bot.joinGameChannel.send(embed = embed)
@@ -227,7 +230,7 @@ class Commands(commands.Cog):
       if self.bot.memberRole in member.roles:
         await member.remove_roles(self.bot.memberRole)
         await member.add_roles(self.bot.moderatorRole)
-        embed = discord.Embed(title = "<:upvote:732640878145044623> Promoted", description = f"{member.mention} is now a {self.bot.moderatorRole.mention}", color = 0xe67e22, timestamp = datetime.utcnow())       
+        embed = discord.Embed(title = "<:upvote:732640878145044623> Promoted", description = f"{member.mention} is now a {self.bot.moderatorRole.mention}", color = 0xe67e22)       
         embed.set_footer(text = f"Promoted by {ctx.author}", icon_url = ctx.author.avatar_url)
         embed.set_thumbnail(url = member.avatar_url)
         await ctx.send(embed = embed)
@@ -243,7 +246,7 @@ class Commands(commands.Cog):
     output = ""
     for member in self.bot.mutedRole.members:
       output += f"{member.mention}\n"
-    embed = discord.Embed(title = ":mute: Muted", description = f"{output}", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":mute: Muted", description = f"{output}", color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
 
@@ -261,7 +264,7 @@ class Commands(commands.Cog):
   @commands.cooldown(1, 5, BucketType.user)
   async def pfp(self, ctx, member: discord.Member = None):
     member = ctx.author if not member else member
-    embed = discord.Embed(title = ":frame_photo: Profile Picture", description = member.mention, color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":frame_photo: Profile Picture", description = member.mention, color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_image(url = member.avatar_url)
     await ctx.send(embed = embed)
@@ -269,7 +272,7 @@ class Commands(commands.Cog):
   @commands.command(help = "Displays my latency among other statistics", aliases = ["latency", "statistics", "stats"])
   @commands.cooldown(1, 5, BucketType.user)
   async def ping(self, ctx):
-    embed = discord.Embed(title = "🏓 Pong!", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = "🏓 Pong!", color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.add_field(name = "Latency", value = f"`{round(self.bot.latency * 1000)}`ms", inline = True)
     embed.add_field(name = "Hardware", value = f"`{psutil.cpu_count()}` Cores \n`{round(psutil.cpu_percent())}`% CPU Usage \n`{round(psutil.virtual_memory().percent)}`% RAM Usage", inline = True)
@@ -293,7 +296,7 @@ class Commands(commands.Cog):
     for i in range(round(length)):
      output += "="
 
-    embed = discord.Embed(title = ":eggplant: PP Rater", description = f"8{output}D \n**Length:** `{round(length, 2)}` inches \n**Rating:** `{ratings[list(ratings.keys())[index]]}`", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":eggplant: PP Rater", description = f"8{output}D \n**Length:** `{round(length, 2)}` inches \n**Rating:** `{ratings[list(ratings.keys())[index]]}`", color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_thumbnail(url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
@@ -367,7 +370,7 @@ class Commands(commands.Cog):
   #     # else:
   #     #     gameRoles = "`None`"
 
-  #     embed = discord.Embed(title=f":bust_in_silhouette: User Profile", description = f"`{member}`", color = topColor, timestamp = datetime.utcnow())
+  #     embed = discord.Embed(title=f":bust_in_silhouette: User Profile", description = f"`{member}`", color = topColor)
   #     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
   #     embed.set_thumbnail(url = member.avatar_url)
   #     embed.add_field(name = "Main Role", value = topRole, inline = True)
@@ -385,7 +388,7 @@ class Commands(commands.Cog):
   @commands.cooldown(1, 5, BucketType.user)
   async def profile(self, ctx, member: discord.Member = None):
     member = ctx.author if not member else member
-    embed = discord.Embed(title = ":busts_in_silhouette: Profile", description = member.mention, color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":busts_in_silhouette: Profile", description = member.mention, color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     joinPos = sum(m.joined_at < member.joined_at for m in self.bot.server.members if m.joined_at is not None) + 1
     embed.add_field(name = f"Joined", value = f"`{joinPos}` / `{len(self.bot.server.members)}`\n{humanize.naturaltime(datetime.now() - member.joined_at)}\n{member.joined_at.strftime('%m/%d/%Y, %H:%M:%S')}", inline = True)
@@ -432,7 +435,7 @@ class Commands(commands.Cog):
   #       if len(reminder) < 50:
   #         await ctx.send(f"{self.bot.checkmarkEmoji} Set! I'll remind you in `{humanize.naturaltime(int(time[:-1]) * timeDict[time[-1]])[:-4]}`")
   #         await asyncio.sleep(int(time[:-1]) * timeDict[time[-1]])
-  #         embed = discord.Embed(title = ":bell: Reminder Set", description = f"Set Duration:\n```{humanize.naturaltime(int(time[:-1]) * timeDict[time[-1]])}```\nReminder:\n```{reminder}```", color = 0xe67e22, timestamp = datetime.utcnow())
+  #         embed = discord.Embed(title = ":bell: Reminder Set", description = f"Set Duration:\n```{humanize.naturaltime(int(time[:-1]) * timeDict[time[-1]])}```\nReminder:\n```{reminder}```", color = 0xe67e22)
   #         embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
   #         await ctx.send(content = ctx.author.mention, embed = embed)
   #         await ctx.author.send(content = ctx.author.mention, embed = embed)
@@ -476,7 +479,7 @@ class Commands(commands.Cog):
     duration = list("▱▱▱▱▱▱▱▱")
     for i in range(int((passed / total) * len(duration))):
       duration[i] = "▰"
-    embed = discord.Embed(title = "<:spotify:841831747867377684> Spotify", description = member.mention, color = activity.color, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = "<:spotify:841831747867377684> Spotify", description = member.mention, color = activity.color)
     embed.add_field(name = "Title", value = f"[{activity.title}](https://open.spotify.com/track/{activity.track_id})", inline = True)
     embed.add_field(name = f"Artist{'s' if len(activity.artists) > 1 else ''}", value = ", ".join(activity.artists), inline = True)
     embed.add_field(name = "Album", value = activity.album, inline = True)
@@ -485,6 +488,53 @@ class Commands(commands.Cog):
     embed.set_image(url = activity.album_cover_url)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
+
+  @commands.command(help = "Displays a user's spotify card")
+  @commands.guild_only()
+  @commands.cooldown(1, 5, BucketType.user)
+  async def card(self, ctx, member: discord.Member = None):
+    member = ctx.author if not member else member
+    listening = False
+    if member.activities:
+      for i in member.activities:
+        if i.type == discord.ActivityType.listening:
+          listening = True
+          activity = i
+          break
+    if not listening:
+      await ctx.send(f"{self.bot.errorEmoji} Can't detect {'your' if member == ctx.author else 'their'} listening status")
+      return
+    passed = int((datetime.now() - activity.start).total_seconds())
+    total = int((activity.end - activity.start).total_seconds())
+
+    template = Image.open("cogs/spotify/template.png")
+    title = ImageFont.truetype("cogs/spotify/Gotham Regular.otf", 50)
+    artists = ImageFont.truetype("cogs/spotify/Gotham Light.otf", 35)
+    current = ImageFont.truetype("cogs/spotify/Gotham Light.otf", 25)
+    end = ImageFont.truetype("cogs/spotify/Gotham Light.otf", 25)
+    album = ImageFont.truetype("cogs/spotify/Gotham Regular.otf", 35)
+    draw = ImageDraw.Draw(template)
+    draw.text((432, 100), f"{activity.album[:20]}..." if len(activity.album) > 20 else activity.album, (255, 255, 255), font = album, anchor = "mm")
+    draw.text((65, 975), f"{activity.title[:20]}..." if len(activity.title) > 20 else activity.title, (255, 255, 255), font = title)
+    draw.text((65, 1040), f"{(', '.join(activity.artists))[:20]}..." if len(", ".join(activity.artists)) > 30 else ", ".join(activity.artists), (127, 127, 127), font = artists)
+    draw.text((60, 1135), f"{int(passed / 60)}:{(passed % 60):02d}", (127, 127, 127), font = current)
+    draw.text((750, 1135), f"{int(total / 60)}:{(total % 60):02d}", (127, 127, 127), font = end)
+    
+    async with aiohttp.ClientSession() as session:
+      async with session.get(activity.album_cover_url) as reply:
+        cover = Image.open(io.BytesIO(await reply.read()))
+        cover = cover.resize((725, 725))
+    
+    presend = io.BytesIO()
+    template.save(presend, format = "png")
+    drawCard = Image.open(presend)
+    drawCard.paste(cover, (70, 200))
+    final = io.BytesIO()
+    drawCard.save(final, format = "png")
+    final.seek(0)
+    await ctx.send(file = discord.File(final, filename = "spotify.png"))
+
+
   
   @commands.command(help = "Unpotatos a user", aliases = ["unaloo"])
   @commands.check(isPotatoStaff)
@@ -510,11 +560,11 @@ class Commands(commands.Cog):
       if self.bot.moderatorRole in member.roles:
         await member.remove_roles(self.bot.moderatorRole)
         await member.add_roles(self.bot.memberRole)
-        embed = discord.Embed(title = "<:downvote:732640878249902161> Demoted", description = f"{member.mention} is now a {self.bot.memberRole.mention}", color = 0xe67e22, timestamp = datetime.utcnow())       
+        embed = discord.Embed(title = "<:downvote:732640878249902161> Demoted", description = f"{member.mention} is now a {self.bot.memberRole.mention}", color = 0xe67e22)       
         embed.set_footer(text = f"Demoted by {ctx.author}", icon_url = ctx.author.avatar_url)
         embed.set_thumbnail(url = member.avatar_url)
         await ctx.send(embed = embed)
-        await self.bot.staffOnlyChannel.send(f"<:downvote:732640878249902161> {member.mention} was demoted")
+        await self.bot.vipChannel.send(f"<:downvote:732640878249902161> {member.mention} was demoted")
       else:
         await ctx.send(f"{self.bot.errorEmoji} They aren't even a moderator")
     else:

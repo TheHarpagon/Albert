@@ -41,7 +41,7 @@ class DatabaseCommands(commands.Cog):
     output = ""
     for i in db:
       output += f"<@{i}>"
-    embed = discord.Embed(title = ":spy: AFKs", description = output, color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":spy: AFKs", description = output, color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
@@ -54,13 +54,13 @@ class DatabaseCommands(commands.Cog):
     async with aiohttp.ClientSession() as session:
       async with session.get("https://uselessfacts.jsph.pl/random.json?language=en") as reply:
         data = await reply.json()
-    embed = discord.Embed(title = ":book: Fact", description = f"{data['text']}", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":book: Fact", description = f"{data['text']}", color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await message.edit(content = None, embed = embed)
   
   @commands.command(help = "Sends a multiplayer quiz", aliases = ["f", "race", "r"])
   @commands.guild_only()
-  @commands.cooldown(1, 10, BucketType.channel)
+  @commands.cooldown(1, 5, BucketType.channel)
   async def fast(self, ctx):
     original = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
     choice = random.randint(0, 2)
@@ -83,7 +83,7 @@ class DatabaseCommands(commands.Cog):
           numbers = [random.randint(50, 100), random.randint(50, 100)]
         answer = numbers[0] - numbers[1]
       
-      embed = discord.Embed(title = ":zap: Math Showdown", description = f"First to solve the following wins!\n```py\n{numbers[0]} {operation} {numbers[1]}```", color = 0xe67e22, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":zap: Math Showdown", description = f"First to solve the following wins!\n```py\n{numbers[0]} {operation} {numbers[1]}```", color = 0xe67e22)
       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
       return [embed, answer]
     
@@ -92,7 +92,7 @@ class DatabaseCommands(commands.Cog):
         async with session.get("https://random-word-api.herokuapp.com/word?number=1") as reply:
           data = await reply.json()
       answer = data[0][::-1]
-      embed = discord.Embed(title = ":zap: Word Showdown", description = f"First to type the following backwards wins!\n```yaml\n{data[0]}```", color = 0xe67e22, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":zap: Word Showdown", description = f"First to type the following backwards wins!\n```yaml\n{data[0]}```", color = 0xe67e22)
       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
       return [embed, answer]
     
@@ -110,7 +110,7 @@ class DatabaseCommands(commands.Cog):
         for j in range(0, 3):
           printedTable += f"||{table[i][j]}|| "
         printedTable += "\n"
-      embed = discord.Embed(title = ":zap: Bubble Wrap", description = f"First to type the location to the white square wins!\n(ex: `B2` or `2B`)\n\n{printedTable}", color = 0xe67e22, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":zap: Bubble Wrap", description = f"First to type the location to the :brown_square: wins!\n(ex: `B2` or `2B`)\n\n{printedTable}", color = 0xe67e22)
       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
       return [embed, answer]
     
@@ -136,7 +136,7 @@ class DatabaseCommands(commands.Cog):
     message = await ctx.send(f"{self.bot.loadingEmoji} Loading...")
     if ctx.message.guild:
       await ctx.message.delete()
-      embed = discord.Embed(title = ":books: Grades", description = f"You can't use this command here, please DM me and try again", color = 0xe67e22, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = ":books: Grades", description = f"You can't use this command here, please DM me and try again", color = 0xe67e22)
       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
       await message.edit(content = None, embed = embed)
       ctx.command.reset_cooldown(ctx)
@@ -153,7 +153,7 @@ class DatabaseCommands(commands.Cog):
       async with session.get(f"https://dvhs.schoolloop.com/mapi/report_card?studentID={studentDB['userID']}") as reply:
         resultDB = await reply.json(content_type = None)
     
-    embed = discord.Embed(title = ":scroll: Grades", description = "Your grades/credentials are **never** saved (read [here](https://www.google.com/))", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":scroll: Grades", description = "Your grades/credentials are **never** saved (read [here](https://www.google.com/))", color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     for i in resultDB:
       if i["courseName"] != "Access":
@@ -169,10 +169,10 @@ class DatabaseCommands(commands.Cog):
     async with aiohttp.ClientSession() as session:
       async with session.get("https://official-joke-api.appspot.com/jokes/random") as reply:
         data = await reply.json()
-    embed = discord.Embed(title = ":book: A joke", description = f"**{data['setup']}**", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":book: A joke", description = f"**{data['setup']}**", color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await message.edit(content = None, embed = embed)
-    embed = discord.Embed(title = ":book: A joke", description = f"**{data['setup']}**\n{data['punchline']}", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":book: A joke", description = f"**{data['setup']}**\n{data['punchline']}", color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await asyncio.sleep(2)
     await message.edit(content = None, embed = embed)
@@ -201,7 +201,7 @@ class DatabaseCommands(commands.Cog):
               if stime == 1:
                 sunit = "second"
               
-              embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{stime}` {sunit}", color = 0x00FF00, timestamp = datetime.utcnow())
+              embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{stime}` {sunit}", color = 0x00FF00)
               embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
               embed.set_thumbnail(url = member.avatar_url)
               await ctx.send(embed = embed)
@@ -213,7 +213,7 @@ class DatabaseCommands(commands.Cog):
               if htime == 1:
                 hunit = "hour"
               
-              embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{htime}` {hunit}", color = 0x00FF00, timestamp = datetime.utcnow())
+              embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{htime}` {hunit}", color = 0x00FF00)
               embed.set_author(name = self.bot.user.name, icon_url = self.bot.user.avatar_url)
               embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
               embed.set_thumbnail(url = member.avatar_url)
@@ -225,13 +225,13 @@ class DatabaseCommands(commands.Cog):
               if mtime == 1:
                 munit = "minute"
               
-              embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{mtime}` {munit}", color = 0x00FF00, timestamp = datetime.utcnow())
+              embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{mtime}` {munit}", color = 0x00FF00)
               embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
               embed.set_thumbnail(url = member.avatar_url)
               await ctx.send(embed = embed)
           
           else:
-            embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `infinity` (`∞`)", color = 0x00FF00, timestamp = datetime.utcnow())
+            embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `infinity` (`∞`)", color = 0x00FF00)
             embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
             embed.set_thumbnail(url = member.avatar_url)
             await ctx.send(embed = embed)
@@ -251,7 +251,7 @@ class DatabaseCommands(commands.Cog):
               await member.add_roles(self.bot.vipRole)
               
             if muteDatabase.search(query.id == (str(member.id) + " " + str(member.guild.id))) != []:
-              embed = discord.Embed(title = ":loud_sound: Unmuted", description = f"{member.mention}'s mute expired", color = 0x00FF00, timestamp = datetime.utcnow())
+              embed = discord.Embed(title = ":loud_sound: Unmuted", description = f"{member.mention}'s mute expired", color = 0x00FF00)
               embed.set_footer(text = f"Originally muted by {ctx.author}", icon_url = ctx.author.avatar_url)
               embed.set_thumbnail(url = member.avatar_url)
               await ctx.send(embed = embed)
@@ -299,7 +299,7 @@ class DatabaseCommands(commands.Cog):
           if not data["ParsedResults"][0]["ParsedText"]:
             await message.edit(content = f"{self.bot.errorEmoji} No text found (if this is an error, try again with `!ocr {1 if engine == 2 else 2}`)")
             return
-          embed = discord.Embed(title = ":newspaper: Text Scanner", color = 0xe67e22, timestamp = datetime.utcnow())
+          embed = discord.Embed(title = ":newspaper: Text Scanner", color = 0xe67e22)
           embed.add_field(name = "Details", value = f"Name: [{i.filename}]({i.url})\nSize: `{round(i.size / 1000, 2)}` kilobytes\nProcess: `{round(int(data['ProcessingTimeInMilliseconds']) / 1000, 2)}` seconds\nEngine: `{engine}` (see more [here](https://ocr.space/ocrapi#ocrengine))", inline = False)
           embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
           if len(data["ParsedResults"][0]["ParsedText"]) > 1024:
@@ -355,7 +355,7 @@ class DatabaseCommands(commands.Cog):
     async with aiohttp.ClientSession() as session:
       async with session.get(f"https://8ball.delegator.com/magic/JSON/{question}") as reply:
         data = await reply.json()
-    embed = discord.Embed(title = ":8ball: The Mighty 8Ball", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":8ball: The Mighty 8Ball", color = 0xe67e22)
     embed.add_field(name = "Question", value = question, inline = False)
     embed.add_field(name = "Response", value = data["magic"]["answer"], inline = False)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
@@ -375,7 +375,7 @@ class DatabaseCommands(commands.Cog):
     async with aiohttp.ClientSession() as session:
       async with session.get("https://evilinsult.com/generate_insult.php?lang=en&type=json") as reply:
         data = await reply.json()
-    embed = discord.Embed(title = "<:pepeLaugh:812786514911428608> Insult", description = data["insult"], color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = "<:pepeLaugh:812786514911428608> Insult", description = data["insult"], color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await message.edit(content = content, embed = embed)
   
@@ -388,7 +388,7 @@ class DatabaseCommands(commands.Cog):
   #   URLs = [URL]
   #   shortenedURL = shortener.shorten_urls(URLs)
   #   print(shortenedURL)
-  #   embed = discord.Embed(title = ":link: Shortened Link", description = shortenedURL[0], color = 0xe67e22, timestamp = datetime.utcnow())
+  #   embed = discord.Embed(title = ":link: Shortened Link", description = shortenedURL[0], color = 0xe67e22)
   #   embed.set_footer(text = f"Requested by {ctx.author}", icon_url = self.bot.user.avatar_url)
   #   embed.set_thumbnail(url = "https://i.imgur.com/YmjXC7s.png")
   #   await message.edit(content = None, embed = embed)
@@ -468,7 +468,7 @@ class DatabaseCommands(commands.Cog):
           output += f"\n**{ordinal(i + 1)}** "
         output += lb[i]
 
-    embed = discord.Embed(title = ":trophy: Leaderboard", description = f"Top 15 Trivia Command Users\nLevel up with `!trivia`\n{output}", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":trophy: Leaderboard", description = f"Top 15 Trivia Command Users\nLevel up with `!trivia`\n{output}", color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
@@ -505,7 +505,7 @@ class DatabaseCommands(commands.Cog):
     random.shuffle(choices)
     correctIndex = choices.index(html2text.html2text(data["results"][0]["correct_answer"]).replace("\n", ""))
     reactionsList = ["🇦", "🇧", "🇨", "🇩"]
-    embed = discord.Embed(title = ":student: Trivia", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nreact with your answer within `10` seconds", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":student: Trivia", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nreact with your answer within `10` seconds", color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await message.edit(content = None, embed = embed)
     for i in reactionsList:
@@ -529,7 +529,7 @@ class DatabaseCommands(commands.Cog):
         json.dump(data, file, indent = 2)
       
       reactionsList[correctIndex] = self.bot.checkmarkEmoji
-      embed = discord.Embed(title = f":alarm_clock: Expired! (-{points[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview the global leaderboard with `!top`", color = 0xFF383E, timestamp = datetime.utcnow())
+      embed = discord.Embed(title = f":alarm_clock: Expired! (-{points[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview the global leaderboard with `!top`", color = 0xFF383E)
       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
       await message.edit(content = None, embed = embed)
     
@@ -549,7 +549,7 @@ class DatabaseCommands(commands.Cog):
           json.dump(data, file, indent = 2)
         
         reactionsList[correctIndex] = self.bot.checkmarkEmoji
-        embed = discord.Embed(title = f"{self.bot.checkmarkEmoji} Correct! (+{points[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview the global leaderboard with `!top`", color = 0x3FB97C, timestamp = datetime.utcnow())
+        embed = discord.Embed(title = f"{self.bot.checkmarkEmoji} Correct! (+{points[difficulty]} points)", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview the global leaderboard with `!top`", color = 0x3FB97C)
         embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
         await message.edit(content = None, embed = embed)
       
@@ -569,7 +569,7 @@ class DatabaseCommands(commands.Cog):
         
         reactionsList[reactionsList.index(str(reaction.emoji))] = self.bot.errorEmoji
         reactionsList[correctIndex] = self.bot.checkmarkEmoji
-        embed = discord.Embed(title = f"{self.bot.errorEmoji} Incorrect!", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview the global leaderboard with `!top`", color = 0xFF383E, timestamp = datetime.utcnow())
+        embed = discord.Embed(title = f"{self.bot.errorEmoji} Incorrect!", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview the global leaderboard with `!top`", color = 0xFF383E)
         embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
         await message.edit(content = None, embed = embed)
   
@@ -584,13 +584,13 @@ class DatabaseCommands(commands.Cog):
         await member.remove_roles(self.bot.mutedRole)
         if not self.bot.memberRole in member.roles:
           await member.add_roles(self.bot.memberRole)
-        embed = discord.Embed(title = ":loud_sound: Unmuted", description = f"{member.mention} was unmuted", color = 0x00FF00, timestamp = datetime.utcnow())
+        embed = discord.Embed(title = ":loud_sound: Unmuted", description = f"{member.mention} was unmuted", color = 0x00FF00)
         embed.set_footer(text = f"Unmuted by {ctx.author}", icon_url = ctx.author.avatar_url)
         embed.set_thumbnail(url = member.avatar_url)
         await ctx.send(embed = embed)
       
       else:
-        embed = discord.Embed(title = f"{self.bot.errorEmoji} Unable to Unmute", description = f"{member.mention} isn't even muted", color = 0xFF0000, timestamp = datetime.utcnow())
+        embed = discord.Embed(title = f"{self.bot.errorEmoji} Unable to Unmute", description = f"{member.mention} isn't even muted", color = 0xFF0000)
         embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
         embed.set_thumbnail(url = member.avatar_url)
         await ctx.send(embed = embed)
@@ -601,7 +601,7 @@ class DatabaseCommands(commands.Cog):
       muteDatabase.remove(query.id == (str(member.id) + " " + str(member.guild.id)))
     
     else:
-      embed = discord.Embed(title = f"{self.bot.errorEmoji} Missing Permissions", description = f"Required Roles: \n• {self.bot.adminRole.mention} \n• {self.bot.moderatorRole.mention}", color = 0xFF0000, timestamp = datetime.utcnow())   
+      embed = discord.Embed(title = f"{self.bot.errorEmoji} Missing Permissions", description = f"Required Roles: \n• {self.bot.adminRole.mention} \n• {self.bot.moderatorRole.mention}", color = 0xFF0000)   
       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
       embed.set_thumbnail(url = member.avatar_url)
       await ctx.send(embed = embed)
@@ -621,7 +621,7 @@ class DatabaseCommands(commands.Cog):
     
     sunrise = datetime.fromtimestamp(int(data["sys"]["sunrise"])) - timedelta(hours = 7)
     sunset = datetime.fromtimestamp(int(data["sys"]["sunset"])) - timedelta(hours = 7)
-    embed = discord.Embed(title = ":partly_sunny: Weather", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":partly_sunny: Weather", color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_thumbnail(url = f"https://openweathermap.org/img/wn/{data['weather'][0]['icon']}@4x.png")
     embed.add_field(name = "City", value = f"`{data['name']}`, `{data['sys']['country']}`", inline = True)
@@ -642,7 +642,7 @@ class DatabaseCommands(commands.Cog):
   #     for i in ctx.message.attachments:
   #       # 71cc188d6f0ff7d6ba026bccb2a9b585
 
-  #       embed = discord.Embed(title = ":desktop: Uploaded File", description = "", color = 0xe67e22, timestamp = datetime.utcnow())
+  #       embed = discord.Embed(title = ":desktop: Uploaded File", description = "", color = 0xe67e22)
   #       embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
   #       await message.edit(content = None, embed = embed)
   #   else:

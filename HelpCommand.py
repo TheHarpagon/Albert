@@ -9,14 +9,14 @@ class HelpCommand(commands.HelpCommand):
       filtered = await self.filter_commands(commands, sort = True)
       for command in filtered:
         output += f"\n`!{command.qualified_name}` {command.help}"
-    embed = discord.Embed(title = ":scroll: Help", description = output, color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = ":scroll: Help", description = output, color = 0xe67e22)
     embed.set_footer(text = f"Requested by {self.context.author}", icon_url = self.context.author.avatar_url)
     await self.get_destination().send(embed = embed)
   
   async def send_command_help(self, command):
     title = command.qualified_name
     title = title.upper() if title in ["afk", "ocr"] else title.capitalize()
-    embed = discord.Embed(title = title, description = f"{command.help}", color = 0xe67e22, timestamp = datetime.utcnow())
+    embed = discord.Embed(title = title, description = f"{command.help}", color = 0xe67e22)
     embed.add_field(name = "Syntax", value = f"`!{command.qualified_name}{' ' + command.signature if command.signature else ''}`\nNote: `[]` is optional; `<>` is required")
     if command.aliases:
       aliases = f"`{command.aliases[0]}`"
