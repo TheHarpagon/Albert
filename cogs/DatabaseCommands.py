@@ -266,10 +266,6 @@ class DatabaseCommands(commands.Cog):
     else:
       await ctx.send(f"{self.bot.errorEmoji} Missing permissions")
   
-  @commands.command()
-  async def test(self, ctx):
-    print()
-  
   @commands.command(help = "Strips off text from an attachment", aliases = ["read", "scan"])
   @commands.cooldown(1, 20, BucketType.user)
   async def ocr(self, ctx, engine = 2):
