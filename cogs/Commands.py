@@ -1,5 +1,6 @@
 import aiohttp
 import asyncio
+import colorthief
 from datetime import datetime, timedelta
 import discord
 from discord.ext import commands
@@ -506,6 +507,10 @@ class Commands(commands.Cog):
       return
     passed = int((datetime.now() - activity.start).total_seconds())
     total = int((activity.end - activity.start).total_seconds())
+
+    # color_thief = colorthief.ColorThief("cogs/spotify/template.png")
+    # dominant_color = color_thief.get_color(quality = 10)
+    # print(dominant_color)
 
     template = Image.open("cogs/spotify/template.png")
     title = ImageFont.truetype("cogs/spotify/Gotham Regular.otf", 50)

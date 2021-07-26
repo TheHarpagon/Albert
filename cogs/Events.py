@@ -14,15 +14,15 @@ class Events(commands.Cog):
   async def on_command_completion(self, ctx):
     print(f"✅　{ctx.command.name.upper()} Command")
   
-  # @commands.Cog.listener()
-  # async def on_command_error(self, ctx, error):
-  #   if isinstance(error, CheckFailure):
-  #     await ctx.send(f"{self.bot.errorEmoji} You are missing permissions")
-  #   elif isinstance(error, CommandOnCooldown):
-  #     await ctx.send(f"{self.bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 2)}` seconds")
-  #   elif not isinstance(error, CommandNotFound):
-  #     await ctx.send(f"{self.bot.errorEmoji} An error occurred\n```{error}```")
-  #   print(f"❌‎‎‎　ERROR ({error})")
+  @commands.Cog.listener()
+  async def on_command_error(self, ctx, error):
+    if isinstance(error, CheckFailure):
+      await ctx.send(f"{self.bot.errorEmoji} You are missing permissions")
+    elif isinstance(error, CommandOnCooldown):
+      await ctx.send(f"{self.bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 2)}` seconds")
+    elif not isinstance(error, CommandNotFound):
+      await ctx.send(f"{self.bot.errorEmoji} An error occurred\n```{error}```")
+    print(f"❌‎‎‎　ERROR ({error})")
   
   @commands.Cog.listener()
   async def on_message(self, message):
