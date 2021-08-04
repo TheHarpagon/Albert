@@ -7,5 +7,5 @@ An application for a private [Discord](https://discord.com/) server with feature
 
 <img src = "https://i.gyazo.com/6ab35d19304098f1e4e898db8152afbe.png" height = auto width = 500>
 <img src = "https://i.gyazo.com/31a4bf3126fafffb97e7047f9008b9ba.gif" height = auto width = 500>
-<img src = "https://i.gyazo.com/2b49945b6ebd0f8dcf50e13aeff59b48.png" height = auto width = 300>
-<img src = "https://i.imgur.com/cQHegtu.png" height = auto width = 267>
+<img src = "https://i.gyazo.com/d583c74bfd42ea3f13415b4f6a346b8b.png" height = auto width = 300>
+<img src = "https://i.imgur.com/rJa1bd8.png" height = auto width = 267>

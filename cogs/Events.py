@@ -54,7 +54,7 @@ class Events(commands.Cog):
   
   @commands.Cog.listener()
   async def on_message_delete(self, message):
-    if self.bot.memberRole in message.author.roles and message.channel.id not in [690647361139245136, 816540206572109824, 835694338230452228, 857404361331441694, 860643594900602900] and not message.author.id == 320369001005842435 and not (message.content.startswith(":") or message.content.endswith(":")):
+    if self.bot.memberRole in message.author.roles and message.channel.id not in [690647361139245136, 816540206572109824, 835694338230452228, 857404361331441694, 860643594900602900] and not (message.content.startswith(":") or message.content.endswith(":")):
       embed = discord.Embed(title = ":wastebasket: Message Deleted", color = 0xe67e22, timestamp = datetime.utcnow())
       embed.set_thumbnail(url = message.author.avatar_url)
       embed.add_field(name = "Author", value = message.author.mention, inline = True)
@@ -65,7 +65,7 @@ class Events(commands.Cog):
   
   @commands.Cog.listener()
   async def on_message_edit(self, before, after):
-    if before.author.bot == False and before.content != after.content and self.bot.memberRole in before.author.roles and before.channel.id not in [690647361139245136, 816540206572109824, 835694338230452228, 860643594900602900] and not before.author.id == 320369001005842435:
+    if before.author.bot == False and before.content != after.content and self.bot.memberRole in before.author.roles and before.channel.id not in [690647361139245136, 816540206572109824, 835694338230452228, 860643594900602900]:
       embed = discord.Embed(title = ":pencil: Message Edited", color = 0xe67e22, timestamp = datetime.utcnow())
       embed.set_thumbnail(url = before.author.avatar_url)
       embed.add_field(name = "Author", value = before.author.mention, inline = True)

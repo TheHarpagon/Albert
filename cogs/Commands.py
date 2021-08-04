@@ -1,12 +1,13 @@
 import aiohttp
 import asyncio
-import colorthief
+from colorthief import ColorThief
 from datetime import datetime, timedelta
 import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType
 import humanize
 import io
+import os
 from PIL import Image, ImageFont, ImageDraw
 import psutil
 import pytz
@@ -25,7 +26,7 @@ class Commands(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
   
-  @commands.command(help = "Potatos a user", aliases = ["aloo"])
+  @commands.command(help = "Potatoes a user", aliases = ["aloo"])
   @commands.check(isPotatoStaff)
   async def potato(self, ctx, member: discord.Member):
     if self.bot.potatoRole not in member.roles:
@@ -37,14 +38,14 @@ class Commands(commands.Cog):
     else:
       await ctx.send(f"{self.bot.errorEmoji} They already potato :face_with_raised_eyebrow:")
   
-  @commands.command(help = "Displays potatos", aliases = ["aloos"])
-  async def potatos(self, ctx):
+  @commands.command(help = "Displays potatoes", aliases = ["aloos"])
+  async def potatoes(self, ctx):
     output = ""
     for member in self.bot.potatoRole.members:
       output += f"\n{member.mention}"
       if member.id == 320369001005842435:
         output += " :crown:"
-    embed = discord.Embed(title = f":potato: Potatos ({len(self.bot.potatoRole.members)}/10)", description = output, color = 0xe67e22)
+    embed = discord.Embed(title = f":potato: Potatoes ({len(self.bot.potatoRole.members)}/10)", description = output, color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
@@ -395,23 +396,23 @@ class Commands(commands.Cog):
     embed.add_field(name = f"Joined", value = f"`{joinPos}` / `{len(self.bot.server.members)}`\n{humanize.naturaltime(datetime.now() - member.joined_at)}\n{member.joined_at.strftime('%m/%d/%Y, %H:%M:%S')}", inline = True)
     embed.add_field(name = f"Created", value = f"{humanize.naturaltime(datetime.now() - member.created_at)}\n{member.created_at.strftime('%m/%d/%Y, %H:%M:%S')}", inline = True)
     embed.add_field(name = f"Status", value = f"`{str(member.status).capitalize()}`", inline = True)
-    # if member.activities:
-    #   activity = ""
-    #   j = 1
-    #   for i in member.activities:
-    #     try:
-    #       name = f"Spotify\nView more with `!spotify @{member.name}`" if i.type == discord.ActivityType.listening else f"{i.emoji} {i.name}" if i.emoji else i.name
-    #       activity += f"Name: {name}"
-    #       activity += f"\nDetails: {i.details}" if i.details else ""
-    #       activity += f"\nState: {i.state}" if i.state else ""
-    #       elapsed = int((datetime.now() - i.start).total_seconds())
-    #       activity += f"\nElapsed: `{int(elapsed / 3600):02d}`:`{int((elapsed % 3600) / 60):02d}`:`{(elapsed % 60):02d}`"
-    #     except:
-    #       pass
-    #     activity = "Error during retrieval" if not activity else activity
-    #     embed.add_field(name = f"Activity ({j})", value = activity, inline = False)
-    #     j += 1
-    #     activity = ""
+    if member.activities:
+      activity = ""
+      j = 1
+      for i in member.activities:
+        try:
+          name = f"Spotify\nView more with `!spotify @{member.name}`" if i.type == discord.ActivityType.listening else f"{i.emoji} {i.name}" if i.emoji else i.name
+          activity += f"Name: {name}"
+          activity += f"\nDetails: {i.details}" if i.details else ""
+          activity += f"\nState: {i.state}" if i.state else ""
+          elapsed = int((datetime.now() - i.start).total_seconds())
+          activity += f"\nElapsed: `{int(elapsed / 3600):02d}`:`{int((elapsed % 3600) / 60):02d}`:`{(elapsed % 60):02d}`"
+        except:
+          pass
+        activity = "Error during retrieval" if not activity else activity
+        embed.add_field(name = f"Activity ({j})", value = activity, inline = False)
+        j += 1
+        activity = ""
     embed.set_thumbnail(url = member.avatar_url)
     await ctx.send(embed = embed)
   
@@ -492,8 +493,9 @@ class Commands(commands.Cog):
 
   @commands.command(help = "Displays a user's spotify card")
   @commands.guild_only()
-  @commands.cooldown(1, 5, BucketType.user)
+  @commands.cooldown(1, 20, BucketType.user)
   async def card(self, ctx, member: discord.Member = None):
+    message = await ctx.send(f"{self.bot.loadingEmoji} Processing...")
     member = ctx.author if not member else member
     listening = False
     if member.activities:
@@ -503,45 +505,60 @@ class Commands(commands.Cog):
           activity = i
           break
     if not listening:
-      await ctx.send(f"{self.bot.errorEmoji} Can't detect {'your' if member == ctx.author else 'their'} listening status")
+      await message.edit(f"{self.bot.errorEmoji} Can't detect {'your' if member == ctx.author else 'their'} listening status")
       return
     passed = int((datetime.now() - activity.start).total_seconds())
     total = int((activity.end - activity.start).total_seconds())
 
-    # color_thief = colorthief.ColorThief("cogs/spotify/template.png")
-    # dominant_color = color_thief.get_color(quality = 10)
-    # print(dominant_color)
-
-    template = Image.open("cogs/spotify/template.png")
-    title = ImageFont.truetype("cogs/spotify/Gotham Regular.otf", 50)
-    artists = ImageFont.truetype("cogs/spotify/Gotham Light.otf", 35)
-    current = ImageFont.truetype("cogs/spotify/Gotham Light.otf", 25)
-    end = ImageFont.truetype("cogs/spotify/Gotham Light.otf", 25)
-    album = ImageFont.truetype("cogs/spotify/Gotham Regular.otf", 35)
-    draw = ImageDraw.Draw(template)
-    draw.text((432, 100), f"{activity.album[:20]}..." if len(activity.album) > 20 else activity.album, (255, 255, 255), font = album, anchor = "mm")
-    draw.text((65, 975), f"{activity.title[:20]}..." if len(activity.title) > 20 else activity.title, (255, 255, 255), font = title)
-    draw.text((65, 1040), f"{(', '.join(activity.artists))[:20]}..." if len(", ".join(activity.artists)) > 30 else ", ".join(activity.artists), (127, 127, 127), font = artists)
-    draw.text((60, 1135), f"{int(passed / 60)}:{(passed % 60):02d}", (127, 127, 127), font = current)
-    draw.text((750, 1135), f"{int(total / 60)}:{(total % 60):02d}", (127, 127, 127), font = end)
-    
     async with aiohttp.ClientSession() as session:
       async with session.get(activity.album_cover_url) as reply:
         cover = Image.open(io.BytesIO(await reply.read()))
         cover = cover.resize((725, 725))
+        coverBytes = io.BytesIO()
+        cover.save(coverBytes, format = "png")
+        # with open("cogs/image.png", "wb") as file:
+        #   file.write(await reply.read())
+    color_thief = ColorThief(coverBytes)
+    dominantColor = color_thief.get_color(quality = 10)
+    # os.remove("cogs/image.png")
+
+    # creating the background
+    # uses a gradient between the dominant color of the album cover and #191414
+    background = Image.new("RGB", (864, 1536), "#FFFFFF")
+    draw = ImageDraw.Draw(background)
+    r, g, b = dominantColor[0], dominantColor[1], dominantColor[2]
+    dr = (25 - dominantColor[0]) / 1536
+    dg = (20 - dominantColor[1]) / 1536
+    db = (20 - dominantColor[2]) / 1536
+    for i in range(1536):
+      r, g, b = r + dr, g + dg, b + db
+      draw.line((0, i, 864, i), fill = (int(r), int(g), int(b)))
+
+    foreground = Image.open("cogs/spotify/template.png")
+    title = ImageFont.truetype("cogs/spotify/CircularStd-Medium.otf", 55)
+    artists = ImageFont.truetype("cogs/spotify/CircularStd-Light.otf", 35)
+    current = ImageFont.truetype("cogs/spotify/CircularStd-Light.otf", 25)
+    end = ImageFont.truetype("cogs/spotify/CircularStd-Light.otf", 25)
+    album = ImageFont.truetype("cogs/spotify/CircularStd-Medium.otf", 35)
+    draw = ImageDraw.Draw(foreground)
+    draw.text((432, 105), f"{activity.album[:30]}..." if len(activity.album) > 30 else activity.album, (255, 255, 255), font = album, anchor = "mm")
+    draw.text((65, 965), f"{activity.title[:20]}..." if len(activity.title) > 20 else activity.title, (255, 255, 255), font = title)
+    draw.text((65, 1030), f"{(', '.join(activity.artists))[:30]}..." if len(", ".join(activity.artists)) > 30 else ", ".join(activity.artists), (211, 211, 211), font = artists)
+    draw.text((60, 1135), f"{int(passed / 60)}:{(passed % 60):02d}", (211, 211, 211), font = current)
+    draw.text((750, 1135), f"{int(total / 60)}:{(total % 60):02d}", (211, 211, 211), font = end)
     
+    # pasting the information and cover onto the background
     presend = io.BytesIO()
-    template.save(presend, format = "png")
-    drawCard = Image.open(presend)
-    drawCard.paste(cover, (70, 200))
+    foreground.paste(cover, (70, 200))
+    foreground.save(presend, format = "png")
     final = io.BytesIO()
-    drawCard.save(final, format = "png")
+    background.paste(foreground, (0, 0), mask = foreground)
+    background.save(final, format = "png")
     final.seek(0)
+    await message.delete()
     await ctx.send(file = discord.File(final, filename = "spotify.png"))
-
-
   
-  @commands.command(help = "Unpotatos a user", aliases = ["unaloo"])
+  @commands.command(help = "Unpotatoes a user", aliases = ["unaloo"])
   @commands.check(isPotatoStaff)
   async def unpotato(self, ctx, member: discord.Member):
     if self.bot.potatoRole in member.roles:
@@ -551,6 +568,7 @@ class Commands(commands.Cog):
       await ctx.send(f"{self.bot.errorEmoji} They ain't even potato :face_with_raised_eyebrow:")
   
   @commands.command(help = "Unjuices a user", aliases = ["unjoose"])
+  @commands.check(isJuiceStaff)
   async def unjuice(self, ctx, member: discord.Member):
     if self.bot.juiceRole in member.roles:
       await member.remove_roles(self.bot.juiceRole)
