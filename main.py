@@ -26,7 +26,6 @@ async def assignments():
   bot.logChannel = bot.get_channel(references.logChannelID)
   bot.generalChannel = bot.get_channel(references.generalChannelID)
   bot.vipChannel = bot.get_channel(references.vipChannelID)
-  bot.joinGameChannel = bot.get_channel(references.joinGameChannelID)
   bot.botProfile = s.get_member(references.rolesChannelID)
 
   bot.birthdayRole = s.get_role(references.birthdayRoleID)
@@ -122,7 +121,7 @@ async def on_ready():
   • run `!help` to see server commands
   • staff can mute at their own discretion
   • ignorance of the rules above is not a valid excuse
-  • rules for the minecraft server pinned in <#659885014603005953>""", inline = False)
+  • rules for the Minecraft SMP pinned in <#693321555366903851>""", inline = False)
   await rulesMessage.edit(embed = embed)
 
   # subjectRolesMessage = await bot.rolesChannel.fetch_message(759521601170833469)
