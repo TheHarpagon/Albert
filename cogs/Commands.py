@@ -22,18 +22,6 @@ async def isPotatoStaff(ctx):
 class Commands(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
-    
-  @commands.command(help = "Bans a user")
-  @commands.check(isStaff)
-  async def ban(self, ctx, member: discord.Member, *, reason = None):
-    if self.bot.adminRole in member.roles or self.bot.moderatorRole in member.roles :
-      await ctx.send(f"{self.bot.errorEmoji} You can't ban a staff member")
-      return
-    await member.ban(reason = reason, delete_message_days = 0)
-    embed = discord.Embed(title = ":lock: Ban", description = f"User: {member.mention}\nReason: {reason}", color = 0xFF0000)
-    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-    embed.set_thumbnail(url = member.avatar_url)
-    await ctx.send(embed = embed)
 
   @commands.command(help = "Displays the server banner")
   @commands.cooldown(1, 5, BucketType.user)
@@ -146,18 +134,6 @@ class Commands(commands.Cog):
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
-  @commands.command(help = "Kicks a user")
-  @commands.check(isStaff)
-  async def kick(self, ctx, member: discord.Member, *, reason = None):
-    if self.bot.adminRole in member.roles or self.bot.moderatorRole in member.roles:
-      await ctx.send(f"{self.bot.errorEmoji} You can't kick a staff member")
-      return
-    await member.kick(reason = reason)
-    embed = discord.Embed(title = ":soccer: Kick", description = f"User: {member.mention}\nReason: {reason}", color = 0xFF0000)
-    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-    embed.set_thumbnail(url = member.avatar_url)
-    await ctx.send(embed = embed)
-  
   @commands.command(help = "Shuts me down", aliases = ["die", "dropdead"])
   @commands.is_owner()
   async def kill(self, ctx):
@@ -257,7 +233,7 @@ class Commands(commands.Cog):
     for i in range(round(length)):
      output += "="
 
-    embed = discord.Embed(title = ":eggplant: PP Rater", description = f"8{output}D \n**Length:** `{round(length, 2)}` inches \n**Rating:** `{ratings[list(ratings.keys())[index]]}`", color = 0xe67e22)
+    embed = discord.Embed(title = ":eggplant: PP Rater", description = f"8{output}D \n**Length:** `{round(length, 2)}` AU \n**Rating:** `{ratings[list(ratings.keys())[index]]}`", color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     embed.set_thumbnail(url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
@@ -386,6 +362,18 @@ class Commands(commands.Cog):
     else:
       await ctx.send(f"{self.bot.checkmarkEmoji} Reloaded")
   
+  @commands.command(help = "Reloads an extension")
+  @commands.is_owner()
+  async def role(self, ctx, action, number = None):
+    if not ctx.guild:
+      if action == "list":
+        output = ""
+        for i in self.bot.schoolRoles:
+          output += f"{self.bot.schoolRoles.index(i) + 1} {i.mention}"
+        await ctx.send(embed = discord.Embed(title = "School Roles", description = "", color = 0xe67e22))
+    else:
+      await ctx.send(embed = discord.Embed(title = f"{self.bot.errorEmoji} You can only use this command in DMs", color = 0xFF0000))
+  
   # @commands.command(help = "Reminds you")
   # @commands.cooldown(1, 7200, BucketType.user) 
   # async def remind(self, ctx, time, *, reminder):
@@ -409,6 +397,19 @@ class Commands(commands.Cog):
   #   else:
   #     await ctx.send(f"{self.bot.errorEmoji} The duration is incorrect, make sure it ends with an `s`, `m`, or an `h`")
   #     ctx.command.reset_cooldown(ctx)
+
+  @commands.command(help = "Displays the schedule", aliases = ["s"])
+  async def schedule(self, ctx, argument = None):
+    embed = discord.Embed(title = ":bell: DVHS Bell Schedule", description = "2021 - 2022", color = 0xe67e22)
+    if not argument:
+      embed.set_image(url = "https://i.gyazo.com/60ef2d7c967ef1a5dbe2e555252b9364.png")
+    elif argument.lower() == "special":
+      embed.set_image(url = "https://i.gyazo.com/e905130e6e4688e7111ba1ae8121b7de.png")
+    else:
+      await ctx.send(content = f"{self.bot.errorEmoji} Use `!s` for the normal schedule, `!s special` for the other")
+      return
+    embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+    await ctx.send(embed = embed)
   
   @commands.command(help = "Sets my status")
   @commands.is_owner()
@@ -478,8 +479,12 @@ class Commands(commands.Cog):
         cover = cover.resize((725, 725))
         coverBytes = io.BytesIO()
         cover.save(coverBytes, format = "png")
-    color_thief = ColorThief(coverBytes)
-    dominantColor = color_thief.get_color(quality = 10)
+    # color_thief = ColorThief(coverBytes)
+    # dominantColor = color_thief.get_color(quality = 10)
+    img = cover.copy()
+    img.convert("RGB")
+    img.resize((1, 1), resample = 0)
+    dominantColor = img.getpixel((0, 0))
 
     # creating the background
     # uses a gradient between the dominant color of the album cover and #191414

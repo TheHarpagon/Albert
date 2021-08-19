@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 import discord
 from discord.ext import commands
@@ -17,12 +18,22 @@ class Events(commands.Cog):
   @commands.Cog.listener()
   async def on_command_error(self, ctx, error):
     if isinstance(error, CheckFailure):
-      await ctx.send(f"{self.bot.errorEmoji} You are missing permissions")
+      await ctx.send(embed = discord.Embed(title = f"{self.bot.errorEmoji} You're missing permissions", color = 0xFF0000))
     elif isinstance(error, CommandOnCooldown):
-      await ctx.send(f"{self.bot.errorEmoji} You are on cooldown for `{round(error.retry_after, 2)}` seconds")
+      await ctx.send(embed = discord.Embed(title = f"{self.bot.errorEmoji} You're on cooldown", description = f"Please wait another `{round(error.retry_after, 2)}` seconds", color = 0xFF0000))
     elif not isinstance(error, CommandNotFound):
-      await ctx.send(f"{self.bot.errorEmoji} An error occurred\n```{error}```")
+      await ctx.send(embed = discord.Embed(title = f"{self.bot.errorEmoji} An error occurred", description = error, color = 0xFF0000))
     print(f"❌‎‎‎　ERROR ({error})")
+
+  @commands.Cog.listener()
+  async def on_member_update(self, before, after):
+    if before.display_name[:6] == "[AFK] " and after.display_name[:6] != "[AFK] ":
+      try:
+        del db[str(after.id)]
+      except:
+        pass
+    elif before.display_name[:6] != "[AFK] " and after.display_name[:6] == "[AFK] ":
+      db[str(after.id)] = [str(datetime.now()), None]
   
   @commands.Cog.listener()
   async def on_message(self, message):
@@ -33,7 +44,10 @@ class Events(commands.Cog):
         del db[str(message.author.id)]
         if message.author.id != 410590963379994639:
           await message.author.edit(nick = message.author.display_name[6:])
-        await message.reply(f":wave: Welcome back, I removed your AFK", delete_after = 3)
+        embed = discord.Embed(title = ":wave: Welcome back, removed your AFK", color = 0xe67e22)
+        reply = await message.reply(embed = embed)
+        await asyncio.sleep(3)
+        await reply.delete()
         print("✅　AFK RETURN Event")
 
     # afk user mentioned
@@ -41,15 +55,14 @@ class Events(commands.Cog):
       for i in message.mentions:
         if str(i.id) in db:
           time = datetime.now() - datetime.strptime(db[str(i.id)][0], '%Y-%m-%d %H:%M:%S.%f')
-          nickname = i.display_name[6:]
-          if i.id == 410590963379994639:
-            nickname = i.display_name
+          embed = discord.Embed(title = ":spy: AFK", description = i.mention, color = 0xe67e22)
+          embed.set_thumbnail(url = i.avatar_url)
+          embed.add_field(name = "Set", value = humanize.naturaltime(time), inline = True)
           # w/o message
-          if not db[str(i.id)][1]:
-            await message.channel.send(f":spy: `{nickname}` is AFK ({humanize.naturaltime(time)})")
-          # with message
-          else:
-            await message.channel.send(f":spy: `{nickname}` is AFK: `{db[str(i.id)][1]}` ({humanize.naturaltime(time)})")
+          if db[str(i.id)][1]:
+            embed.add_field(name = "Message", value = db[str(i.id)][1], inline = True)
+          embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+          await message.channel.send(embed = embed)
           print("✅　AFK MENTION Event")
   
   @commands.Cog.listener()
@@ -107,16 +120,16 @@ class Events(commands.Cog):
   @commands.Cog.listener()
   async def on_raw_reaction_add(self, payload):
     if payload.message_id == 759534246607585300:
-      await payload.member.add_roles(self.bot.gameRRDict[str(payload.emoji.name)], self.bot.dividerTwoRole)
-      await payload.member.send(f"{self.bot.plusEmoji} Added the **{self.bot.gameRRDict[str(payload.emoji.name)]}** role")
+      await payload.member.add_roles(self.bot.gameRR[str(payload.emoji.name)], self.bot.dividerTwoRole)
+      await payload.member.send(f"{self.bot.plusEmoji} Added the **{self.bot.gameRR[str(payload.emoji.name)]}** role")
       print("✅　REACTION (ADD) Event")
 
   @commands.Cog.listener()
   async def on_raw_reaction_remove(self, payload):
     member = self.bot.server.get_member(payload.user_id)
     if payload.message_id == 759534246607585300:
-      await member.remove_roles(self.bot.gameRRDict[str(payload.emoji.name)])
-      await member.send(f"{self.bot.minusEmoji} Removed the **{self.bot.gameRRDict[str(payload.emoji.name)]}** role")
+      await member.remove_roles(self.bot.gameRR[str(payload.emoji.name)])
+      await member.send(f"{self.bot.minusEmoji} Removed the **{self.bot.gameRR[str(payload.emoji.name)]}** role")
 
 def setup(bot):
   bot.add_cog(Events(bot))

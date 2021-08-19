@@ -40,6 +40,7 @@ async def assignments():
   
   bot.dividerOneRole = s.get_role(references.dividerOneRoleID)
   
+  
   bot.dividerTwoRole = s.get_role(references.dividerTwoRoleID)
   bot.chessRole = s.get_role(references.chessRoleID)
   bot.contentRole = s.get_role(references.contentRoleID)
@@ -63,9 +64,7 @@ async def assignments():
   bot.plusEmoji = bot.get_emoji(references.plusEmojiID)
   bot.minusEmoji = bot.get_emoji(references.minusEmojiID)
 
-  # bot.schoolRRDict = {references.brainEmojiID: bot.helperRole, references.bellEmojiID: bot.bellScheduleRole, references.oneEmojiID: bot.precalculusRole, references.twoEmojiID: bot.apCalcABRole, references.threeEmojiID: bot.apCalcBCRole, references.fourEmojiID: bot.hPhysicsRole, references.fiveEmojiID: bot.apPhysicsRole, references.sixEmojiID: bot.apBiologyRole, references.sevenEmojiID: bot.rushRole, references.eightEmojiID: bot.apushRole, references.nineEmojiID: bot.vsNetRole, references.tenEmojiID: bot.apcsRole}
-
-  bot.gameRRDict = {"\U0000265f\U0000fe0f": bot.chessRole, "\U0001f37f": bot.contentRole, "\U0001f52b": bot.krunkerRole, "\U000026cf\U0000fe0f": bot.minecraftRole, "\U0001f453": bot.politicsRole, "🖍️": bot.skribblRole, "\U0001f399\U0000fe0f": bot.vcRole}
+  bot.gameRR = {"\U0000265f\U0000fe0f": bot.chessRole, "\U0001f37f": bot.contentRole, "\U0001f52b": bot.krunkerRole, "\U000026cf\U0000fe0f": bot.minecraftRole, "\U0001f453": bot.politicsRole, "🖍️": bot.skribblRole, "\U0001f399\U0000fe0f": bot.vcRole}
 
   def memberCount():
     return len([member for member in bot.get_all_members() if not member.bot])

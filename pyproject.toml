@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "repl_python3_Albert-1"
+name = "repl_python3_Albert"
 version = "0.1.0"
 description = ""
 authors = ["hdadhich01 <<>>"]
@@ -20,6 +20,8 @@ psutil = "^5.8.0"
 ordinal = "^1.0.3"
 Pillow = "^8.3.1"
 colorthief = "^0.2.1"
+"discord.py" = "^1.7.3"
+pytimeparse = "^1.1.8"
 
 [tool.poetry.dev-dependencies]
 

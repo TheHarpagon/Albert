@@ -12,7 +12,6 @@ from ordinal import ordinal
 import portolan
 import random
 from replit import db
-import tinydb
 import uuid
 
 async def isStaff(ctx):
@@ -31,16 +30,18 @@ class DatabaseCommands(commands.Cog):
         await ctx.author.edit(nick = f"[AFK] {ctx.author.display_name}")
       else:
         await ctx.author.edit(nick = f"[AFK] {ctx.author.display_name[:-6]}")
-    db[str(ctx.author.id)] = [str(ctx.message.created_at), message]
-    text = f"{self.bot.checkmarkEmoji} Set your AFK"
-    text += f"\n```{message}```" if message else ""
-    await ctx.send(text)
+    db[str(ctx.author.id)] = [str(datetime.now()), message]
+    if message:
+      embed = discord.Embed(title = f"{self.bot.checkmarkEmoji} Set your AFK", description = message, color = 0xe67e22)
+    else:
+      embed = discord.Embed(title = f"{self.bot.checkmarkEmoji} Set your AFK", color = 0xe67e22)
+    await ctx.send(embed = embed)
   
   @commands.command(help = "Displays all AFKs")
   async def afks(self, ctx):
     output = ""
     for i in db:
-      output += f"<@{i}>"
+      output += f"\n<@{i}>" "\n".join()
     embed = discord.Embed(title = ":spy: AFKs", description = output, color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
@@ -176,95 +177,6 @@ class DatabaseCommands(commands.Cog):
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await asyncio.sleep(2)
     await message.edit(content = None, embed = embed)
-
-  @commands.command(help = "Mutes a user", aliases = ["stfu"])
-  async def mute(self, ctx, user: str, mtime = None):
-    mutes = {}
-    muteDatabase = tinydb.TinyDB("cogs/muteDatabase.json")
-    query = tinydb.Query()
-    if mtime == None:
-        mtime = -1
-
-    member = ctx.message.mentions[0]
-    vipStat = self.bot.vipRole in member.roles
-
-    if float(mtime) > 0:
-      mtime = float(mtime)
-
-    if ((ctx.message.author.id == 410590963379994639) or (self.bot.moderatorRole in ctx.message.author.roles)) and (self.bot.memberRole not in ctx.message.author.roles):
-      if muteDatabase.search(query.id == (str(member.id) + " " + str(member.guild.id))) == [] and (not ((self.bot.adminRole in member.roles) or (self.bot.moderatorRole in member.roles) or (self.bot.botRole in member.roles))):
-          if mtime > 0:
-            if mtime < 1:
-              stime = round(mtime * 60)
-              sunit = "seconds"                    
-
-              if stime == 1:
-                sunit = "second"
-              
-              embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{stime}` {sunit}", color = 0x00FF00)
-              embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
-              embed.set_thumbnail(url = member.avatar_url)
-              await ctx.send(embed = embed)
-            
-            if mtime >= 60:
-              htime = mtime / 60
-              hunit = "hours"
-
-              if htime == 1:
-                hunit = "hour"
-              
-              embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{htime}` {hunit}", color = 0x00FF00)
-              embed.set_author(name = self.bot.user.name, icon_url = self.bot.user.avatar_url)
-              embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
-              embed.set_thumbnail(url = member.avatar_url)
-              await ctx.send(embed = embed)
-            
-            if (mtime >= 1) and (mtime < 60):
-              munit = "minutes"
-              
-              if mtime == 1:
-                munit = "minute"
-              
-              embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `{mtime}` {munit}", color = 0x00FF00)
-              embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
-              embed.set_thumbnail(url = member.avatar_url)
-              await ctx.send(embed = embed)
-          
-          else:
-            embed = discord.Embed(title = ":mute: Muted", description = f"{member.mention} was muted for `infinity` (`∞`)", color = 0x00FF00)
-            embed.set_footer(text = f"Muted by {ctx.author}", icon_url = ctx.author.avatar_url)
-            embed.set_thumbnail(url = member.avatar_url)
-            await ctx.send(embed = embed)
-          
-          muteDatabase.insert({"id":(str(member.id) + " " + str(member.guild.id)), "expires":(mtime * 60)})
-          await member.add_roles(self.bot.mutedRole)
-          await member.remove_roles(self.bot.memberRole)
-          if vipStat:
-            await member.remove_roles(self.bot.vipRole)
-
-          if mtime > 0:
-            await asyncio.sleep(mtime*60)
-            
-            await member.remove_roles(self.bot.mutedRole)
-            await member.add_roles(self.bot.memberRole)
-            if vipStat:
-              await member.add_roles(self.bot.vipRole)
-              
-            if muteDatabase.search(query.id == (str(member.id) + " " + str(member.guild.id))) != []:
-              embed = discord.Embed(title = ":loud_sound: Unmuted", description = f"{member.mention}'s mute expired", color = 0x00FF00)
-              embed.set_footer(text = f"Originally muted by {ctx.author}", icon_url = ctx.author.avatar_url)
-              embed.set_thumbnail(url = member.avatar_url)
-              await ctx.send(embed = embed)
-              muteDatabase.remove(query.id == (str(member.id) + " " + str(member.guild.id)))
-      
-      else:
-        if (self.bot.adminRole in member.roles) or (self.bot.moderatorRole in member.roles) or (self.bot.botRole in member.roles):
-          await ctx.send(f"{self.bot.errorEmoji} This user cannot be muted")
-      
-        else:
-          await ctx.send(f"{self.bot.errorEmoji} This user is already muted")
-    else:
-      await ctx.send(f"{self.bot.errorEmoji} Missing permissions")
   
   @commands.command(help = "Strips off text from an attachment", aliases = ["read", "scan"])
   @commands.cooldown(1, 20, BucketType.user)
@@ -374,65 +286,6 @@ class DatabaseCommands(commands.Cog):
     embed = discord.Embed(title = "<:pepeLaugh:812786514911428608> Insult", description = data["insult"], color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await message.edit(content = content, embed = embed)
-  
-  # @commands.command(help = "Shortens a URL", aliases = ["link", "short", "tiny"])
-  # @commands.cooldown(1, 5, BucketType.user) 
-  # async def shorten(self, ctx, *, URL: str):
-  #   message = await ctx.send(f"{self.bot.loadingEmoji} Shortening URL...")
-  #   tokensPool = "a9c21c045c5d62380a54a7d3a22b06d8e6396c1c"
-  #   shortener = bitlyshortener.Shortener(token = tokensPool, max_cache = 256)
-  #   URLs = [URL]
-  #   shortenedURL = shortener.shorten_urls(URLs)
-  #   print(shortenedURL)
-  #   embed = discord.Embed(title = ":link: Shortened Link", description = shortenedURL[0], color = 0xe67e22)
-  #   embed.set_footer(text = f"Requested by {ctx.author}", icon_url = self.bot.user.avatar_url)
-  #   embed.set_thumbnail(url = "https://i.imgur.com/YmjXC7s.png")
-  #   await message.edit(content = None, embed = embed)
-  
-  @commands.command(help = "Beta mute command", aliases = ["testmute"])
-  @commands.is_owner()
-  async def tmute(self, ctx, member: discord.Member, duration = None):
-    if ctx.author.id == 410590963379994639 or self.bot.moderatorRole not in member.roles:
-      if self.bot.mutedRole in member.roles:
-        await ctx.send(f"{self.bot.errorEmoji} They are already muted")
-        return
-      with open("cogs/mutes.json", "r") as file:
-        data = json.load(file)
-      if str(member.id) in data:
-        await ctx.send(f"{self.bot.errorEmoji} They are already muted")
-      else:
-        if duration:
-          if duration[-1] in ["m", "h"]:
-            seconds = 0
-            time = {"m": 60, "h": 3600}
-            if duration[-1] == "m":
-              seconds = int(duration[:-1]) * 60
-            elif duration[-1] == "h":
-              seconds = int(duration[:-1]) * 3600
-            await member.remove_roles(self.bot.vipRole, self.bot.memberRole)
-            await member.add_roles(self.bot.mutedRole)
-            await ctx.send(f"{self.bot.checkmarkEmoji} Muted for `{duration}`")
-            data[str(ctx.author.id)] = (time[duration.lower()[-1]])
-            with open("cogs/mutes.json", "w") as file:
-              json.dump(data, file, indent = 2)
-            await asyncio.sleep(seconds)
-            with open("cogs/mutes.json", "r") as file:
-              data = json.load(file)
-            del data[str(ctx.author.id)]
-            with open("cogs/mutes.json", "w") as file:
-              json.dump(data, file, indent = 2)
-          else:
-            await ctx.send(f"{self.bot.errorEmoji} Invalid duration, use it as such\nex: `13m` or `0.75h`")
-            return
-        else:
-          await member.remove_roles(self.bot.vipRole, self.bot.memberRole)
-          await member.add_roles(self.bot.mutedRole)
-          data[str(member.id)] = "infiniy"
-          with open("cogs/mutes.json", "w") as file:
-            json.dump(data, file, indent = 2)
-          await ctx.send(f"{self.bot.checkmarkEmoji} Muted")
-    else:
-      await ctx.send(f"{self.bot.errorEmoji} You can't mute staff")
   
   @commands.command(help = "Displays the trivia leaderboard", aliases = ["lb", "leaderboard", "^"])
   @commands.cooldown(1, 10, BucketType.user)
@@ -568,39 +421,6 @@ class DatabaseCommands(commands.Cog):
         embed = discord.Embed(title = f"{self.bot.errorEmoji} Incorrect!", description = f"**Category**: {category}\n**Difficulty**: {difficulty.capitalize()}\n**Question**: {question}\n\n{reactionsList[0]} {choices[0]}\n{reactionsList[1]} {choices[1]}\n{reactionsList[2]} {choices[2]}\n{reactionsList[3]} {choices[3]}\n\nview the global leaderboard with `!top`", color = 0xFF383E)
         embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
         await message.edit(content = None, embed = embed)
-  
-  @commands.command(help = "Unmutes a user", aliases = ["unstfu"])
-  async def unmute(self, ctx, user: str):
-    mutes = {}
-    muteDatabase = tinydb.TinyDB("cogs/muteDatabase.json")
-    query = tinydb.Query()
-    member = ctx.message.mentions[0]
-    if (self.bot.adminRole in ctx.message.author.roles) or (self.bot.moderatorRole in ctx.message.author.roles):
-      if self.bot.mutedRole in member.roles:
-        await member.remove_roles(self.bot.mutedRole)
-        if not self.bot.memberRole in member.roles:
-          await member.add_roles(self.bot.memberRole)
-        embed = discord.Embed(title = ":loud_sound: Unmuted", description = f"{member.mention} was unmuted", color = 0x00FF00)
-        embed.set_footer(text = f"Unmuted by {ctx.author}", icon_url = ctx.author.avatar_url)
-        embed.set_thumbnail(url = member.avatar_url)
-        await ctx.send(embed = embed)
-      
-      else:
-        embed = discord.Embed(title = f"{self.bot.errorEmoji} Unable to Unmute", description = f"{member.mention} isn't even muted", color = 0xFF0000)
-        embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-        embed.set_thumbnail(url = member.avatar_url)
-        await ctx.send(embed = embed)
-      
-      if not self.bot.memberRole in member.roles:
-        await member.add_roles(self.bot.memberRole)
-      
-      muteDatabase.remove(query.id == (str(member.id) + " " + str(member.guild.id)))
-    
-    else:
-      embed = discord.Embed(title = f"{self.bot.errorEmoji} Missing Permissions", description = f"Required Roles: \n• {self.bot.adminRole.mention} \n• {self.bot.moderatorRole.mention}", color = 0xFF0000)   
-      embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-      embed.set_thumbnail(url = member.avatar_url)
-      await ctx.send(embed = embed)
   
   @commands.command(help = "Displays the weather for a city")
   @commands.cooldown(1, 20, BucketType.user) 
