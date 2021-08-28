@@ -119,6 +119,10 @@ class Events(commands.Cog):
   
   @commands.Cog.listener()
   async def on_raw_reaction_add(self, payload):
+    if payload.message_id == 759521601170833469:
+      await payload.member.add_roles(self.bot.schoolRR[str(payload.emoji.name)], self.bot.dividerOneRole)
+      await payload.member.send(f"{self.bot.plusEmoji} Added the **{self.bot.schoolRR[str(payload.emoji.name)]}** role")
+      print("✅　REACTION (ADD) Event")
     if payload.message_id == 759534246607585300:
       await payload.member.add_roles(self.bot.gameRR[str(payload.emoji.name)], self.bot.dividerTwoRole)
       await payload.member.send(f"{self.bot.plusEmoji} Added the **{self.bot.gameRR[str(payload.emoji.name)]}** role")
@@ -127,9 +131,14 @@ class Events(commands.Cog):
   @commands.Cog.listener()
   async def on_raw_reaction_remove(self, payload):
     member = self.bot.server.get_member(payload.user_id)
+    if payload.message_id == 759521601170833469:
+      await member.remove_roles(self.bot.schoolRR[str(payload.emoji.name)])
+      await member.send(f"{self.bot.minusEmoji} Removed the **{self.bot.schoolRR[str(payload.emoji.name)]}** role")
+      print("✅　REACTION (REMOVE) Event")
     if payload.message_id == 759534246607585300:
       await member.remove_roles(self.bot.gameRR[str(payload.emoji.name)])
       await member.send(f"{self.bot.minusEmoji} Removed the **{self.bot.gameRR[str(payload.emoji.name)]}** role")
+      print("✅　REACTION (REMOVE) Event")
 
 def setup(bot):
   bot.add_cog(Events(bot))
