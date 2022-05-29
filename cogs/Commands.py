@@ -1,5 +1,6 @@
 import aiohttp
-from colorthief import ColorThief
+import asyncio
+# from colorthief import ColorThief
 from datetime import datetime
 import discord
 from discord.ext import commands
@@ -95,7 +96,7 @@ class Commands(commands.Cog):
     embed = discord.Embed(title = ":inbox_tray: Invite Link", color = 0xe67e22)
     embed.set_thumbnail(url = self.bot.user.avatar_url)
     embed.add_field(name = "Bot", value = "[Link](https://discord.com/api/oauth2/authorize?client_id=851538022356615208&permissions=134605888&scope=bot)", inline = False)
-    embed.add_field(name = "Server", value = "discord.gg/uncle", inline = False)
+    embed.add_field(name = "Server", value = "discord.gg/fG8vTrj", inline = False)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
   
@@ -160,7 +161,7 @@ class Commands(commands.Cog):
     output = ""
     for member in self.bot.mutedRole.members:
       output += f"{member.mention}\n"
-    embed = discord.Embed(title = ":mute: Muted", description = f"{output}", color = 0xe67e22)
+    embed = discord.Embed(title = ":mute: Muted", description = f"{output if output else 'None'}", color = 0xe67e22)
     embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
     await ctx.send(embed = embed)
 
@@ -374,29 +375,29 @@ class Commands(commands.Cog):
     else:
       await ctx.send(embed = discord.Embed(title = f"{self.bot.errorEmoji} You can only use this command in DMs", color = 0xFF0000))
   
-  # @commands.command(help = "Reminds you")
-  # @commands.cooldown(1, 7200, BucketType.user) 
-  # async def remind(self, ctx, time, *, reminder):
-  #   timeDict = {"s": 1, "m": 60, "h": 3600}
-  #   # time parser
-  #   if time[-1] in list(timeDict.keys()) and time[:-1].isnumeric():
-  #     if int(time[:-1]) * timeDict[time[-1]] <= 14400:
-  #       if len(reminder) < 50:
-  #         await ctx.send(f"{self.bot.checkmarkEmoji} Set! I'll remind you in `{humanize.naturaltime(int(time[:-1]) * timeDict[time[-1]])[:-4]}`")
-  #         await asyncio.sleep(int(time[:-1]) * timeDict[time[-1]])
-  #         embed = discord.Embed(title = ":bell: Reminder Set", description = f"Set Duration:\n```{humanize.naturaltime(int(time[:-1]) * timeDict[time[-1]])}```\nReminder:\n```{reminder}```", color = 0xe67e22)
-  #         embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
-  #         await ctx.send(content = ctx.author.mention, embed = embed)
-  #         await ctx.author.send(content = ctx.author.mention, embed = embed)
-  #       else:
-  #         await ctx.send(f"{self.bot.errorEmoji} The reminder must be under `50` characters")
-  #         ctx.command.reset_cooldown(ctx)
-  #     else:
-  #       await ctx.send(f"{self.bot.errorEmoji} The duration can't be more than 4 hours")
-  #       ctx.command.reset_cooldown(ctx)
-  #   else:
-  #     await ctx.send(f"{self.bot.errorEmoji} The duration is incorrect, make sure it ends with an `s`, `m`, or an `h`")
-  #     ctx.command.reset_cooldown(ctx)
+  @commands.command(help = "Reminds you")
+  @commands.cooldown(1, 7200, BucketType.user) 
+  async def remind(self, ctx, time, *, reminder):
+    timeDict = {"s": 1, "m": 60, "h": 3600}
+    # time parser
+    if time[-1] in list(timeDict.keys()) and time[:-1].isnumeric():
+      if int(time[:-1]) * timeDict[time[-1]] <= 14400:
+        if len(reminder) < 50:
+          await ctx.send(f"{self.bot.checkmarkEmoji} Set! I'll remind you in `{humanize.naturaltime(int(time[:-1]) * timeDict[time[-1]])[:-4]}`")
+          await asyncio.sleep(int(time[:-1]) * timeDict[time[-1]])
+          embed = discord.Embed(title = ":bell: Reminder Set", description = f"Set Duration:\n```{humanize.naturaltime(int(time[:-1]) * timeDict[time[-1]])}```\nReminder:\n```{reminder}```", color = 0xe67e22)
+          embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+          await ctx.send(content = ctx.author.mention, embed = embed)
+          await ctx.author.send(content = ctx.author.mention, embed = embed)
+        else:
+          await ctx.send(f"{self.bot.errorEmoji} The reminder must be under `50` characters")
+          ctx.command.reset_cooldown(ctx)
+      else:
+        await ctx.send(f"{self.bot.errorEmoji} The duration can't be more than 4 hours")
+        ctx.command.reset_cooldown(ctx)
+    else:
+      await ctx.send(f"{self.bot.errorEmoji} The duration is incorrect, make sure it ends with an `s`, `m`, or an `h`")
+      ctx.command.reset_cooldown(ctx)
 
   @commands.command(help = "Displays the schedule", aliases = ["s"])
   async def schedule(self, ctx, argument = None):

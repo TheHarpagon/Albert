@@ -345,7 +345,7 @@
   #   embed.set_thumbnail(url = member.avatar_url)
   #   await ctx.send(embed = embed)
 
-  @commands.command(help = "Bans a user")
+  # @commands.command(help = "Bans a user")
   # @commands.check(isStaff)
   # async def ban(self, ctx, member: discord.Member, *, reason = None):
   #   if self.bot.adminRole in member.roles or self.bot.moderatorRole in member.roles :

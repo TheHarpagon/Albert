@@ -1,7 +1,3 @@
-cogs/afks.json
-cogs/mlinks.json
-cogs/mutes.json
-cogs/muteDatabase.json
 cogs/points.json
 references.py
 __pycache__/

@@ -102,19 +102,19 @@ async def assignments():
   async def updateStatus():
     await bot.change_presence(status = discord.Status.idle, activity = discord.Activity(type = discord.ActivityType.watching, name = f"{bot.memberCount()} Members • !help"))
   bot.updateStatus = updateStatus
+  await updateStatus()
 
 
 # bot startup event
 @bot.event
 async def on_ready():
-  print(f"DPY Version: {discord.__version__}")
-  print("Loading Assignments:")
+  print(f"\n✅ Updated Packages/Dependencies")
   await assignments()
-  print(f"✅ Loaded\nLoading Cogs:")
+  print(f"✅ Loaded Assignments")
   for filename in os.listdir("./cogs"):
     if filename.endswith(".py"):
       bot.load_extension(f"cogs.{filename[:-3]}")
-      print(f"✅ {filename}")
+      print(f"✅ Loaded {filename}")
   
   # afk reapplication
   for member in bot.server.members:
@@ -126,7 +126,6 @@ async def on_ready():
         db[str(member.id)] = [str(datetime.now()), None]
   
   tprint(bot.user.name)
-  bot.updateStatus
   bot.startTime = datetime.now()
   
   rulesMessage = await bot.rulesChannel.fetch_message(790036264648441897)

@@ -1,0 +1,67 @@
+Event,Date-Time,Reason,Duration,"Duration (in mins.)","Monitor URL"
+Up,"2022-03-22 09:00:09",OK,"1630 hrs, 15 mins",97816,https://Albert.hdadhich01.repl.co
+Down,"2022-03-22 08:00:19","Not Found","0 hrs, 59 mins",60,https://Albert.hdadhich01.repl.co
+Up,"2022-03-21 21:40:15",OK,"10 hrs, 20 mins",620,https://Albert.hdadhich01.repl.co
+Down,"2022-03-21 21:25:23","Internal Server Error","0 hrs, 14 mins",15,https://Albert.hdadhich01.repl.co
+Up,"2022-03-20 16:54:49",OK,"28 hrs, 30 mins",1711,https://Albert.hdadhich01.repl.co
+Down,"2022-03-20 16:39:49","DNS Resolving problem","0 hrs, 15 mins",15,https://Albert.hdadhich01.repl.co
+Up,"2022-03-19 09:25:36",OK,"31 hrs, 14 mins",1874,https://Albert.hdadhich01.repl.co
+Down,"2022-03-19 09:20:52","Not Found","0 hrs, 4 mins",5,https://Albert.hdadhich01.repl.co
+Up,"2022-03-19 09:15:02",OK,"0 hrs, 5 mins",6,https://Albert.hdadhich01.repl.co
+Down,"2022-03-19 09:10:18","Not Found","0 hrs, 4 mins",5,https://Albert.hdadhich01.repl.co
+Up,"2022-03-19 08:39:21",OK,"0 hrs, 30 mins",31,https://Albert.hdadhich01.repl.co
+Down,"2022-03-19 08:34:22","Not Found","0 hrs, 4 mins",5,https://Albert.hdadhich01.repl.co
+Up,"2022-03-19 02:08:39",OK,"6 hrs, 25 mins",386,https://Albert.hdadhich01.repl.co
+Down,"2022-03-19 01:23:44","Not Found","0 hrs, 44 mins",45,https://Albert.hdadhich01.repl.co
+Up,"2022-03-18 13:42:16",OK,"11 hrs, 41 mins",701,https://Albert.hdadhich01.repl.co
+Down,"2022-03-18 13:22:25","Not Found","0 hrs, 19 mins",20,https://Albert.hdadhich01.repl.co
+Up,"2022-03-18 12:50:16",OK,"0 hrs, 32 mins",32,https://Albert.hdadhich01.repl.co
+Down,"2022-03-18 12:45:21","Not Found","0 hrs, 4 mins",5,https://Albert.hdadhich01.repl.co
+Up,"2022-03-18 12:39:58",OK,"0 hrs, 5 mins",5,https://Albert.hdadhich01.repl.co
+Down,"2022-03-18 12:35:13","Not Found","0 hrs, 4 mins",5,https://Albert.hdadhich01.repl.co
+Up,"2022-03-17 12:15:09",OK,"24 hrs, 20 mins",1460,https://Albert.hdadhich01.repl.co
+Down,"2022-03-17 11:59:47","Not Found","0 hrs, 15 mins",15,https://Albert.hdadhich01.repl.co
+Up,"2022-03-15 03:26:39",OK,"56 hrs, 33 mins",3393,https://Albert.hdadhich01.repl.co
+Down,"2022-03-15 03:04:51","Not Found","0 hrs, 21 mins",22,https://Albert.hdadhich01.repl.co
+Up,"2022-03-15 01:54:18",OK,"1 hrs, 10 mins",71,https://Albert.hdadhich01.repl.co
+Down,"2022-03-15 01:45:54","Internal Server Error","0 hrs, 8 mins",8,https://Albert.hdadhich01.repl.co
+Up,"2022-03-14 09:00:54",OK,"16 hrs, 45 mins",1005,https://Albert.hdadhich01.repl.co
+Down,"2022-03-14 08:46:00","Not Found","0 hrs, 14 mins",15,https://Albert.hdadhich01.repl.co
+Up,"2022-03-14 08:29:50",OK,"0 hrs, 16 mins",16,https://Albert.hdadhich01.repl.co
+Down,"2022-03-14 08:24:54","Internal Server Error","0 hrs, 4 mins",5,https://Albert.hdadhich01.repl.co
+Up,"2022-03-13 22:53:08",OK,"9 hrs, 31 mins",572,https://Albert.hdadhich01.repl.co
+Down,"2022-03-13 22:43:04","Not Found","0 hrs, 10 mins",10,https://Albert.hdadhich01.repl.co
+Up,"2022-03-13 07:30:23",OK,"15 hrs, 12 mins",913,https://Albert.hdadhich01.repl.co
+Down,"2022-03-13 07:20:32","Not Found","0 hrs, 9 mins",10,https://Albert.hdadhich01.repl.co
+Up,"2022-03-12 08:59:50",OK,"22 hrs, 20 mins",1341,https://Albert.hdadhich01.repl.co
+Down,"2022-03-12 08:46:55","Not Found","0 hrs, 12 mins",13,https://Albert.hdadhich01.repl.co
+Up,"2022-03-12 04:11:53",OK,"4 hrs, 35 mins",275,https://Albert.hdadhich01.repl.co
+Down,"2022-03-12 03:22:40","Not Found","0 hrs, 49 mins",49,https://Albert.hdadhich01.repl.co
+Up,"2022-03-11 07:06:57",OK,"20 hrs, 15 mins",1216,https://Albert.hdadhich01.repl.co
+Down,"2022-03-11 06:59:27","Not Found","0 hrs, 7 mins",8,https://Albert.hdadhich01.repl.co
+Up,"2022-03-09 08:36:35",OK,"46 hrs, 22 mins",2783,https://Albert.hdadhich01.repl.co
+Down,"2022-03-09 08:23:12","DNS Resolving problem","0 hrs, 13 mins",13,https://Albert.hdadhich01.repl.co
+Up,"2022-03-09 07:50:38",OK,"0 hrs, 32 mins",33,https://Albert.hdadhich01.repl.co
+Down,"2022-03-09 07:45:46","Not Found","0 hrs, 4 mins",5,https://Albert.hdadhich01.repl.co
+Up,"2022-03-09 02:11:43",OK,"5 hrs, 34 mins",334,https://Albert.hdadhich01.repl.co
+Down,"2022-03-09 01:56:16","Not Found","0 hrs, 15 mins",15,https://Albert.hdadhich01.repl.co
+Up,"2022-03-09 01:28:38",OK,"0 hrs, 27 mins",28,https://Albert.hdadhich01.repl.co
+Down,"2022-03-09 01:23:45","Not Found","0 hrs, 4 mins",5,https://Albert.hdadhich01.repl.co
+Up,"2022-03-08 19:42:32",OK,"5 hrs, 41 mins",341,https://Albert.hdadhich01.repl.co
+Down,"2022-03-08 19:32:14","Not Found","0 hrs, 10 mins",10,https://Albert.hdadhich01.repl.co
+Up,"2022-03-07 12:42:39",OK,"30 hrs, 49 mins",1850,https://Albert.hdadhich01.repl.co
+Down,"2022-03-07 12:29:59","Not Found","0 hrs, 12 mins",13,https://Albert.hdadhich01.repl.co
+Up,"2022-03-07 11:07:26",OK,"1 hrs, 22 mins",83,https://Albert.hdadhich01.repl.co
+Down,"2022-03-07 11:03:59","Not Found","0 hrs, 3 mins",3,https://Albert.hdadhich01.repl.co
+Up,"2022-03-07 10:52:24",OK,"0 hrs, 11 mins",12,https://Albert.hdadhich01.repl.co
+Down,"2022-03-07 10:46:43","Not Found","0 hrs, 5 mins",6,https://Albert.hdadhich01.repl.co
+Up,"2022-03-06 10:57:58",OK,"23 hrs, 48 mins",1429,https://Albert.hdadhich01.repl.co
+Down,"2022-03-06 10:47:46","Not Found","0 hrs, 10 mins",10,https://Albert.hdadhich01.repl.co
+Up,"2022-03-06 07:46:32",OK,"3 hrs, 1 mins",181,https://Albert.hdadhich01.repl.co
+Down,"2022-03-06 07:18:43","Not Found","0 hrs, 27 mins",28,https://Albert.hdadhich01.repl.co
+Up,"2022-03-04 07:58:37",OK,"47 hrs, 20 mins",2840,https://Albert.hdadhich01.repl.co
+Down,"2022-03-04 07:54:05","Not Found","0 hrs, 4 mins",5,https://Albert.hdadhich01.repl.co
+Up,"2022-03-03 10:46:44",OK,"21 hrs, 7 mins",1267,https://Albert.hdadhich01.repl.co
+Down,"2022-03-03 09:56:39","Not Found","0 hrs, 50 mins",50,https://Albert.hdadhich01.repl.co
+Up,"2022-03-02 03:51:19",OK,"30 hrs, 5 mins",1805,https://Albert.hdadhich01.repl.co
+Down,"2022-03-02 03:31:18","Not Found","0 hrs, 20 mins",20,https://Albert.hdadhich01.repl.co
